@@ -33,13 +33,13 @@ gulp.task('compress', ['clean'], function () {
 
   // development version
   gulp.src(filePaths.javascript)
-    .pipe(jsBuildFlow('be-frontend-components.js')())
+    .pipe(jsBuildFlow('be-table.js')())
     .pipe(gulp.dest('build/js'));
 
   // minified version
   gulp.src(filePaths.javascript)
     .pipe(sourcemaps.init())
-      .pipe(jsBuildFlow('be-frontend-components.min.js')())
+      .pipe(jsBuildFlow('be-table.min.js')())
       .pipe(uglify())
     .pipe(sourcemaps.write('./'))
     .pipe(gulp.dest('build/js'));
@@ -47,7 +47,7 @@ gulp.task('compress', ['clean'], function () {
 
 gulp.task('lint', function() {
   return gulp.src(filePaths.javascript)
-    .pipe(jsBuildFlow('be-frontend-components.js')())
+    .pipe(jsBuildFlow('be-table.js')())
     .pipe(jshint())
     .pipe(jshint.reporter('default'))
     .pipe(jshint.reporter('fail'));

@@ -2,7 +2,7 @@
  * BETable react component and table library
  *
  * Developer QuickStart:
- *   # install react-tools to compile beTable.jsx to beTable.js
+ *   # install react-tools to compile be-table.jsx to be-table.js
  *   npm install -g react-tools
  *   jsx --watch --extension jsx seed/static/seed/js/jsx/ seed/static/seed/js/jsx/
  *
