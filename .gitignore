@@ -1,0 +1,10 @@
+*.DS_Store
+*.sublime-workspace
+*.sublime-project
+*.lock
+*.DS_Store
+*.swp
+*.out
+node_modules
+npm-debug.log
+bower_components
