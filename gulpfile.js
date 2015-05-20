@@ -12,8 +12,9 @@ var wrap = require('gulp-wrap');
 
 var filePaths = {
   javascript: [
+    'src/utils.js',
     'src/formatters.js',
-    'src/beTable.jsx',
+    'src/be-table.jsx',
   ]
 };
 
@@ -48,11 +49,11 @@ gulp.task('compress', ['clean'], function () {
 gulp.task('lint', function() {
   return gulp.src(filePaths.javascript)
     .pipe(jsBuildFlow('be-table.js')())
-    .pipe(jshint())
+    .pipe(jshint({esnext: true}))
     .pipe(jshint.reporter('default'))
     .pipe(jshint.reporter('fail'));
 });
 
 gulp.task('test', ['lint']);
 gulp.task('build', ['clean', 'compress']);
-gulp.task('default', ['test', 'less', 'build']);
+gulp.task('default', ['test', 'build']);

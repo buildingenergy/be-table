@@ -379,6 +379,7 @@ var TableFooter = React.createClass({
       );
   }
 });
+
 // last step add the react component to the mix
-window.BE.react.BETable = BETable;
+getNamespace('BE', 'Table').BETable = BETable;
 
