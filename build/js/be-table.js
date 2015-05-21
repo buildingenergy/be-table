@@ -535,6 +535,13 @@ var BETable = React.createClass({displayName: "BETable",
       },
       date: {
         renderer: formatters.dateRenderer
+      },
+      multiselector: {
+        renderer: function () {
+            return (
+                React.createElement("input", {type: "checkbox"})
+            );
+        }
       }
     };
     return _.assign({}, rendererDefaults, this.props.customRenderers);
@@ -552,6 +559,9 @@ var BETable = React.createClass({displayName: "BETable",
     };
   },
   handleColumnClick: function (e, obj) {
+    if (!obj.sortable) {
+        return;
+    }
     var ascending = (this.state.sorting.column === obj) ? !this.state.sorting.ascending : false;
     this.setState({
       sorting: {
@@ -585,16 +595,19 @@ var BETable = React.createClass({displayName: "BETable",
     });
   },
   render: function() {
-    var columns = this.props.columns.map(function (c) {
+    let columnDefs = this.props.columns;
+
+    var columns = columnDefs.map(function (c) {
         return React.createElement(Column, {key: c.sort_column, column: c, handleClick: this.handleColumnClick, sorting: this.state.sorting});
     }.bind(this));
 
-    var searchFilters = this.props.columns.map(function (c) {
-        return React.createElement(SearchFilter, {key: c.sort_column, column: c, handleChange: this.handleFilterChange, sorting: this.state.sorting});
+    var searchFilters = columnDefs.map(function (c) {
+        var isSorted = c === this.state.sorting.column;
+        return React.createElement(SearchFilter, {key: c.sort_column, column: c, handleChange: this.handleFilterChange, isSorted: isSorted});
     }.bind(this));
 
     var rows = this.props.rows.map(function (r) {
-      return React.createElement(Row, {row: r, columns: this.props.columns, sorting: this.state.sorting, renderers: this.getRenderers(), key: r.id});
+      return React.createElement(Row, {row: r, columns: columnDefs, sorting: this.state.sorting, renderers: this.getRenderers(), key: r.id});
     }.bind(this));
 
     var numberOfObjects = this.props.searchmeta.totalMatchCount || this.props.searchmeta.number_matching_search;
@@ -637,8 +650,10 @@ var Column = React.createClass({displayName: "Column",
     this.props.handleClick(e, this.props.column);
   },
   render: function() {
-    var classString = "column_head scroll_columns";
-    if (this.props.column === this.props.sorting.column) {
+    let classString = "";
+    let content;
+    let column = this.props.column;
+    if (column === this.props.sorting.column) {
       classString += " sorted";
       if (this.props.sorting.ascending) {
         classString += " sort_asc";
@@ -646,9 +661,19 @@ var Column = React.createClass({displayName: "Column",
         classString += " sort_desc";
       }
     }
+
+    if (column.type == 'multiselector') {
+        classString += " check";
+        content = (
+            React.createElement("input", {type: "checkbox"})
+        );
+    } else {
+        classString += " column_head scroll_columns";
+        content = this.props.column.title;
+    }
     return (
       React.createElement("th", {className: classString, onClick: this.handleClick}, 
-        this.props.column.title
+        content
       )
     );
   }
@@ -667,7 +692,7 @@ var SearchFilter = React.createClass({displayName: "SearchFilter",
   propTypes: {
     column : React.PropTypes.object.isRequired,
     handleChange: React.PropTypes.func,
-    sorting: React.PropTypes.object.isRequired
+    isSorted: React.PropTypes.bool,
   },
   getDefaultProps: function () {
       return {
@@ -684,17 +709,26 @@ var SearchFilter = React.createClass({displayName: "SearchFilter",
     this.props.handleChange(e.target.value, this.props.column);
   },
   render: function() {
-    var thClassString = "sub_head scroll_columns";
+    let content;
+    var thClassString = "sub_head";
     var inputClassString = "form-control input-sm show";
-    if (this.props.column === this.props.sorting.column) {
+    if (this.props.isSorted) {
       thClassString += " sorted";
     }
     if (this.state.input !== "") {
       inputClassString += " active";
     }
+    if (this.props.column.type === 'multiselector') {
+        thClassString += " check";
+        content = '';
+    } else {
+        thClassString += " scroll_columns";
+        content = React.createElement("input", {type: "text", className: inputClassString, placeholder: this.props.column.title, onChange: this.handleChange})
+    }
+
     return (
       React.createElement("th", {className: thClassString}, 
-        React.createElement("input", {type: "text", className: inputClassString, placeholder: this.props.column.title, onChange: this.handleChange})
+        content
       )
     );
   }
@@ -732,13 +766,12 @@ var Cell = React.createClass({displayName: "Cell",
     renderers: React.PropTypes.object.isRequired
   },
   render: function () {
-    var renderer, rendererArgs;
-    var classString = "scroll_columns is_aligned_left";
+    let classString = "scroll_columns is_aligned_left";
     if (this.props.isSorted) {
       classString += " sorted";
     }
-    var cellValue = this.props.row[this.props.column.sort_column];
-    var type = this.props.column.type || "string";
+    let cellValue = this.props.row[this.props.column.sort_column];
+    let type = this.props.column.type || "string";
 
     /// REMOVE BELOW HERE IN PRODUCTION (comment in with label demo and a colunn of Property Id to see in action)
     // if (this.props.column.sort_column === "Audit Group") {
@@ -748,8 +781,8 @@ var Cell = React.createClass({displayName: "Cell",
 
     // this is a magical 3 lines of code
     if (_.has(this.props.renderers, type)) {
-      renderer = this.props.renderers[type].renderer;
-      rendererArgs = [].concat([cellValue], this.props.renderers[type].rendererArgs || []);
+      let renderer = this.props.renderers[type].renderer;
+      let rendererArgs = [].concat([cellValue], this.props.renderers[type].rendererArgs || []);
       cellValue = renderer.apply(null, rendererArgs);
     }
     return (
