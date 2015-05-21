@@ -5,7 +5,7 @@ function getNamespace() {
    *
    * e.g.:
    *   getNamespace('BE', 'utils', 'formatting') === window.BE.utils.formatting
-   *   // keeps existing objects intact if extant, otherwise creates empty dicts
+   *   // keeps existing objects intact if extant, otherwise creates empty objects
    */
   var o = window;
   for (var k of arguments) {

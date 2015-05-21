@@ -54,6 +54,11 @@ gulp.task('lint', function() {
     .pipe(jshint.reporter('fail'));
 });
 
+gulp.task('watch', function() {
+    gulp.watch(filePaths.javascript, ['build']);
+})
+
 gulp.task('test', ['lint']);
 gulp.task('build', ['clean', 'compress']);
+gulp.task('dev', ['build', 'watch']);
 gulp.task('default', ['test', 'build']);

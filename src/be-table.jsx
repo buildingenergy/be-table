@@ -71,8 +71,8 @@ var React = window.React;
 /** @jsx React.DOM */
 var BETable = React.createClass({
   propTypes: {
-    columns : React.PropTypes.array.isRequired,
-    rows : React.PropTypes.array.isRequired,
+    columns: React.PropTypes.array.isRequired,
+    rows: React.PropTypes.array.isRequired,
     callback: React.PropTypes.func,
     searchmeta: React.PropTypes.object,
     objectname: React.PropTypes.string,
@@ -98,8 +98,10 @@ var BETable = React.createClass({
   },
   getInitialState: function () {
     return {
-      selectedColumn: {},
-      ascending: true,
+      sorting: {
+        column: {},
+        ascending: true,
+      },
       searchFilters: {},
       currentPage: 1,
       numberPerPage: 10,
@@ -107,10 +109,12 @@ var BETable = React.createClass({
     };
   },
   handleColumnClick: function (e, obj) {
-    var ascending = (this.state.selectedColumn === obj) ? !this.state.ascending : false;
+    var ascending = (this.state.sorting.column === obj) ? !this.state.sorting.ascending : false;
     this.setState({
-      selectedColumn: obj,
-      ascending: ascending,
+      sorting: {
+        column: obj,
+        ascending: ascending,
+      },
       currentPage: 1
     }, function () {
       this.props.callback(this.state, {eventType: 'columnClicked'});
@@ -131,7 +135,7 @@ var BETable = React.createClass({
   },
   rowCallback: function (row) {
     this.setState(function (previousState, currentProps) {
-      // if row in selectedRows remove, else add
+
       return {};
     }, function () {
       this.props.callback(this.state, {eventType: 'rowClicked'});
@@ -139,15 +143,15 @@ var BETable = React.createClass({
   },
   render: function() {
     var columns = this.props.columns.map(function (c) {
-        return <Column key={c.sort_column} column={c} handleClick={this.handleColumnClick} selectedState={this.state}></Column>;
+        return <Column key={c.sort_column} column={c} handleClick={this.handleColumnClick} sorting={this.state.sorting}></Column>;
     }.bind(this));
 
     var searchFilters = this.props.columns.map(function (c) {
-        return <SearchFilter key={c.sort_column} column={c} handleChange={this.handleFilterChange} selectedState={this.state}></SearchFilter>;
+        return <SearchFilter key={c.sort_column} column={c} handleChange={this.handleFilterChange} sorting={this.state.sorting}></SearchFilter>;
     }.bind(this));
 
     var rows = this.props.rows.map(function (r) {
-      return <Row row={r} columns={this.props.columns} selectedState={this.state} renderers={this.getRenderers()}key={r.id}></Row>;
+      return <Row row={r} columns={this.props.columns} sorting={this.state.sorting} renderers={this.getRenderers()}key={r.id}></Row>;
     }.bind(this));
 
     var numberOfObjects = this.props.searchmeta.totalMatchCount || this.props.searchmeta.number_matching_search;
@@ -184,16 +188,16 @@ var Column = React.createClass({
   propTypes: {
     column : React.PropTypes.object.isRequired,
     handleClick: React.PropTypes.func,
-    selectedState: React.PropTypes.object.isRequired
+    sorting: React.PropTypes.object.isRequired
   },
   handleClick: function (e) {
     this.props.handleClick(e, this.props.column);
   },
   render: function() {
     var classString = "column_head scroll_columns";
-    if (this.props.column === this.props.selectedState.selectedColumn) {
+    if (this.props.column === this.props.sorting.column) {
       classString += " sorted";
-      if (this.props.selectedState.ascending) {
+      if (this.props.sorting.ascending) {
         classString += " sort_asc";
       } else {
         classString += " sort_desc";
@@ -220,7 +224,7 @@ var SearchFilter = React.createClass({
   propTypes: {
     column : React.PropTypes.object.isRequired,
     handleChange: React.PropTypes.func,
-    selectedState: React.PropTypes.object.isRequired
+    sorting: React.PropTypes.object.isRequired
   },
   getDefaultProps: function () {
       return {
@@ -239,7 +243,7 @@ var SearchFilter = React.createClass({
   render: function() {
     var thClassString = "sub_head scroll_columns";
     var inputClassString = "form-control input-sm show";
-    if (this.props.column === this.props.selectedState.selectedColumn) {
+    if (this.props.column === this.props.sorting.column) {
       thClassString += " sorted";
     }
     if (this.state.input !== "") {
@@ -255,15 +259,15 @@ var SearchFilter = React.createClass({
 
 var Row = React.createClass({
   propTypes: {
-    row : React.PropTypes.object.isRequired,
-    columns : React.PropTypes.array.isRequired,
-    selectedState: React.PropTypes.object.isRequired,
+    row: React.PropTypes.object.isRequired,
+    columns: React.PropTypes.array.isRequired,
+    sorting: React.PropTypes.object.isRequired,
     renderers: React.PropTypes.object.isRequired
   },
   render: function() {
     var row = this.props.columns.map(function (c) {
-      var sorted = c === this.props.selectedState.selectedColumn;
-      return <Cell column={c} row={this.props.row} sorted={sorted} renderers={this.props.renderers}/>;
+      var isSorted = c === this.props.sorting.column;
+      return <Cell column={c} row={this.props.row} isSorted={isSorted} renderers={this.props.renderers}/>;
     }.bind(this));
     return (
       <tr>
@@ -281,13 +285,13 @@ var Cell = React.createClass({
   propTypes: {
     column: React.PropTypes.object.isRequired,
     row: React.PropTypes.object.isRequired,
-    sorted: React.PropTypes.bool,
+    isSorted: React.PropTypes.bool,
     renderers: React.PropTypes.object.isRequired
   },
   render: function () {
     var renderer, rendererArgs;
     var classString = "scroll_columns is_aligned_left";
-    if (this.props.sorted) {
+    if (this.props.isSorted) {
       classString += " sorted";
     }
     var cellValue = this.props.row[this.props.column.sort_column];
