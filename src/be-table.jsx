@@ -34,7 +34,7 @@
  *            searchmeta="paginationInfo"
  *            callback="tableCallback"
  *            objectname="'items'"
- *            custom-renderers="customRenderers"
+ *            custom-types="customTypes"
  *            watch-depth="reference"></BETable>
  */
 
@@ -47,8 +47,8 @@
  *
  * usage:
  *   // basic example
- *   var customRenderers = {};
- *   customRenderers.year_built = {
+ *   var customTypes = {};
+ *   customTypes.year_built = {
  *     renderer: formatters.numberRenderer,
  *     rendererArgs: [0, false]  // no decimals, no commas
  *   };
@@ -58,8 +58,8 @@
  *    return React.createElement("span", {className: "label label-success"}, this.props.labelText);
  *    }
  *   });
- *   var customRenderers = {};
- *   customRenderers.label = {
+ *   var customTypes = {};
+ *   customTypes.label = {
  *     renderer: function (val) {
  *       return React.createElement(Label, {labelText: val});
  *     }
@@ -76,32 +76,55 @@ var BETable = React.createClass({
     callback: React.PropTypes.func,
     searchmeta: React.PropTypes.object,
     objectname: React.PropTypes.string,
-    customRenderers: React.PropTypes.object
+    customTypes: React.PropTypes.object
   },
   getDefaultProps: function () {
       return {
           objectname: 'rows',
-          customRenderers: {}
+          customTypes: {}
       };
   },
-  getRenderers: function () {
-    var rendererDefaults = {
+  getTypes: function () {
+
+    var baseType = {
+        cellRenderer: (val) => val,
+        headerRenderer: (col) => col.title,
+        filterRenderer: (col) => console.error("TODO"),
+        columnClass: "column_head scroll_columns"
+    };
+
+    var fillType = function(type) {
+        return _.defaults(type, baseType);
+    };
+
+    var defaultTypes = {
       number: {
-        renderer: formatters.numberRenderer,
-        rendererArgs: [0]
+        cellRenderer: function(val) {
+          return formatters.numberRenderer(val, 0);
+        }
       },
       date: {
-        renderer: formatters.dateRenderer
+        cellRenderer: function(val) {
+          return formatters.dateRenderer(val);
+        }
       },
       multiselector: {
-        renderer: function () {
+        columnClass: (col) => {
+            return 'check';
+        },
+        cellRenderer: (val, row, col, opts) => {
+            let cb = this.rowCallback;
+            let handler = function() {
+                let node = this.getDOMNode();
+                cb(row, node.checked);
+            }
             return (
-                <input type="checkbox" />
+              <input type="checkbox" onChange={handler} checked={opts.isSelected}/>
             );
         }
       }
     };
-    return _.assign({}, rendererDefaults, this.props.customRenderers);
+    return _.mapValues(_.assign({}, defaultTypes, this.props.customTypes), fillType);
   },
   getInitialState: function () {
     return {
@@ -143,10 +166,19 @@ var BETable = React.createClass({
       this.props.callback(this.state);
     });
   },
-  rowCallback: function (row) {
+  rowCallback: function (row, insert) {
     this.setState(function (previousState, currentProps) {
+        var rows = previousState.selectedRows;
+        if (insert) {
+            rows[row.id] = row;
+        } else {
+            delete(rows[row.id]);
+        }
+        console.log(row);
 
-      return {};
+        return {
+            selectedRows: rows
+        };
     }, function () {
       this.props.callback(this.state, {eventType: 'rowClicked'});
     });
@@ -164,7 +196,7 @@ var BETable = React.createClass({
     }.bind(this));
 
     var rows = this.props.rows.map(function (r) {
-      return <Row row={r} columns={columnDefs} sorting={this.state.sorting} renderers={this.getRenderers()} key={r.id}></Row>;
+      return <Row row={r} isSelected={_.contains(r.id, this.state.selectedRows)} columns={columnDefs} sorting={this.state.sorting} dataTypes={this.getTypes()} key={r.id}></Row>;
     }.bind(this));
 
     var numberOfObjects = this.props.searchmeta.totalMatchCount || this.props.searchmeta.number_matching_search;
@@ -296,12 +328,12 @@ var Row = React.createClass({
     row: React.PropTypes.object.isRequired,
     columns: React.PropTypes.array.isRequired,
     sorting: React.PropTypes.object.isRequired,
-    renderers: React.PropTypes.object.isRequired
+    dataTypes: React.PropTypes.object.isRequired
   },
   render: function() {
     var row = this.props.columns.map(function (c) {
       var isSorted = c === this.props.sorting.column;
-      return <Cell column={c} row={this.props.row} isSorted={isSorted} renderers={this.props.renderers}/>;
+      return <Cell column={c} row={this.props.row} isSorted={isSorted} isSelected={this.props.isSelected} dataTypes={this.props.dataTypes}/>;
     }.bind(this));
     return (
       <tr>
@@ -320,7 +352,8 @@ var Cell = React.createClass({
     column: React.PropTypes.object.isRequired,
     row: React.PropTypes.object.isRequired,
     isSorted: React.PropTypes.bool,
-    renderers: React.PropTypes.object.isRequired
+    isSelected: React.PropTypes.bool,
+    dataTypes: React.PropTypes.object.isRequired
   },
   render: function () {
     let classString = "scroll_columns is_aligned_left";
@@ -336,11 +369,10 @@ var Cell = React.createClass({
     // }
     /// REMOVE ABOVE HERE
 
-    // this is a magical 3 lines of code
-    if (_.has(this.props.renderers, type)) {
-      let renderer = this.props.renderers[type].renderer;
-      let rendererArgs = [].concat([cellValue], this.props.renderers[type].rendererArgs || []);
-      cellValue = renderer.apply(null, rendererArgs);
+    if (_.has(this.props.dataTypes, type)) {
+      let renderer = (this.props.dataTypes[type]);
+      cellValue = renderer.cellRenderer(cellValue, this.props.row, this.props.column, {isSelected: this.props.isSelected});
+      classString += " " + renderer.columnClass(this.props.column);
     }
     return (
       <td className={classString}>{cellValue}</td>
