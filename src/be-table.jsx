@@ -21,8 +21,8 @@
  * Usage:
  * JS:
  *   cols = [
- *     {sort_column: 'price', title: 'Price', subtitle: '$', type: 'number'},
- *     {sort_column: 'item', title: 'Item', type: 'string'}
+ *     {key: 'price', title: 'Price', subtitle: '$', type: 'number'},
+ *     {key: 'item', title: 'Item', type: 'string'}
  *   ];
  *   rows = [{item: 'kale', price: 4.34}, {item: 'almonds', price: 5.44}];
  *   tableCallback = function (state) {console.log (state);};
@@ -68,6 +68,42 @@
 
 var React = window.React;
 
+var defaultTypes = {
+  number: {
+    cellRenderer: function(val) {
+      return formatters.numberRenderer(val, 0);
+    },
+    columnClass: "column_head scroll_columns is_aligned_right"
+  },
+  year: {
+    cellRenderer: function(val) {
+      return formatters.numberRenderer(val, 0, true);
+    },
+    columnClass: "column_head scroll_columns"
+  },
+  date: {
+    cellRenderer: function(val) {
+      return formatters.dateRenderer(val);
+    }
+  },
+  multiselector: {
+    columnClass: (col) => {
+        return 'check';
+    },
+    cellRenderer: (val, row, col, opts) => {
+        let cb = this.rowCallback;
+        let handler = function() {
+            let node = this.getDOMNode();
+            cb(row, node.checked);
+        }
+        return (
+          <input type="checkbox" onChange={handler} checked={opts.isSelected}/>
+        );
+    }
+  }
+};
+
+
 /** @jsx React.DOM */
 var BETable = React.createClass({
   propTypes: {
@@ -84,47 +120,21 @@ var BETable = React.createClass({
           customTypes: {}
       };
   },
+  /** Get default and custom types merged, with missing values filled with defaults */
   getTypes: function () {
 
-    var baseType = {
+    var mergedTypes = _.assign({}, defaultTypes, this.props.customTypes);
+
+    var completeType = function(type) {
+      return _.defaults(type, {
         cellRenderer: (val) => val,
         headerRenderer: (col) => col.title,
         filterRenderer: (col) => console.error("TODO"),
         columnClass: "column_head scroll_columns"
+      });
     };
 
-    var fillType = function(type) {
-        return _.defaults(type, baseType);
-    };
-
-    var defaultTypes = {
-      number: {
-        cellRenderer: function(val) {
-          return formatters.numberRenderer(val, 0);
-        }
-      },
-      date: {
-        cellRenderer: function(val) {
-          return formatters.dateRenderer(val);
-        }
-      },
-      multiselector: {
-        columnClass: (col) => {
-            return 'check';
-        },
-        cellRenderer: (val, row, col, opts) => {
-            let cb = this.rowCallback;
-            let handler = function() {
-                let node = this.getDOMNode();
-                cb(row, node.checked);
-            }
-            return (
-              <input type="checkbox" onChange={handler} checked={opts.isSelected}/>
-            );
-        }
-      }
-    };
-    return _.mapValues(_.assign({}, defaultTypes, this.props.customTypes), fillType);
+    return _.mapValues(mergedTypes, completeType);
   },
   getInitialState: function () {
     return {
@@ -155,7 +165,7 @@ var BETable = React.createClass({
   },
   handleFilterChange: function (val, column) {
     this.setState(function (previousState, currentProps) {
-      previousState.searchFilters[column.sort_column] = val;
+      previousState.searchFilters[column.key] = val;
       return {searchFilters: previousState.searchFilters, currentPage: 1};
     }, function () {
       this.props.callback(this.state);
@@ -187,12 +197,12 @@ var BETable = React.createClass({
     let columnDefs = this.props.columns;
 
     var columns = columnDefs.map(function (c) {
-        return <Column key={c.sort_column} column={c} handleClick={this.handleColumnClick} sorting={this.state.sorting}></Column>;
+        return <Column key={c.key} column={c} handleClick={this.handleColumnClick} sorting={this.state.sorting}></Column>;
     }.bind(this));
 
     var searchFilters = columnDefs.map(function (c) {
         var isSorted = c === this.state.sorting.column;
-        return <SearchFilter key={c.sort_column} column={c} handleChange={this.handleFilterChange} isSorted={isSorted}></SearchFilter>;
+        return <SearchFilter key={c.key} column={c} handleChange={this.handleFilterChange} isSorted={isSorted}></SearchFilter>;
     }.bind(this));
 
     var rows = this.props.rows.map(function (r) {
@@ -312,7 +322,7 @@ var SearchFilter = React.createClass({
         content = '';
     } else {
         thClassString += " scroll_columns";
-        content = <input type="text" className={inputClassString}  placeholder={this.props.column.title} onChange={this.handleChange} />
+        content = (<input type="text" className={inputClassString}  placeholder={this.props.column.title} onChange={this.handleChange} />);
     }
 
     return (
@@ -360,11 +370,11 @@ var Cell = React.createClass({
     if (this.props.isSorted) {
       classString += " sorted";
     }
-    let cellValue = this.props.row[this.props.column.sort_column];
+    let cellValue = this.props.row[this.props.column.key];
     let type = this.props.column.type || "string";
 
     /// REMOVE BELOW HERE IN PRODUCTION (comment in with label demo and a colunn of Property Id to see in action)
-    // if (this.props.column.sort_column === "Audit Group") {
+    // if (this.props.column.key === "Audit Group") {
     //   type = "label";
     // }
     /// REMOVE ABOVE HERE
@@ -372,7 +382,7 @@ var Cell = React.createClass({
     if (_.has(this.props.dataTypes, type)) {
       let renderer = (this.props.dataTypes[type]);
       cellValue = renderer.cellRenderer(cellValue, this.props.row, this.props.column, {isSelected: this.props.isSelected});
-      classString += " " + renderer.columnClass(this.props.column);
+      classString += " " + getOrCall(renderer.columnClass, this.props.column);
     }
     return (
       <td className={classString}>{cellValue}</td>

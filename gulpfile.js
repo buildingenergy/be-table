@@ -5,6 +5,7 @@ var concat = require('gulp-concat');
 var del = require('del');
 var jshint = require('gulp-jshint');
 var lazypipe = require('lazypipe');
+var notify = require('gulp-notify');
 var react = require('gulp-react');
 var sourcemaps = require('gulp-sourcemaps');
 var uglify = require('gulp-uglify');
@@ -18,10 +19,15 @@ var filePaths = {
   ]
 };
 
+var swallow = notify.onError(function(err) {
+  console.error('\nERROR:\n\n', err);
+  return err;
+});
+
 // common pipeline steps for javascript builds
 var jsBuildFlow = function(outpath) {
   return lazypipe()
-  .pipe(react, {harmony: true})
+  // .pipe(react, {harmony: true})
   .pipe(concat, outpath)
   .pipe(wrap, '(function(){\n"use strict";\n<%= contents %>\n})();');
 }
@@ -34,6 +40,7 @@ gulp.task('compress', ['clean'], function () {
 
   // development version
   gulp.src(filePaths.javascript)
+    .pipe(react({harmony: true})).on('error', swallow)
     .pipe(jsBuildFlow('be-table.js')())
     .pipe(gulp.dest('build/js'));
 

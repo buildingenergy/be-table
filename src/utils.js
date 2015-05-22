@@ -14,3 +14,11 @@ function getNamespace() {
   }
   return o;
 }
+
+function getOrCall(x, ...params) {
+  if (_.isFunction(x)) {
+    return x.apply(params);
+  } else {
+    return x;
+  }
+}
