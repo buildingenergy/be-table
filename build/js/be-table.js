@@ -610,7 +610,7 @@ var BETable = React.createClass({displayName: "BETable",
       },
       currentPage: 1
     }, function () {
-      this.props.callback(this.state, {eventType: 'columnClicked'});
+      this.props.callback(this.state, {eventType: 'columnSorted'});
     });
   },
   handleFilterChange: function (val, column) {
@@ -618,12 +618,12 @@ var BETable = React.createClass({displayName: "BETable",
       previousState.searchFilters[column.key] = val;
       return {searchFilters: previousState.searchFilters, currentPage: 1};
     }, function () {
-      this.props.callback(this.state);
+      this.props.callback(this.state, {eventType: 'filterChanged'});
     });
   },
   paginationCallback: function (state) {
     this.setState(state, function () {
-      this.props.callback(this.state);
+      this.props.callback(this.state, {eventType: 'pagination'});
     });
   },
   rowCallback: function (row, insert) {
