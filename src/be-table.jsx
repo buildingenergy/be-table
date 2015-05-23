@@ -68,37 +68,75 @@
 
 var React = window.React;
 
-var defaultTypes = {
-  number: {
-    cellRenderer: function(val) {
-      return formatters.numberRenderer(val, 0);
+var getDefaultTypes = function () {
+
+  let rangeFilter = (col) => (
+    <div class="col-xs-6">
+        <input type="number" name={col.key + "__gte"} class="form-control input-sm" placeholder="Min" />
+        <input type="number" name={col.key + "__lte"} class="form-control input-sm" placeholder="Max" />
+    </div>
+  );
+
+  let dateRangeFilter = (col) => (
+    <div class="col-xs-6">
+        <input type="date" name={col.key + "__gte"} class="form-control input-sm" placeholder="Min" />
+        <input type="date" name={col.key + "__lte"} class="form-control input-sm" placeholder="Max" />
+    </div>
+  );
+
+  return {
+    string: {},
+    number: {
+      filter: {
+        renderer: rangeFilter
+      },
+      cell: {
+        className: "column_head scroll_columns is_aligned_right",
+        renderer: function(val) {
+          return formatters.numberRenderer(val, 0);
+        },
+      }
     },
-    columnClass: "column_head scroll_columns is_aligned_right"
-  },
-  year: {
-    cellRenderer: function(val) {
-      return formatters.numberRenderer(val, 0, true);
+    year: {
+      filter: {
+        renderer: rangeFilter
+      },
+      cell: {
+        renderer: function(val) {
+          return formatters.numberRenderer(val, 0, true);
+        },
+      }
     },
-    columnClass: "column_head scroll_columns"
-  },
-  date: {
-    cellRenderer: function(val) {
-      return formatters.dateRenderer(val);
-    }
-  },
-  multiselector: {
-    columnClass: (col) => {
-        return 'check';
-    },
-    cellRenderer: (val, row, col, opts) => {
-        let cb = this.rowCallback;
-        let handler = function() {
-            let node = this.getDOMNode();
-            cb(row, node.checked);
+    date: {
+      filter: {
+        renderer: rangeFilter
+      },
+      cell: {
+        renderer: function(val) {
+          return formatters.dateRenderer(val);
         }
-        return (
-          <input type="checkbox" onChange={handler} checked={opts.isSelected}/>
-        );
+      }
+    },
+    multiselector: {
+      header: {
+        className: "check"
+      },
+      filter: {
+        className: "check"
+      },
+      cell: {
+        className: "check",
+        renderer: (val, row, col, opts) => {
+            let cb = this.rowCallback;
+            let handler = function() {
+                let node = this.getDOMNode();
+                cb(row, node.checked);
+            }
+            return (
+              <input type="checkbox" onChange={handler} checked={opts.isSelected}/>
+            );
+        }
+      }
     }
   }
 };
@@ -123,14 +161,26 @@ var BETable = React.createClass({
   /** Get default and custom types merged, with missing values filled with defaults */
   getTypes: function () {
 
-    var mergedTypes = _.assign({}, defaultTypes, this.props.customTypes);
+    var normalFilter = (col) => (
+      <input type="text" name={col.key} class="form-control input-sm show" placeholder="{$ col.title $}" />
+    );
+
+    var mergedTypes = _.assign({}, getDefaultTypes(), this.props.customTypes);
 
     var completeType = function(type) {
       return _.defaults(type, {
-        cellRenderer: (val) => val,
-        headerRenderer: (col) => col.title,
-        filterRenderer: (col) => console.error("TODO"),
-        columnClass: "column_head scroll_columns"
+        cell: {
+          className: "column_head scroll_columns",
+          renderer: (val) => val,
+        },
+        header: {
+          className: "column_head scroll_columns",
+          renderer: (col) => col.title,
+        },
+        filter: {
+          className: "sub_head scroll_columns",
+          renderer: normalFilter,
+        },
       });
     };
 
@@ -163,9 +213,9 @@ var BETable = React.createClass({
       this.props.callback(this.state, {eventType: 'columnSorted'});
     });
   },
-  handleFilterChange: function (val, column) {
+  handleFilterChange: function (val, key) {
     this.setState(function (previousState, currentProps) {
-      previousState.searchFilters[column.key] = val;
+      previousState.searchFilters[key] = val;
       return {searchFilters: previousState.searchFilters, currentPage: 1};
     }, function () {
       this.props.callback(this.state, {eventType: 'filterChanged'});
@@ -184,7 +234,6 @@ var BETable = React.createClass({
         } else {
             delete(rows[row.id]);
         }
-        console.log(row);
 
         return {
             selectedRows: rows
@@ -195,14 +244,19 @@ var BETable = React.createClass({
   },
   render: function() {
     let columnDefs = this.props.columns;
+    var types = this.getTypes();
 
     var columns = columnDefs.map(function (c) {
         return <Column key={c.key} column={c} handleClick={this.handleColumnClick} sorting={this.state.sorting}></Column>;
     }.bind(this));
 
     var searchFilters = columnDefs.map(function (c) {
-        var isSorted = c === this.state.sorting.column;
-        return <SearchFilter key={c.key} column={c} handleChange={this.handleFilterChange} isSorted={isSorted}></SearchFilter>;
+        var renderer = types[c.type].filter;
+        return (
+          <SearchFilter renderer={renderer} handleChange={this.handleFilterChange}>
+              {renderer.renderer(c)}
+          </SearchFilter>
+        );
     }.bind(this));
 
     var rows = this.props.rows.map(function (r) {
@@ -305,29 +359,22 @@ var SearchFilter = React.createClass({
     this.setState({
       input: e.target.value
     });
-    this.props.handleChange(e.target.value, this.props.column);
+    this.props.handleChange(e.target.value, e.target.name);
   },
   render: function() {
     let content;
-    var thClassString = "sub_head";
-    var inputClassString = "form-control input-sm show";
+    var thClassString = "sub_head scroll_columns";
     if (this.props.isSorted) {
       thClassString += " sorted";
     }
     if (this.state.input !== "") {
       inputClassString += " active";
     }
-    if (this.props.column.type === 'multiselector') {
-        thClassString += " check";
-        content = '';
-    } else {
-        thClassString += " scroll_columns";
-        content = (<input type="text" className={inputClassString}  placeholder={this.props.column.title} onChange={this.handleChange} />);
-    }
+    // content = this.props.renderer.renderer(this.props.column);
 
     return (
       <th className={thClassString}>
-        {content}
+        {this.props.children}
       </th>
     );
   }
@@ -381,8 +428,8 @@ var Cell = React.createClass({
 
     if (_.has(this.props.dataTypes, type)) {
       let renderer = (this.props.dataTypes[type]);
-      cellValue = renderer.cellRenderer(cellValue, this.props.row, this.props.column, {isSelected: this.props.isSelected});
-      classString += " " + getOrCall(renderer.columnClass, this.props.column);
+      cellValue = renderer.cell.renderer(cellValue, this.props.row, this.props.column, {isSelected: this.props.isSelected});
+      classString += " " + getOrCall(renderer.cell.className, this.props.column);
     }
     return (
       <td className={classString}>{cellValue}</td>
