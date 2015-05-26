@@ -620,15 +620,16 @@ var BETable = React.createClass({displayName: "BETable",
         cell: {
           className: "check",
           renderer: function(val, row, col, opts)  {
-              let handler = function(ev) {
-                  let node = this.getDOMNode();
+              let checked = opts.isSelectedRow;
+              let handler = function(ev)  {
+                  let node = ev.target;
                   this.rowCallback(row, node.checked);
                   return false;
-              };
+              }.bind(this);
               return (
                 React.createElement("input", {type: "checkbox", 
                        onChange: handler, 
-                       checked: opts.isSelected})
+                       checked: checked})
               );
           }.bind(this)
         }
@@ -740,7 +741,7 @@ var BETable = React.createClass({displayName: "BETable",
     }.bind(this));
 
     var rows = this.props.rows.map(function (row) {
-      return React.createElement(Row, {row: row, isSelected: _.contains(row.id, this.state.selectedRows), columns: columnDefs, sorting: this.state.sorting, dataTypes: this.getTypes(), key: row.id});
+      return React.createElement(Row, {row: row, isSelectedRow: _.has(this.state.selectedRows, row.id), columns: columnDefs, sorting: this.state.sorting, dataTypes: this.getTypes(), key: row.id});
     }.bind(this));
 
     var numberOfObjects = this.props.searchmeta.totalMatchCount || this.props.searchmeta.number_matching_search;
@@ -845,7 +846,7 @@ var Row = React.createClass({displayName: "Row",
   render: function() {
     var row = this.props.columns.map(function (c) {
       var isSorted = c === this.props.sorting.column;
-      return React.createElement(Cell, {column: c, row: this.props.row, isSorted: isSorted, isSelected: this.props.isSelected, dataTypes: this.props.dataTypes});
+      return React.createElement(Cell, {column: c, row: this.props.row, isSorted: isSorted, isSelectedRow: this.props.isSelectedRow, dataTypes: this.props.dataTypes});
     }.bind(this));
     return (
       React.createElement("tr", null, 
@@ -864,7 +865,7 @@ var Cell = React.createClass({displayName: "Cell",
     column: React.PropTypes.object.isRequired,
     row: React.PropTypes.object.isRequired,
     isSorted: React.PropTypes.bool,
-    isSelected: React.PropTypes.bool,
+    isSelectedRow: React.PropTypes.bool,
     dataTypes: React.PropTypes.object.isRequired
   },
   render: function () {
@@ -883,7 +884,7 @@ var Cell = React.createClass({displayName: "Cell",
 
     if (_.has(this.props.dataTypes, type)) {
       let renderer = (this.props.dataTypes[type]);
-      cellValue = getOrCall(renderer.cell.renderer, cellValue, this.props.row, this.props.column, {isSelected: this.props.isSelected});
+      cellValue = getOrCall(renderer.cell.renderer, cellValue, this.props.row, this.props.column, {isSelectedRow: this.props.isSelectedRow});
       classString += " " + getOrCall(renderer.cell.className, this.props.column);
     }
     return (
