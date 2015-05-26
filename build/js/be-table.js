@@ -516,9 +516,10 @@ var formatters = {};
  *   };
  */
 
+
 var React = window.React;
 
-/** @jsx React.DOM */
+
 var BETable = React.createClass({displayName: "BETable",
   propTypes: {
     columns: React.PropTypes.array.isRequired,
@@ -529,10 +530,10 @@ var BETable = React.createClass({displayName: "BETable",
     customTypes: React.PropTypes.object
   },
   getDefaultProps: function () {
-      return {
-          objectname: 'rows',
-          customTypes: {}
-      };
+    return {
+      objectname: 'rows',
+      customTypes: {}
+    };
   },
   /** Get default and custom types merged, with missing values filled with defaults */
   getTypes: function () {
@@ -545,7 +546,7 @@ var BETable = React.createClass({displayName: "BETable",
                className: "form-control input-sm show", 
                required: "true", 
                placeholder: col.title})
-      )
+        )
     }.bind(this);
 
     /** Convenience function that, given an input type, returns a function
@@ -558,20 +559,20 @@ var BETable = React.createClass({displayName: "BETable",
       return (
         React.createElement("div", null, 
           React.createElement("div", {className: "col-xs-6"}, 
-              React.createElement("input", {type: type, 
-                     name: minKey, 
-                     onChange: function(ev)  {return this.filterCallback(ev.target.name, ev.target.value);}.bind(this), 
-                     className: "form-control input-sm", 
-                     required: "true", 
-                     placeholder: "Min"})
+            React.createElement("input", {type: type, 
+                   name: minKey, 
+                   onChange: function(ev)  {return this.filterCallback(ev.target.name, ev.target.value);}.bind(this), 
+                   className: "form-control input-sm", 
+                   required: "true", 
+                   placeholder: "Min"})
           ), 
           React.createElement("div", {className: "col-xs-6"}, 
-              React.createElement("input", {type: type, 
-                     name: maxKey, 
-                     onChange: function(ev)  {return this.filterCallback(ev.target.name, ev.target.value);}.bind(this), 
-                     className: "form-control input-sm", 
-                     required: "true", 
-                     placeholder: "Max"})
+            React.createElement("input", {type: type, 
+                   name: maxKey, 
+                   onChange: function(ev)  {return this.filterCallback(ev.target.name, ev.target.value);}.bind(this), 
+                   className: "form-control input-sm", 
+                   required: "true", 
+                   placeholder: "Max"})
           )
         )
       );
@@ -620,17 +621,17 @@ var BETable = React.createClass({displayName: "BETable",
         cell: {
           className: "check",
           renderer: function(val, row, col, opts)  {
-              let checked = opts.isSelectedRow;
-              let handler = function(ev)  {
-                  let node = ev.target;
-                  this.rowCallback(row, node.checked);
-                  return false;
-              }.bind(this);
-              return (
-                React.createElement("input", {type: "checkbox", 
-                       onChange: handler, 
-                       checked: checked})
-              );
+            let checked = opts.isSelectedRow;
+            let handler = function(ev)  {
+              let node = ev.target;
+              this.rowCallback(row, node.checked);
+              return false;
+            }.bind(this);
+            return (
+              React.createElement("input", {type: "checkbox", 
+                     onChange: handler, 
+                     checked: checked})
+            );
           }.bind(this)
         }
       }
@@ -676,7 +677,7 @@ var BETable = React.createClass({displayName: "BETable",
 
   sortingCallback: function (obj) {
     if (!obj.sortable) {
-        return;
+      return;
     }
     var ascending = (this.state.sorting.column === obj) ? !this.state.sorting.ascending : false;
     this.setState({
@@ -707,16 +708,16 @@ var BETable = React.createClass({displayName: "BETable",
 
   rowCallback: function (row, insert) {
     this.setState(function (previousState, currentProps) {
-        var rows = previousState.selectedRows;
-        if (insert) {
-            rows[row.id] = row;
-        } else {
-            delete(rows[row.id]);
-        }
+      var rows = previousState.selectedRows;
+      if (insert) {
+        rows[row.id] = row;
+      } else {
+        delete(rows[row.id]);
+      }
 
-        return {
-            selectedRows: rows
-        };
+      return {
+        selectedRows: rows
+      };
     }, function () {
       this.props.callback(this.state, {eventType: 'rowClicked'});
     });
@@ -727,16 +728,21 @@ var BETable = React.createClass({displayName: "BETable",
     var types = this.getTypes();
 
     var columns = columnDefs.map(function (col) {
-        return React.createElement(Column, {key: col.key, column: col, handleClick: function()  {return this.sortingCallback(col);}.bind(this), sorting: this.state.sorting});
+      return (
+        React.createElement(Column, {key: col.key, 
+                column: col, 
+                handleClick: function()  {return this.sortingCallback(col);}.bind(this), 
+                sorting: this.state.sorting})
+      );
     }.bind(this));
 
     var searchFilters = columnDefs.map(function (col) {
-        let type = types[col.type].filter;
-        let contents = getOrCall(type.renderer, col, 'booboo');
-        return (
-          React.createElement(SearchFilter, {className: getOrCall(type.className, col)}, 
-              contents
-          )
+      let type = types[col.type].filter;
+      let contents = getOrCall(type.renderer, col, 'booboo');
+      return (
+        React.createElement(SearchFilter, {className: getOrCall(type.className, col)}, 
+          contents
+        )
         );
     }.bind(this));
 
@@ -797,13 +803,13 @@ var Column = React.createClass({displayName: "Column",
     }
 
     if (column.type == 'multiselector') {
-        classString += " check";
-        content = (
-            React.createElement("input", {type: "checkbox"})
-        );
+      classString += " check";
+      content = (
+        React.createElement("input", {type: "checkbox"})
+      );
     } else {
-        classString += " column_head scroll_columns";
-        content = this.props.column.title;
+      classString += " column_head scroll_columns";
+      content = this.props.column.title;
     }
     return (
       React.createElement("th", {className: classString, onClick: this.handleClick}, 
@@ -812,6 +818,7 @@ var Column = React.createClass({displayName: "Column",
     );
   }
 });
+
 
 /**
  * SearchFilter: the filter sub header
@@ -846,7 +853,9 @@ var Row = React.createClass({displayName: "Row",
   render: function() {
     var row = this.props.columns.map(function (c) {
       var isSorted = c === this.props.sorting.column;
-      return React.createElement(Cell, {column: c, row: this.props.row, isSorted: isSorted, isSelectedRow: this.props.isSelectedRow, dataTypes: this.props.dataTypes});
+      return (
+        React.createElement(Cell, {column: c, row: this.props.row, isSorted: isSorted, isSelectedRow: this.props.isSelectedRow, dataTypes: this.props.dataTypes})
+      );
     }.bind(this));
     return (
       React.createElement("tr", null, 
@@ -898,11 +907,11 @@ var Cell = React.createClass({displayName: "Cell",
  */
 var TableFooter = React.createClass({displayName: "TableFooter",
   propTypes: {
-      numberPerPageOptions: React.PropTypes.array,
-      numberPerPage: React.PropTypes.number,
-      currentPage: React.PropTypes.number,
-      numberOfObjects: React.PropTypes.number,
-      paginationCallback: React.PropTypes.func
+    numberPerPageOptions: React.PropTypes.array,
+    numberPerPage: React.PropTypes.number,
+    currentPage: React.PropTypes.number,
+    numberOfObjects: React.PropTypes.number,
+    paginationCallback: React.PropTypes.func
   },
   getDefaultProps: function () {
     return {
@@ -938,27 +947,27 @@ var TableFooter = React.createClass({displayName: "TableFooter",
     var nextStyle = this.props.currentPage === numberOfPages ? {} : {cursor: "pointer"};
 
     return (
-        React.createElement("div", {className: "table_footer"}, 
-            React.createElement("div", {className: "display_number_entries col-sm-3 col-md-3"}, 
-                 React.createElement("div", {className: "display_number_entries_text"}, "Display:"), 
-                 React.createElement("div", {className: "display_number_entries_select"}, 
-                    React.createElement("select", {className: "form-control input-sm col-xs-2", onChange: this.changePagination}, 
-                        options
-                    )
-                ), 
-                React.createElement("div", {className: "display_number_entries_text"}, this.props.objectName)
-            ), 
-            React.createElement("div", {className: "counts col-sm-6 col-md-6"}, 
-                React.createElement("span", null, "Showing ", pageStart, " to ", pageEnd, " of ", this.props.numberOfObjects, " ", this.props.objectName)
-            ), 
-            React.createElement("div", {className: "pager_container col-sm-3 col-md-3"}, 
-                React.createElement("ul", {className: "pager"}, 
-                  React.createElement("li", {className: prevDisabled}, React.createElement("a", {style: prevStyle, onClick: this.prevPage}, React.createElement("i", {className: "fa fa-angle-double-left"}), " Previous")), 
-                  React.createElement("li", {className: nextDisabled}, React.createElement("a", {style: nextStyle, onClick: this.nextPage}, "Next ", React.createElement("i", {className: "fa fa-angle-double-right"})))
-                )
+      React.createElement("div", {className: "table_footer"}, 
+        React.createElement("div", {className: "display_number_entries col-sm-3 col-md-3"}, 
+          React.createElement("div", {className: "display_number_entries_text"}, "Display:"), 
+          React.createElement("div", {className: "display_number_entries_select"}, 
+            React.createElement("select", {className: "form-control input-sm col-xs-2", onChange: this.changePagination}, 
+              options
             )
+          ), 
+          React.createElement("div", {className: "display_number_entries_text"}, this.props.objectName)
+        ), 
+        React.createElement("div", {className: "counts col-sm-6 col-md-6"}, 
+          React.createElement("span", null, "Showing ", pageStart, " to ", pageEnd, " of ", this.props.numberOfObjects, " ", this.props.objectName)
+        ), 
+        React.createElement("div", {className: "pager_container col-sm-3 col-md-3"}, 
+          React.createElement("ul", {className: "pager"}, 
+            React.createElement("li", {className: prevDisabled}, React.createElement("a", {style: prevStyle, onClick: this.prevPage}, React.createElement("i", {className: "fa fa-angle-double-left"}), " Previous")), 
+            React.createElement("li", {className: nextDisabled}, React.createElement("a", {style: nextStyle, onClick: this.nextPage}, "Next ", React.createElement("i", {className: "fa fa-angle-double-right"})))
+          )
         )
-      );
+      )
+    );
   }
 });
 
