@@ -630,14 +630,15 @@ var BETable = React.createClass({displayName: "BETable",
         cell: {
           className: "check",
           renderer: function(val, row, col, opts)  {
-              let cb = this.rowCallback;
-              let handler = function() {
+              let handler = function(ev) {
                   let node = this.getDOMNode();
-                  cb(row, node.checked);
-              }
+                  this.rowCallback(row, node.checked);
+                  return false;
+              };
               return (
                 React.createElement("input", {type: "checkbox", 
-                       onChange: handler, checked: opts.isSelected})
+                       onChange: handler, 
+                       checked: opts.isSelected})
               );
           }.bind(this)
         }
@@ -751,7 +752,7 @@ var BETable = React.createClass({displayName: "BETable",
     var searchFilters = columnDefs.map(function (c) {
         return (
           React.createElement(SearchFilter, null, 
-              types[c.type].filter.renderer(c)
+              types[c.type].filter.renderer ? types[c.type].filter.renderer(c) : null
           )
         );
     }.bind(this));

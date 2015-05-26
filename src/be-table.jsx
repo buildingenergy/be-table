@@ -180,14 +180,15 @@ var BETable = React.createClass({
         cell: {
           className: "check",
           renderer: (val, row, col, opts) => {
-              let cb = this.rowCallback;
-              let handler = function() {
+              let handler = function(ev) {
                   let node = this.getDOMNode();
-                  cb(row, node.checked);
-              }
+                  this.rowCallback(row, node.checked);
+                  return false;
+              };
               return (
                 <input type="checkbox"
-                       onChange={handler} checked={opts.isSelected}/>
+                       onChange={handler}
+                       checked={opts.isSelected}/>
               );
           }
         }
@@ -301,7 +302,7 @@ var BETable = React.createClass({
     var searchFilters = columnDefs.map(function (c) {
         return (
           <SearchFilter>
-              {types[c.type].filter.renderer(c)}
+              {types[c.type].filter.renderer ? types[c.type].filter.renderer(c) : null}
           </SearchFilter>
         );
     }.bind(this));
