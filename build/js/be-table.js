@@ -518,80 +518,6 @@ var formatters = {};
 
 var React = window.React;
 
-var getDefaultTypes = function () {
-
-  let rangeFilter = function(col)  
-    {return React.createElement("div", {class: "col-xs-6"}, 
-        React.createElement("input", {type: "number", name: col.key + "__gte", class: "form-control input-sm", placeholder: "Min"}), 
-        React.createElement("input", {type: "number", name: col.key + "__lte", class: "form-control input-sm", placeholder: "Max"})
-    );}
-  ;
-
-  let dateRangeFilter = function(col)  
-    {return React.createElement("div", {class: "col-xs-6"}, 
-        React.createElement("input", {type: "date", name: col.key + "__gte", class: "form-control input-sm", placeholder: "Min"}), 
-        React.createElement("input", {type: "date", name: col.key + "__lte", class: "form-control input-sm", placeholder: "Max"})
-    );}
-  ;
-
-  return {
-    string: {},
-    number: {
-      filter: {
-        renderer: rangeFilter
-      },
-      cell: {
-        className: "column_head scroll_columns is_aligned_right",
-        renderer: function(val) {
-          return formatters.numberRenderer(val, 0);
-        },
-      }
-    },
-    year: {
-      filter: {
-        renderer: rangeFilter
-      },
-      cell: {
-        renderer: function(val) {
-          return formatters.numberRenderer(val, 0, true);
-        },
-      }
-    },
-    date: {
-      filter: {
-        renderer: rangeFilter
-      },
-      cell: {
-        renderer: function(val) {
-          return formatters.dateRenderer(val);
-        }
-      }
-    },
-    multiselector: {
-      header: {
-        className: "check"
-      },
-      filter: {
-        className: "check"
-      },
-      cell: {
-        className: "check",
-        renderer: function(val, row, col, opts)  {
-            let cb = this.rowCallback;
-            let handler = function() {
-                let node = this.getDOMNode();
-                cb(row, node.checked);
-            }
-            return (
-              React.createElement("input", {type: "checkbox", onChange: handler, checked: opts.isSelected})
-            );
-        }.bind(this)
-      }
-    }
-  }
-};
-
-
 /** @jsx React.DOM */
 var BETable = React.createClass({displayName: "BETable",
   propTypes: {
@@ -608,14 +534,130 @@ var BETable = React.createClass({displayName: "BETable",
           customTypes: {}
       };
   },
+  getDefaultTypes: function () {
+
+    /** Convenience function that, given an input type, returns a function
+     *  that takes a col and renders a range filter
+     */
+    let makeRangeFilter = function(type)  {return function(col)  {
+      let minKey = col.key + "__gte";
+      let maxKey = col.key + "__lte";
+
+      return (
+        React.createElement("div", null, 
+          React.createElement("div", {className: "col-xs-6"}, 
+              React.createElement("input", {type: type, 
+                     name: minKey, 
+                     onChange: function(ev)  {return this.filterCallback(ev.target.name, ev.target.value);}.bind(this), 
+                     className: "form-control input-sm", 
+                     required: "true", 
+                     placeholder: "Min"})
+          ), 
+          React.createElement("div", {className: "col-xs-6"}, 
+              React.createElement("input", {type: type, 
+                     name: maxKey, 
+                     onChange: function(ev)  {return this.filterCallback(ev.target.name, ev.target.value);}.bind(this), 
+                     className: "form-control input-sm", 
+                     required: "true", 
+                     placeholder: "Max"})
+          )
+        )
+      );
+    }.bind(this);}.bind(this);
+
+    let rangeFilter = function(col)  
+      {return React.createElement("div", null, 
+        React.createElement("div", {className: "col-xs-6"}, 
+            React.createElement("input", {type: "number", name: col.key + "__gte", className: "form-control input-sm", placeholder: "Min"})
+        ), 
+        React.createElement("div", {className: "col-xs-6"}, 
+            React.createElement("input", {type: "number", name: col.key + "__lte", className: "form-control input-sm", placeholder: "Max"})
+        )
+      );}
+    ;
+
+    let dateRangeFilter = function(col)  
+      {return React.createElement("div", null, 
+        React.createElement("div", {className: "col-xs-6"}, 
+            React.createElement("input", {type: "date", name: col.key + "__gte", className: "form-control input-sm", placeholder: "Min"})
+        ), 
+        React.createElement("div", {className: "col-xs-6"}, 
+            React.createElement("input", {type: "date", name: col.key + "__lte", className: "form-control input-sm", placeholder: "Max"})
+        )
+      );}
+    ;
+
+    return {
+      string: {},
+      number: {
+        filter: {
+          renderer: makeRangeFilter('number')
+        },
+        cell: {
+          className: "column_head scroll_columns is_aligned_right",
+          renderer: function(val) {
+            return formatters.numberRenderer(val, 0);
+          },
+        }
+      },
+      year: {
+        filter: {
+          renderer: makeRangeFilter('number')
+        },
+        cell: {
+          renderer: function(val) {
+            return formatters.numberRenderer(val, 0, true);
+          },
+        }
+      },
+      date: {
+        filter: {
+          renderer: makeRangeFilter('date')
+        },
+        cell: {
+          renderer: function(val) {
+            return formatters.dateRenderer(val);
+          }
+        }
+      },
+      multiselector: {
+        header: {
+          className: "check"
+        },
+        filter: {
+          className: "check"
+        },
+        cell: {
+          className: "check",
+          renderer: function(val, row, col, opts)  {
+              let cb = this.rowCallback;
+              let handler = function() {
+                  let node = this.getDOMNode();
+                  cb(row, node.checked);
+              }
+              return (
+                React.createElement("input", {type: "checkbox", 
+                       onChange: handler, checked: opts.isSelected})
+              );
+          }.bind(this)
+        }
+      }
+    }
+  },
+
   /** Get default and custom types merged, with missing values filled with defaults */
   getTypes: function () {
 
     var normalFilter = function(col)  
-      {return React.createElement("input", {type: "text", name: col.key, class: "form-control input-sm show", placeholder: "{$ col.title $}"});}
+      {return React.createElement("input", {type: "text", 
+             name: col.key, 
+             onChange: function(ev)  {return this.filterCallback(ev.target.name, ev.target.value);}.bind(this), 
+             className: "form-control input-sm show", 
+             required: "true", 
+             placeholder: col.title});}.bind(this)
     ;
 
-    var mergedTypes = _.assign({}, getDefaultTypes(), this.props.customTypes);
+    var mergedTypes = _.assign({}, this.getDefaultTypes(), this.props.customTypes);
 
     var completeType = function(type) {
       return _.defaults(type, {
@@ -636,6 +678,7 @@ var BETable = React.createClass({displayName: "BETable",
 
     return _.mapValues(mergedTypes, completeType);
   },
+
   getInitialState: function () {
     return {
       sorting: {
@@ -648,7 +691,8 @@ var BETable = React.createClass({displayName: "BETable",
       selectedRows: []
     };
   },
-  handleColumnClick: function (e, obj) {
+
+  sortingCallback: function (obj) {
     if (!obj.sortable) {
         return;
     }
@@ -663,7 +707,8 @@ var BETable = React.createClass({displayName: "BETable",
       this.props.callback(this.state, {eventType: 'columnSorted'});
     });
   },
-  handleFilterChange: function (val, key) {
+
+  filterCallback: function (key, val) {
     this.setState(function (previousState, currentProps) {
       previousState.searchFilters[key] = val;
       return {searchFilters: previousState.searchFilters, currentPage: 1};
@@ -671,11 +716,13 @@ var BETable = React.createClass({displayName: "BETable",
       this.props.callback(this.state, {eventType: 'filterChanged'});
     });
   },
+
   paginationCallback: function (state) {
     this.setState(state, function () {
       this.props.callback(this.state, {eventType: 'pagination'});
     });
   },
+
   rowCallback: function (row, insert) {
     this.setState(function (previousState, currentProps) {
         var rows = previousState.selectedRows;
@@ -692,19 +739,19 @@ var BETable = React.createClass({displayName: "BETable",
       this.props.callback(this.state, {eventType: 'rowClicked'});
     });
   },
+
   render: function() {
     let columnDefs = this.props.columns;
     var types = this.getTypes();
 
     var columns = columnDefs.map(function (c) {
-        return React.createElement(Column, {key: c.key, column: c, handleClick: this.handleColumnClick, sorting: this.state.sorting});
+        return React.createElement(Column, {key: c.key, column: c, handleClick: function()  {return this.sortingCallback(c);}.bind(this), sorting: this.state.sorting});
     }.bind(this));
 
     var searchFilters = columnDefs.map(function (c) {
-        var renderer = types[c.type].filter;
         return (
-          React.createElement(SearchFilter, {renderer: renderer, handleChange: this.handleFilterChange}, 
-              renderer.renderer(c)
+          React.createElement(SearchFilter, null, 
+              types[c.type].filter.renderer(c)
           )
         );
     }.bind(this));
@@ -792,35 +839,10 @@ var Column = React.createClass({displayName: "Column",
  *  - add blank and protected filters
  */
 var SearchFilter = React.createClass({displayName: "SearchFilter",
-  propTypes: {
-    column : React.PropTypes.object.isRequired,
-    handleChange: React.PropTypes.func,
-    isSorted: React.PropTypes.bool,
-  },
-  getDefaultProps: function () {
-      return {
-        handleChange: _.noop
-      };
-  },
-  getInitialState: function() {
-    return {input: ""};
-  },
-  handleChange: function (e) {
-    this.setState({
-      input: e.target.value
-    });
-    this.props.handleChange(e.target.value, e.target.name);
-  },
+
   render: function() {
     let content;
     var thClassString = "sub_head scroll_columns";
-    if (this.props.isSorted) {
-      thClassString += " sorted";
-    }
-    if (this.state.input !== "") {
-      inputClassString += " active";
-    }
-    // content = this.props.renderer.renderer(this.props.column);
 
     return (
       React.createElement("th", {className: thClassString}, 

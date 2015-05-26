@@ -68,80 +68,6 @@
 
 var React = window.React;
 
-var getDefaultTypes = function () {
-
-  let rangeFilter = (col) => (
-    <div class="col-xs-6">
-        <input type="number" name={col.key + "__gte"} class="form-control input-sm" placeholder="Min" />
-        <input type="number" name={col.key + "__lte"} class="form-control input-sm" placeholder="Max" />
-    </div>
-  );
-
-  let dateRangeFilter = (col) => (
-    <div class="col-xs-6">
-        <input type="date" name={col.key + "__gte"} class="form-control input-sm" placeholder="Min" />
-        <input type="date" name={col.key + "__lte"} class="form-control input-sm" placeholder="Max" />
-    </div>
-  );
-
-  return {
-    string: {},
-    number: {
-      filter: {
-        renderer: rangeFilter
-      },
-      cell: {
-        className: "column_head scroll_columns is_aligned_right",
-        renderer: function(val) {
-          return formatters.numberRenderer(val, 0);
-        },
-      }
-    },
-    year: {
-      filter: {
-        renderer: rangeFilter
-      },
-      cell: {
-        renderer: function(val) {
-          return formatters.numberRenderer(val, 0, true);
-        },
-      }
-    },
-    date: {
-      filter: {
-        renderer: rangeFilter
-      },
-      cell: {
-        renderer: function(val) {
-          return formatters.dateRenderer(val);
-        }
-      }
-    },
-    multiselector: {
-      header: {
-        className: "check"
-      },
-      filter: {
-        className: "check"
-      },
-      cell: {
-        className: "check",
-        renderer: (val, row, col, opts) => {
-            let cb = this.rowCallback;
-            let handler = function() {
-                let node = this.getDOMNode();
-                cb(row, node.checked);
-            }
-            return (
-              <input type="checkbox" onChange={handler} checked={opts.isSelected}/>
-            );
-        }
-      }
-    }
-  }
-};
-
-
 /** @jsx React.DOM */
 var BETable = React.createClass({
   propTypes: {
@@ -158,14 +84,130 @@ var BETable = React.createClass({
           customTypes: {}
       };
   },
+  getDefaultTypes: function () {
+
+    /** Convenience function that, given an input type, returns a function
+     *  that takes a col and renders a range filter
+     */
+    let makeRangeFilter = (type) => (col) => {
+      let minKey = col.key + "__gte";
+      let maxKey = col.key + "__lte";
+
+      return (
+        <div>
+          <div className="col-xs-6">
+              <input type={type}
+                     name={minKey}
+                     onChange={(ev) => this.filterCallback(ev.target.name, ev.target.value)}
+                     className="form-control input-sm"
+                     required="true"
+                     placeholder="Min" />
+          </div>
+          <div className="col-xs-6">
+              <input type={type}
+                     name={maxKey}
+                     onChange={(ev) => this.filterCallback(ev.target.name, ev.target.value)}
+                     className="form-control input-sm"
+                     required="true"
+                     placeholder="Max" />
+          </div>
+        </div>
+      );
+    };
+
+    let rangeFilter = (col) => (
+      <div>
+        <div className="col-xs-6">
+            <input type="number" name={col.key + "__gte"} className="form-control input-sm" placeholder="Min" />
+        </div>
+        <div className="col-xs-6">
+            <input type="number" name={col.key + "__lte"} className="form-control input-sm" placeholder="Max" />
+        </div>
+      </div>
+    );
+
+    let dateRangeFilter = (col) => (
+      <div>
+        <div className="col-xs-6">
+            <input type="date" name={col.key + "__gte"} className="form-control input-sm" placeholder="Min" />
+        </div>
+        <div className="col-xs-6">
+            <input type="date" name={col.key + "__lte"} className="form-control input-sm" placeholder="Max" />
+        </div>
+      </div>
+    );
+
+    return {
+      string: {},
+      number: {
+        filter: {
+          renderer: makeRangeFilter('number')
+        },
+        cell: {
+          className: "column_head scroll_columns is_aligned_right",
+          renderer: function(val) {
+            return formatters.numberRenderer(val, 0);
+          },
+        }
+      },
+      year: {
+        filter: {
+          renderer: makeRangeFilter('number')
+        },
+        cell: {
+          renderer: function(val) {
+            return formatters.numberRenderer(val, 0, true);
+          },
+        }
+      },
+      date: {
+        filter: {
+          renderer: makeRangeFilter('date')
+        },
+        cell: {
+          renderer: function(val) {
+            return formatters.dateRenderer(val);
+          }
+        }
+      },
+      multiselector: {
+        header: {
+          className: "check"
+        },
+        filter: {
+          className: "check"
+        },
+        cell: {
+          className: "check",
+          renderer: (val, row, col, opts) => {
+              let cb = this.rowCallback;
+              let handler = function() {
+                  let node = this.getDOMNode();
+                  cb(row, node.checked);
+              }
+              return (
+                <input type="checkbox"
+                       onChange={handler} checked={opts.isSelected}/>
+              );
+          }
+        }
+      }
+    }
+  },
+
   /** Get default and custom types merged, with missing values filled with defaults */
   getTypes: function () {
 
     var normalFilter = (col) => (
-      <input type="text" name={col.key} class="form-control input-sm show" placeholder="{$ col.title $}" />
+      <input type="text"
+             name={col.key}
+             onChange={(ev) => this.filterCallback(ev.target.name, ev.target.value)}
+             className="form-control input-sm show"
+             required="true"
+             placeholder={col.title} />
     );
 
-    var mergedTypes = _.assign({}, getDefaultTypes(), this.props.customTypes);
+    var mergedTypes = _.assign({}, this.getDefaultTypes(), this.props.customTypes);
 
     var completeType = function(type) {
       return _.defaults(type, {
@@ -186,6 +228,7 @@ var BETable = React.createClass({
 
     return _.mapValues(mergedTypes, completeType);
   },
+
   getInitialState: function () {
     return {
       sorting: {
@@ -198,7 +241,8 @@ var BETable = React.createClass({
       selectedRows: []
     };
   },
-  handleColumnClick: function (e, obj) {
+
+  sortingCallback: function (obj) {
     if (!obj.sortable) {
         return;
     }
@@ -213,7 +257,8 @@ var BETable = React.createClass({
       this.props.callback(this.state, {eventType: 'columnSorted'});
     });
   },
-  handleFilterChange: function (val, key) {
+
+  filterCallback: function (key, val) {
     this.setState(function (previousState, currentProps) {
       previousState.searchFilters[key] = val;
       return {searchFilters: previousState.searchFilters, currentPage: 1};
@@ -221,11 +266,13 @@ var BETable = React.createClass({
       this.props.callback(this.state, {eventType: 'filterChanged'});
     });
   },
+
   paginationCallback: function (state) {
     this.setState(state, function () {
       this.props.callback(this.state, {eventType: 'pagination'});
     });
   },
+
   rowCallback: function (row, insert) {
     this.setState(function (previousState, currentProps) {
         var rows = previousState.selectedRows;
@@ -242,19 +289,19 @@ var BETable = React.createClass({
       this.props.callback(this.state, {eventType: 'rowClicked'});
     });
   },
+
   render: function() {
     let columnDefs = this.props.columns;
     var types = this.getTypes();
 
     var columns = columnDefs.map(function (c) {
-        return <Column key={c.key} column={c} handleClick={this.handleColumnClick} sorting={this.state.sorting}></Column>;
+        return <Column key={c.key} column={c} handleClick={() => this.sortingCallback(c)} sorting={this.state.sorting}></Column>;
     }.bind(this));
 
     var searchFilters = columnDefs.map(function (c) {
-        var renderer = types[c.type].filter;
         return (
-          <SearchFilter renderer={renderer} handleChange={this.handleFilterChange}>
-              {renderer.renderer(c)}
+          <SearchFilter>
+              {types[c.type].filter.renderer(c)}
           </SearchFilter>
         );
     }.bind(this));
@@ -342,35 +389,10 @@ var Column = React.createClass({
  *  - add blank and protected filters
  */
 var SearchFilter = React.createClass({
-  propTypes: {
-    column : React.PropTypes.object.isRequired,
-    handleChange: React.PropTypes.func,
-    isSorted: React.PropTypes.bool,
-  },
-  getDefaultProps: function () {
-      return {
-        handleChange: _.noop
-      };
-  },
-  getInitialState: function() {
-    return {input: ""};
-  },
-  handleChange: function (e) {
-    this.setState({
-      input: e.target.value
-    });
-    this.props.handleChange(e.target.value, e.target.name);
-  },
+
   render: function() {
     let content;
     var thClassString = "sub_head scroll_columns";
-    if (this.props.isSorted) {
-      thClassString += " sorted";
-    }
-    if (this.state.input !== "") {
-      inputClassString += " active";
-    }
-    // content = this.props.renderer.renderer(this.props.column);
 
     return (
       <th className={thClassString}>
