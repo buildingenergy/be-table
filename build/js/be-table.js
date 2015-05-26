@@ -684,7 +684,7 @@ var BETable = React.createClass({displayName: "BETable",
       searchFilters: {},
       currentPage: 1,
       numberPerPage: 10,
-      selectedRows: [],
+      selectedRows: {},
       selectAll: false,
     };
   },
@@ -723,6 +723,10 @@ var BETable = React.createClass({displayName: "BETable",
   rowCallback: function (row, insert) {
     this.setState(function (previousState, currentProps) {
       var rows = previousState.selectedRows;
+      if (previousState.selectAll) {
+        insert = !insert;
+      }
+
       if (insert) {
         rows[row.id] = row;
       } else {
