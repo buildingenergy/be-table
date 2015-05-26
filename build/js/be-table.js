@@ -19,7 +19,7 @@ function getNamespace() {
 
 function getOrCall(x ) {for (var params=[],$__0=1,$__1=arguments.length;$__0<$__1;$__0++) params.push(arguments[$__0]);
   if (_.isFunction(x)) {
-    return x.apply(params);
+    return x.apply(this, params);
   } else {
     return x;
   }
@@ -534,7 +534,19 @@ var BETable = React.createClass({displayName: "BETable",
           customTypes: {}
       };
   },
-  getDefaultTypes: function () {
+  /** Get default and custom types merged, with missing values filled with defaults */
+  getTypes: function () {
+
+    let normalFilter = function(col, xaxhz)  {
+      return (
+        React.createElement("input", {type: "text", 
+               name: col.key, 
+               onChange: function(ev)  {return this.filterCallback(ev.target.name, ev.target.value);}.bind(this), 
+               className: "form-control input-sm show", 
+               required: "true", 
+               placeholder: col.title})
+      )
+    }.bind(this);
 
     /** Convenience function that, given an input type, returns a function
      *  that takes a col and renders a range filter
@@ -565,29 +577,7 @@ var BETable = React.createClass({displayName: "BETable",
       );
     }.bind(this);}.bind(this);
 
-    let rangeFilter = function(col)  
-      {return React.createElement("div", null, 
-        React.createElement("div", {className: "col-xs-6"}, 
-            React.createElement("input", {type: "number", name: col.key + "__gte", className: "form-control input-sm", placeholder: "Min"})
-        ), 
-        React.createElement("div", {className: "col-xs-6"}, 
-            React.createElement("input", {type: "number", name: col.key + "__lte", className: "form-control input-sm", placeholder: "Max"})
-        )
-      );}
-    ;
-
-    let dateRangeFilter = function(col)  
-      {return React.createElement("div", null, 
-        React.createElement("div", {className: "col-xs-6"}, 
-            React.createElement("input", {type: "date", name: col.key + "__gte", className: "form-control input-sm", placeholder: "Min"})
-        ), 
-        React.createElement("div", {className: "col-xs-6"}, 
-            React.createElement("input", {type: "date", name: col.key + "__lte", className: "form-control input-sm", placeholder: "Max"})
-        )
-      );}
-    ;
-
-    return {
+    let defaultTypes = {
       string: {},
       number: {
         filter: {
@@ -625,7 +615,7 @@ var BETable = React.createClass({displayName: "BETable",
           className: "check"
         },
         filter: {
-          className: "check"
+          className: "check",
         },
         cell: {
           className: "check",
@@ -643,22 +633,9 @@ var BETable = React.createClass({displayName: "BETable",
           }.bind(this)
         }
       }
-    }
-  },
+    };
 
-  /** Get default and custom types merged, with missing values filled with defaults */
-  getTypes: function () {
-
-    var normalFilter = function(col)  
-      {return React.createElement("input", {type: "text", 
-             name: col.key, 
-             onChange: function(ev)  {return this.filterCallback(ev.target.name, ev.target.value);}.bind(this), 
-             className: "form-control input-sm show", 
-             required: "true", 
-             placeholder: col.title});}.bind(this)
-    ;
-
-    var mergedTypes = _.assign({}, this.getDefaultTypes(), this.props.customTypes);
+    var mergedTypes = _.assign({}, defaultTypes, this.props.customTypes);
 
     var completeType = function(type) {
       return _.defaults(type, {
@@ -677,7 +654,10 @@ var BETable = React.createClass({displayName: "BETable",
       });
     };
 
-    return _.mapValues(mergedTypes, completeType);
+
+    let allTypes = _.mapValues(mergedTypes, completeType);
+
+    return allTypes;
   },
 
   getInitialState: function () {
@@ -745,20 +725,22 @@ var BETable = React.createClass({displayName: "BETable",
     let columnDefs = this.props.columns;
     var types = this.getTypes();
 
-    var columns = columnDefs.map(function (c) {
-        return React.createElement(Column, {key: c.key, column: c, handleClick: function()  {return this.sortingCallback(c);}.bind(this), sorting: this.state.sorting});
+    var columns = columnDefs.map(function (col) {
+        return React.createElement(Column, {key: col.key, column: col, handleClick: function()  {return this.sortingCallback(col);}.bind(this), sorting: this.state.sorting});
     }.bind(this));
 
-    var searchFilters = columnDefs.map(function (c) {
+    var searchFilters = columnDefs.map(function (col) {
+        let type = types[col.type].filter;
+        let contents = getOrCall(type.renderer, col, 'booboo');
         return (
-          React.createElement(SearchFilter, null, 
-              types[c.type].filter.renderer ? types[c.type].filter.renderer(c) : null
+          React.createElement(SearchFilter, {className: getOrCall(type.className, col)}, 
+              contents
           )
         );
     }.bind(this));
 
-    var rows = this.props.rows.map(function (r) {
-      return React.createElement(Row, {row: r, isSelected: _.contains(r.id, this.state.selectedRows), columns: columnDefs, sorting: this.state.sorting, dataTypes: this.getTypes(), key: r.id});
+    var rows = this.props.rows.map(function (row) {
+      return React.createElement(Row, {row: row, isSelected: _.contains(row.id, this.state.selectedRows), columns: columnDefs, sorting: this.state.sorting, dataTypes: this.getTypes(), key: row.id});
     }.bind(this));
 
     var numberOfObjects = this.props.searchmeta.totalMatchCount || this.props.searchmeta.number_matching_search;
@@ -846,7 +828,7 @@ var SearchFilter = React.createClass({displayName: "SearchFilter",
     var thClassString = "sub_head scroll_columns";
 
     return (
-      React.createElement("th", {className: thClassString}, 
+      React.createElement("th", {className: thClassString + " " + this.props.className}, 
         this.props.children
       )
     );
@@ -901,7 +883,7 @@ var Cell = React.createClass({displayName: "Cell",
 
     if (_.has(this.props.dataTypes, type)) {
       let renderer = (this.props.dataTypes[type]);
-      cellValue = renderer.cell.renderer(cellValue, this.props.row, this.props.column, {isSelected: this.props.isSelected});
+      cellValue = getOrCall(renderer.cell.renderer, cellValue, this.props.row, this.props.column, {isSelected: this.props.isSelected});
       classString += " " + getOrCall(renderer.cell.className, this.props.column);
     }
     return (

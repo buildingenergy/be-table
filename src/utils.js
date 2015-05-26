@@ -17,7 +17,7 @@ function getNamespace() {
 
 function getOrCall(x, ...params) {
   if (_.isFunction(x)) {
-    return x.apply(params);
+    return x.apply(this, params);
   } else {
     return x;
   }

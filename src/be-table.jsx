@@ -84,7 +84,19 @@ var BETable = React.createClass({
           customTypes: {}
       };
   },
-  getDefaultTypes: function () {
+  /** Get default and custom types merged, with missing values filled with defaults */
+  getTypes: function () {
+
+    let normalFilter = (col, xaxhz) => {
+      return (
+        <input type="text"
+               name={col.key}
+               onChange={(ev) => this.filterCallback(ev.target.name, ev.target.value)}
+               className="form-control input-sm show"
+               required="true"
+               placeholder={col.title} />
+      )
+    };
 
     /** Convenience function that, given an input type, returns a function
      *  that takes a col and renders a range filter
@@ -115,29 +127,7 @@ var BETable = React.createClass({
       );
     };
 
-    let rangeFilter = (col) => (
-      <div>
-        <div className="col-xs-6">
-            <input type="number" name={col.key + "__gte"} className="form-control input-sm" placeholder="Min" />
-        </div>
-        <div className="col-xs-6">
-            <input type="number" name={col.key + "__lte"} className="form-control input-sm" placeholder="Max" />
-        </div>
-      </div>
-    );
-
-    let dateRangeFilter = (col) => (
-      <div>
-        <div className="col-xs-6">
-            <input type="date" name={col.key + "__gte"} className="form-control input-sm" placeholder="Min" />
-        </div>
-        <div className="col-xs-6">
-            <input type="date" name={col.key + "__lte"} className="form-control input-sm" placeholder="Max" />
-        </div>
-      </div>
-    );
-
-    return {
+    let defaultTypes = {
       string: {},
       number: {
         filter: {
@@ -175,7 +165,7 @@ var BETable = React.createClass({
           className: "check"
         },
         filter: {
-          className: "check"
+          className: "check",
         },
         cell: {
           className: "check",
@@ -193,22 +183,9 @@ var BETable = React.createClass({
           }
         }
       }
-    }
-  },
+    };
 
-  /** Get default and custom types merged, with missing values filled with defaults */
-  getTypes: function () {
-
-    var normalFilter = (col) => (
-      <input type="text"
-             name={col.key}
-             onChange={(ev) => this.filterCallback(ev.target.name, ev.target.value)}
-             className="form-control input-sm show"
-             required="true"
-             placeholder={col.title} />
-    );
-
-    var mergedTypes = _.assign({}, this.getDefaultTypes(), this.props.customTypes);
+    var mergedTypes = _.assign({}, defaultTypes, this.props.customTypes);
 
     var completeType = function(type) {
       return _.defaults(type, {
@@ -227,7 +204,10 @@ var BETable = React.createClass({
       });
     };
 
-    return _.mapValues(mergedTypes, completeType);
+
+    let allTypes = _.mapValues(mergedTypes, completeType);
+
+    return allTypes;
   },
 
   getInitialState: function () {
@@ -295,20 +275,22 @@ var BETable = React.createClass({
     let columnDefs = this.props.columns;
     var types = this.getTypes();
 
-    var columns = columnDefs.map(function (c) {
-        return <Column key={c.key} column={c} handleClick={() => this.sortingCallback(c)} sorting={this.state.sorting}></Column>;
+    var columns = columnDefs.map(function (col) {
+        return <Column key={col.key} column={col} handleClick={() => this.sortingCallback(col)} sorting={this.state.sorting}></Column>;
     }.bind(this));
 
-    var searchFilters = columnDefs.map(function (c) {
+    var searchFilters = columnDefs.map(function (col) {
+        let type = types[col.type].filter;
+        let contents = getOrCall(type.renderer, col, 'booboo');
         return (
-          <SearchFilter>
-              {types[c.type].filter.renderer ? types[c.type].filter.renderer(c) : null}
+          <SearchFilter className={getOrCall(type.className, col)}>
+              {contents}
           </SearchFilter>
         );
     }.bind(this));
 
-    var rows = this.props.rows.map(function (r) {
-      return <Row row={r} isSelected={_.contains(r.id, this.state.selectedRows)} columns={columnDefs} sorting={this.state.sorting} dataTypes={this.getTypes()} key={r.id}></Row>;
+    var rows = this.props.rows.map(function (row) {
+      return <Row row={row} isSelected={_.contains(row.id, this.state.selectedRows)} columns={columnDefs} sorting={this.state.sorting} dataTypes={this.getTypes()} key={row.id}></Row>;
     }.bind(this));
 
     var numberOfObjects = this.props.searchmeta.totalMatchCount || this.props.searchmeta.number_matching_search;
@@ -396,7 +378,7 @@ var SearchFilter = React.createClass({
     var thClassString = "sub_head scroll_columns";
 
     return (
-      <th className={thClassString}>
+      <th className={thClassString + " " + this.props.className}>
         {this.props.children}
       </th>
     );
@@ -451,7 +433,7 @@ var Cell = React.createClass({
 
     if (_.has(this.props.dataTypes, type)) {
       let renderer = (this.props.dataTypes[type]);
-      cellValue = renderer.cell.renderer(cellValue, this.props.row, this.props.column, {isSelected: this.props.isSelected});
+      cellValue = getOrCall(renderer.cell.renderer, cellValue, this.props.row, this.props.column, {isSelected: this.props.isSelected});
       classString += " " + getOrCall(renderer.cell.className, this.props.column);
     }
     return (
