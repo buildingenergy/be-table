@@ -613,7 +613,26 @@ var BETable = React.createClass({displayName: "BETable",
       },
       multiselector: {
         header: {
-          className: "check"
+          className: "check",
+          renderer: function(col, state)  {
+            let checked = state.selectAll;
+            let handler = function(ev)  {
+              let node = ev.target;
+              this.setState(function(prevState)  {
+                let selectAll = !prevState.selectAll;
+                return {
+                  selectedRows: [],
+                  selectAll: !prevState.selectAll
+                }
+              });
+              return false;
+            }.bind(this);
+            return (
+              React.createElement("input", {type: "checkbox", 
+                     onChange: handler, 
+                     checked: checked})
+            );
+          }.bind(this)
         },
         filter: {
           className: "check",
@@ -671,7 +690,8 @@ var BETable = React.createClass({displayName: "BETable",
       searchFilters: {},
       currentPage: 1,
       numberPerPage: 10,
-      selectedRows: []
+      selectedRows: [],
+      selectAll: false,
     };
   },
 
@@ -723,31 +743,44 @@ var BETable = React.createClass({displayName: "BETable",
     });
   },
 
+  isSelectedRow: function (row) {
+    let selected = _.has(this.state.selectedRows, row.id)
+    if (this.state.selectAll) {
+      selected = !selected;
+    }
+    return selected;
+  },
+
   render: function() {
     let columnDefs = this.props.columns;
     var types = this.getTypes();
 
     var columns = columnDefs.map(function (col) {
+      let builder = types[col.type].header;
+      let className = getOrCall(builder.className, col);
+      let content = getOrCall(builder.renderer, col, this.state);
       return (
         React.createElement(Column, {key: col.key, 
                 column: col, 
+                className: className, 
                 handleClick: function()  {return this.sortingCallback(col);}.bind(this), 
-                sorting: this.state.sorting})
+                sorting: this.state.sorting}, 
+          content
+        )
       );
     }.bind(this));
 
     var searchFilters = columnDefs.map(function (col) {
-      let type = types[col.type].filter;
-      let contents = getOrCall(type.renderer, col, 'booboo');
+      let builder = types[col.type].filter;
       return (
-        React.createElement(SearchFilter, {className: getOrCall(type.className, col)}, 
-          contents
+        React.createElement(SearchFilter, {className: getOrCall(builder.className, col)}, 
+          getOrCall(builder.renderer, col, 'booboo')
         )
         );
     }.bind(this));
 
     var rows = this.props.rows.map(function (row) {
-      return React.createElement(Row, {row: row, isSelectedRow: _.has(this.state.selectedRows, row.id), columns: columnDefs, sorting: this.state.sorting, dataTypes: this.getTypes(), key: row.id});
+      return React.createElement(Row, {row: row, isSelectedRow: this.isSelectedRow(row), columns: columnDefs, sorting: this.state.sorting, dataTypes: this.getTypes(), key: row.id});
     }.bind(this));
 
     var numberOfObjects = this.props.searchmeta.totalMatchCount || this.props.searchmeta.number_matching_search;
@@ -790,7 +823,7 @@ var Column = React.createClass({displayName: "Column",
     this.props.handleClick(e, this.props.column);
   },
   render: function() {
-    let classString = "";
+    let classString = this.props.className;
     let content;
     let column = this.props.column;
     if (column === this.props.sorting.column) {
@@ -813,7 +846,7 @@ var Column = React.createClass({displayName: "Column",
     }
     return (
       React.createElement("th", {className: classString, onClick: this.handleClick}, 
-        content
+        this.props.children
       )
     );
   }
@@ -854,11 +887,15 @@ var Row = React.createClass({displayName: "Row",
     var row = this.props.columns.map(function (c) {
       var isSorted = c === this.props.sorting.column;
       return (
-        React.createElement(Cell, {column: c, row: this.props.row, isSorted: isSorted, isSelectedRow: this.props.isSelectedRow, dataTypes: this.props.dataTypes})
+        React.createElement(Cell, {column: c, 
+              row: this.props.row, 
+              isSorted: isSorted, 
+              isSelectedRow: this.props.isSelectedRow, 
+              dataTypes: this.props.dataTypes})
       );
     }.bind(this));
     return (
-      React.createElement("tr", null, 
+      React.createElement("tr", {className: this.props.isSelectedRow ? 'selected-row' : ''}, 
         row
       )
     );
@@ -885,16 +922,10 @@ var Cell = React.createClass({displayName: "Cell",
     let cellValue = this.props.row[this.props.column.key];
     let type = this.props.column.type || "string";
 
-    /// REMOVE BELOW HERE IN PRODUCTION (comment in with label demo and a colunn of Property Id to see in action)
-    // if (this.props.column.key === "Audit Group") {
-    //   type = "label";
-    // }
-    /// REMOVE ABOVE HERE
-
     if (_.has(this.props.dataTypes, type)) {
-      let renderer = (this.props.dataTypes[type]);
-      cellValue = getOrCall(renderer.cell.renderer, cellValue, this.props.row, this.props.column, {isSelectedRow: this.props.isSelectedRow});
-      classString += " " + getOrCall(renderer.cell.className, this.props.column);
+      let builder = (this.props.dataTypes[type].cell);
+      classString += " " + getOrCall(builder.className, this.props.column);
+      cellValue = getOrCall(builder.renderer, cellValue, this.props.row, this.props.column, {isSelectedRow: this.props.isSelectedRow});
     }
     return (
       React.createElement("td", {className: classString}, cellValue)
