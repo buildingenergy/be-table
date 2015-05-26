@@ -311,18 +311,18 @@ var BETable = React.createClass({
     let columnDefs = this.props.columns;
     var types = this.getTypes();
 
-    var columns = columnDefs.map(function (col) {
+    var headers = columnDefs.map(function (col) {
       let builder = types[col.type].header;
       let className = getOrCall(builder.className, col);
       let content = getOrCall(builder.renderer, col, this.state);
       return (
-        <Column key={col.key}
+        <Header key={col.key}
                 column={col}
                 className={className}
                 handleClick={() => this.sortingCallback(col)}
                 sorting={this.state.sorting}>
           {content}
-        </Column>
+        </Header>
       );
     }.bind(this));
 
@@ -347,7 +347,7 @@ var BETable = React.createClass({
           <table className="table table-striped sortable">
             <thead>
               <tr>
-                {columns}
+                {headers}
               </tr>
               <tr className="sub_head">
                 {searchFilters}
@@ -369,7 +369,7 @@ var BETable = React.createClass({
 });
 
 
-var Column = React.createClass({
+var Header = React.createClass({
   propTypes: {
     column : React.PropTypes.object.isRequired,
     handleClick: React.PropTypes.func,

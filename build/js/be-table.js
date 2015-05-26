@@ -761,12 +761,12 @@ var BETable = React.createClass({displayName: "BETable",
     let columnDefs = this.props.columns;
     var types = this.getTypes();
 
-    var columns = columnDefs.map(function (col) {
+    var headers = columnDefs.map(function (col) {
       let builder = types[col.type].header;
       let className = getOrCall(builder.className, col);
       let content = getOrCall(builder.renderer, col, this.state);
       return (
-        React.createElement(Column, {key: col.key, 
+        React.createElement(Header, {key: col.key, 
                 column: col, 
                 className: className, 
                 handleClick: function()  {return this.sortingCallback(col);}.bind(this), 
@@ -797,7 +797,7 @@ var BETable = React.createClass({displayName: "BETable",
           React.createElement("table", {className: "table table-striped sortable"}, 
             React.createElement("thead", null, 
               React.createElement("tr", null, 
-                columns
+                headers
               ), 
               React.createElement("tr", {className: "sub_head"}, 
                 searchFilters
@@ -819,7 +819,7 @@ var BETable = React.createClass({displayName: "BETable",
 });
 
 
-var Column = React.createClass({displayName: "Column",
+var Header = React.createClass({displayName: "Header",
   propTypes: {
     column : React.PropTypes.object.isRequired,
     handleClick: React.PropTypes.func,
