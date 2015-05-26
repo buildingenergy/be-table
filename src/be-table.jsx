@@ -168,13 +168,7 @@ var BETable = React.createClass({
             let checked = state.selectAll;
             let handler = (ev) => {
               let node = ev.target;
-              this.setState((prevState) => {
-                let selectAll = !prevState.selectAll;
-                return {
-                  selectedRows: [],
-                  selectAll: !prevState.selectAll
-                }
-              });
+              this.selectAllCallback(node.checked);
               return false;
             };
             return (
@@ -290,6 +284,18 @@ var BETable = React.createClass({
       };
     }, function () {
       this.props.callback(this.state, {eventType: 'rowClicked'});
+    });
+  },
+
+  selectAllCallback: function () {
+    this.setState((prevState) => {
+      let selectAll = !prevState.selectAll;
+      return {
+        selectedRows: [],
+        selectAll: !prevState.selectAll
+      }
+    }, function () {
+      this.props.callback(this.state, {eventType: 'selectAllToggled'});
     });
   },
 
