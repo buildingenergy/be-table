@@ -35,7 +35,6 @@ var wrapText = [
 // common pipeline steps for javascript builds
 var jsBuildFlow = function(outpath) {
   return lazypipe()
-  // .pipe(react, {harmony: true})
   .pipe(concat, outpath)
   .pipe(babel)
   .pipe(wrap, wrapText[0] + '<%= contents %>' + wrapText[1]);
@@ -49,23 +48,13 @@ gulp.task('compress', ['clean'], function () {
 
   // development version
   gulp.src(filePaths.javascript)
-    // .pipe(react({harmony: true})).on('error', swallow)
-    // .pipe(babel({modules: null})).on('error', swallow)
-    .pipe(jsBuildFlow('be-table.js')())
-    // .pipe(babel()).on('error', swallow)
-    // .pipe(concat('be-table.js'))
-    // .pipe(wrap('(function(){\n"use strict";\n<%= contents %>\n})();'))
+    .pipe(jsBuildFlow('be-table.js')()).on('error', swallow)
     .pipe(gulp.dest('build/js'));
 
   // minified version
   gulp.src(filePaths.javascript)
     .pipe(sourcemaps.init())
-      // .pipe(react({harmony: true})).on('error', swallow)
-      // .pipe(babel({modules: null})).on('error', swallow)
-      .pipe(jsBuildFlow('be-table.min.js')())
-      // .pipe(babel()).on('error', swallow)
-      // .pipe(concat('be-table.min.js'))
-      // .pipe(wrap('(function(){\n"use strict";\n<%= contents %>\n})();'))
+      .pipe(jsBuildFlow('be-table.min.js')()).on('error', swallow)
       .pipe(uglify()).on('error', swallow)
     .pipe(sourcemaps.write('./'))
     .pipe(gulp.dest('build/js'));
