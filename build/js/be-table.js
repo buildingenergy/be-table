@@ -744,7 +744,7 @@ var BETable = React.createClass({displayName: "BETable",
     this.setState(function(prevState)  {
       let selectAll = !prevState.selectAll;
       return {
-        selectedRows: [],
+        selectedRows: {},
         selectAll: !prevState.selectAll
       }
     }, function () {
