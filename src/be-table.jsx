@@ -66,8 +66,9 @@
  *   };
  */
 
+var _ = require('lodash') || window._;
 
-var React = window.React;
+var React = require('react') || window.React;
 
 
 var BETable = React.createClass({
@@ -558,3 +559,6 @@ var TableFooter = React.createClass({
 // last step add the react component to the mix
 getNamespace('BE', 'Table').BETable = BETable;
 
+module.exports = {
+  BETable: BETable
+};

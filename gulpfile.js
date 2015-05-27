@@ -4,6 +4,7 @@ var gulp   = require('gulp');
 var babel = require('gulp-babel');
 var concat = require('gulp-concat');
 var del = require('del');
+var jest = require('gulp-jest');
 var jshint = require('gulp-jshint');
 var lazypipe = require('lazypipe');
 var notify = require('gulp-notify');
@@ -74,7 +75,16 @@ gulp.task('watch', function() {
     gulp.watch(filePaths.javascript, ['build']);
 })
 
-gulp.task('test', ['lint']);
+gulp.task('test', function () {
+  return gulp.src('__tests__')
+    .pipe(jest({
+      testDirectoryName: "__tests__",
+      unmockedModulePathPatterns: [
+        "node_modules/react"
+      ]
+    }))
+});
+
 gulp.task('build', ['clean', 'compress']);
 gulp.task('dev', ['build', 'watch']);
 gulp.task('default', ['test', 'build']);
