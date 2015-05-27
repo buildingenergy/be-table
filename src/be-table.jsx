@@ -536,6 +536,8 @@ var TableFooter = React.createClass({
     var prevStyle = this.props.currentPage <= 1 ? {} : {cursor: "pointer"};
     var nextDisabled = this.props.currentPage === numberOfPages ? "disabled" : "";
     var nextStyle = this.props.currentPage === numberOfPages ? {} : {cursor: "pointer"};
+    var firstButton;
+    var lastButton;
     if (this.props.enableFirstLast) {
         firstButton = (<li className={prevDisabled}><a style={prevStyle} onClick={this.firstPage}><i className="fa fa-angle-double-left"></i><i className="fa fa-angle-double-left"></i> First</a></li>);
         lastButton = (<li className={nextDisabled}><a style={nextStyle} onClick={this.lastPage}>Last <i className="fa fa-angle-double-right"></i><i className="fa fa-angle-double-right"></i></a></li>)
