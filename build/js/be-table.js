@@ -986,6 +986,8 @@ var TableFooter = React.createClass({displayName: "TableFooter",
     var prevStyle = this.props.currentPage <= 1 ? {} : {cursor: "pointer"};
     var nextDisabled = this.props.currentPage === numberOfPages ? "disabled" : "";
     var nextStyle = this.props.currentPage === numberOfPages ? {} : {cursor: "pointer"};
+    var firstButton;
+    var lastButton;
     if (this.props.enableFirstLast) {
         firstButton = (React.createElement("li", {className: prevDisabled}, React.createElement("a", {style: prevStyle, onClick: this.firstPage}, React.createElement("i", {className: "fa fa-angle-double-left"}), React.createElement("i", {className: "fa fa-angle-double-left"}), " First")));
         lastButton = (React.createElement("li", {className: nextDisabled}, React.createElement("a", {style: nextStyle, onClick: this.lastPage}, "Last ", React.createElement("i", {className: "fa fa-angle-double-right"}), React.createElement("i", {className: "fa fa-angle-double-right"}))))
