@@ -949,7 +949,8 @@ var TableFooter = React.createClass({displayName: "TableFooter",
   },
   getDefaultProps: function () {
     return {
-      numberPerPageOptions: [10, 25, 50, 100]
+      numberPerPageOptions: [10, 25, 50, 100],
+      enableFirstLast: true
     };
   },
   changePagination: function (r) {
@@ -957,6 +958,12 @@ var TableFooter = React.createClass({displayName: "TableFooter",
   },
   numberOfPages: function () {
     return Math.ceil(this.props.numberOfObjects / this.props.numberPerPage);
+  },
+  firstPage: function() {
+    this.props.paginationCallback({currentPage: 1});
+  },
+  lastPage: function() {
+    this.props.paginationCallback({currentPage: this.numberOfPages()});
   },
   nextPage: function () {
     if (this.props.currentPage < this.numberOfPages()) {
@@ -979,6 +986,10 @@ var TableFooter = React.createClass({displayName: "TableFooter",
     var prevStyle = this.props.currentPage <= 1 ? {} : {cursor: "pointer"};
     var nextDisabled = this.props.currentPage === numberOfPages ? "disabled" : "";
     var nextStyle = this.props.currentPage === numberOfPages ? {} : {cursor: "pointer"};
+    if (this.props.enableFirstLast) {
+        firstButton = (React.createElement("li", {className: prevDisabled}, React.createElement("a", {style: prevStyle, onClick: this.firstPage}, React.createElement("i", {className: "fa fa-angle-double-left"}), React.createElement("i", {className: "fa fa-angle-double-left"}), " First")));
+        lastButton = (React.createElement("li", {className: nextDisabled}, React.createElement("a", {style: nextStyle, onClick: this.lastPage}, "Last ", React.createElement("i", {className: "fa fa-angle-double-right"}), React.createElement("i", {className: "fa fa-angle-double-right"}))))
+    }
 
     return (
       React.createElement("div", {className: "table_footer"}, 
@@ -996,8 +1007,10 @@ var TableFooter = React.createClass({displayName: "TableFooter",
         ), 
         React.createElement("div", {className: "pager_container col-sm-3 col-md-3"}, 
           React.createElement("ul", {className: "pager"}, 
+            firstButton, 
             React.createElement("li", {className: prevDisabled}, React.createElement("a", {style: prevStyle, onClick: this.prevPage}, React.createElement("i", {className: "fa fa-angle-double-left"}), " Previous")), 
-            React.createElement("li", {className: nextDisabled}, React.createElement("a", {style: nextStyle, onClick: this.nextPage}, "Next ", React.createElement("i", {className: "fa fa-angle-double-right"})))
+            React.createElement("li", {className: nextDisabled}, React.createElement("a", {style: nextStyle, onClick: this.nextPage}, "Next ", React.createElement("i", {className: "fa fa-angle-double-right"}))), 
+            lastButton
           )
         )
       )

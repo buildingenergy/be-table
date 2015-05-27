@@ -499,7 +499,8 @@ var TableFooter = React.createClass({
   },
   getDefaultProps: function () {
     return {
-      numberPerPageOptions: [10, 25, 50, 100]
+      numberPerPageOptions: [10, 25, 50, 100],
+      enableFirstLast: true
     };
   },
   changePagination: function (r) {
@@ -507,6 +508,12 @@ var TableFooter = React.createClass({
   },
   numberOfPages: function () {
     return Math.ceil(this.props.numberOfObjects / this.props.numberPerPage);
+  },
+  firstPage: function() {
+    this.props.paginationCallback({currentPage: 1});
+  },
+  lastPage: function() {
+    this.props.paginationCallback({currentPage: this.numberOfPages()});
   },
   nextPage: function () {
     if (this.props.currentPage < this.numberOfPages()) {
@@ -529,6 +536,10 @@ var TableFooter = React.createClass({
     var prevStyle = this.props.currentPage <= 1 ? {} : {cursor: "pointer"};
     var nextDisabled = this.props.currentPage === numberOfPages ? "disabled" : "";
     var nextStyle = this.props.currentPage === numberOfPages ? {} : {cursor: "pointer"};
+    if (this.props.enableFirstLast) {
+        firstButton = (<li className={prevDisabled}><a style={prevStyle} onClick={this.firstPage}><i className="fa fa-angle-double-left"></i><i className="fa fa-angle-double-left"></i> First</a></li>);
+        lastButton = (<li className={nextDisabled}><a style={nextStyle} onClick={this.lastPage}>Last <i className="fa fa-angle-double-right"></i><i className="fa fa-angle-double-right"></i></a></li>)
+    }
 
     return (
       <div className="table_footer">
@@ -546,8 +557,10 @@ var TableFooter = React.createClass({
         </div>
         <div className="pager_container col-sm-3 col-md-3">
           <ul className="pager">
+            {firstButton}
             <li className={prevDisabled}><a style={prevStyle} onClick={this.prevPage}><i className="fa fa-angle-double-left"></i> Previous</a></li>
             <li className={nextDisabled}><a style={nextStyle} onClick={this.nextPage}>Next <i className="fa fa-angle-double-right"></i></a></li>
+            {lastButton}
           </ul>
         </div>
       </div>
