@@ -46,6 +46,11 @@ describe('BETable', function () {
         // customTypes: {},
       })
     );
-    expect(3).toBe(3);
+    var thead = TU.findRenderedDOMComponentWithTag(table, 'thead')
+    var tbody = TU.findRenderedDOMComponentWithTag(table, 'tbody')
+    var headRows = TU.scryRenderedDOMComponentsWithTag(thead, 'tr');
+    var bodyRows = TU.scryRenderedDOMComponentsWithTag(tbody, 'tr');
+    expect(headRows.length).toBe(2);
+    expect(bodyRows.length).toBe(5);
   });
 })
