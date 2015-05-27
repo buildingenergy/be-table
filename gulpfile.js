@@ -26,13 +26,18 @@ var swallow = notify.onError(function(err) {
   return err;
 });
 
+var wrapText = [
+  '(function(){\n', // prepend
+  '\n})();', // append
+];
+
 // common pipeline steps for javascript builds
 var jsBuildFlow = function(outpath) {
   return lazypipe()
   // .pipe(react, {harmony: true})
-  .pipe(babel)
   .pipe(concat, outpath)
-  .pipe(wrap, '(function(){\n"use strict";\n<%= contents %>\n})();');
+  .pipe(babel)
+  .pipe(wrap, wrapText[0] + '<%= contents %>' + wrapText[1]);
 }
 
 gulp.task('clean', function (cb) {
@@ -43,7 +48,8 @@ gulp.task('compress', ['clean'], function () {
 
   // development version
   gulp.src(filePaths.javascript)
-    .pipe(react({harmony: true})).on('error', swallow)
+    // .pipe(react({harmony: true})).on('error', swallow)
+    // .pipe(babel({modules: null})).on('error', swallow)
     .pipe(jsBuildFlow('be-table.js')())
     // .pipe(babel()).on('error', swallow)
     // .pipe(concat('be-table.js'))
@@ -53,7 +59,8 @@ gulp.task('compress', ['clean'], function () {
   // minified version
   gulp.src(filePaths.javascript)
     .pipe(sourcemaps.init())
-      .pipe(react({harmony: true})).on('error', swallow)
+      // .pipe(react({harmony: true})).on('error', swallow)
+      // .pipe(babel({modules: null})).on('error', swallow)
       .pipe(jsBuildFlow('be-table.min.js')())
       // .pipe(babel()).on('error', swallow)
       // .pipe(concat('be-table.min.js'))
