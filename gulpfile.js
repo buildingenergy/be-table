@@ -1,6 +1,7 @@
 // sampled from https://github.com/oblador/angular-scroll/blob/master/gulpfile.js
 var gulp   = require('gulp');
 
+require('harmonize')()
 var babel = require('gulp-babel');
 var concat = require('gulp-concat');
 var del = require('del');
