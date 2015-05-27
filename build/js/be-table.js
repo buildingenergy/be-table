@@ -1,11 +1,5 @@
 (function(){
-"use strict";
-var require = require || function() {};
-"use strict";
-
-// var require = require || function() {};
-// var module = module || {};
-"use strict";
+'use strict';
 
 function getNamespace() {
   /**
@@ -36,8 +30,6 @@ function getOrCall(x) {
   }
 }
 /* jshint ignore:start */
-
-'use strict';
 
 var formatters = {};
 
@@ -459,6 +451,7 @@ var formatters = {};
   ns.dateRenderer = dateRenderer;
 })(formatters);
 /* jshint ignore:end */
+
 /**
  * BETable react component and table library
  *
@@ -526,10 +519,8 @@ var formatters = {};
  *   };
  */
 
-"use strict";
-
 var BETable = React.createClass({
-  displayName: "BETable",
+  displayName: 'BETable',
 
   propTypes: {
     columns: React.PropTypes.array.isRequired,
@@ -541,7 +532,7 @@ var BETable = React.createClass({
   },
   getDefaultProps: function getDefaultProps() {
     return {
-      objectname: "rows",
+      objectname: 'rows',
       customTypes: {}
     };
   },
@@ -550,13 +541,13 @@ var BETable = React.createClass({
     var _this = this;
 
     var normalFilter = function normalFilter(col, xaxhz) {
-      return React.createElement("input", { type: "text",
+      return React.createElement('input', { type: 'text',
         name: col.key,
         onChange: function (ev) {
           return _this.filterCallback(ev.target.name, ev.target.value);
         },
-        className: "form-control input-sm show",
-        required: "true",
+        className: 'form-control input-sm show',
+        required: 'true',
         placeholder: col.title });
     };
 
@@ -565,35 +556,35 @@ var BETable = React.createClass({
      */
     var makeRangeFilter = function makeRangeFilter(type) {
       return function (col) {
-        var minKey = col.key + "__gte";
-        var maxKey = col.key + "__lte";
+        var minKey = col.key + '__gte';
+        var maxKey = col.key + '__lte';
 
         return React.createElement(
-          "div",
+          'div',
           null,
           React.createElement(
-            "div",
-            { className: "col-xs-6" },
-            React.createElement("input", { type: type,
+            'div',
+            { className: 'col-xs-6' },
+            React.createElement('input', { type: type,
               name: minKey,
               onChange: function (ev) {
                 return _this.filterCallback(ev.target.name, ev.target.value);
               },
-              className: "form-control input-sm",
-              required: "true",
-              placeholder: "Min" })
+              className: 'form-control input-sm',
+              required: 'true',
+              placeholder: 'Min' })
           ),
           React.createElement(
-            "div",
-            { className: "col-xs-6" },
-            React.createElement("input", { type: type,
+            'div',
+            { className: 'col-xs-6' },
+            React.createElement('input', { type: type,
               name: maxKey,
               onChange: function (ev) {
                 return _this.filterCallback(ev.target.name, ev.target.value);
               },
-              className: "form-control input-sm",
-              required: "true",
-              placeholder: "Max" })
+              className: 'form-control input-sm',
+              required: 'true',
+              placeholder: 'Max' })
           )
         );
       };
@@ -603,17 +594,17 @@ var BETable = React.createClass({
       string: {},
       number: {
         filter: {
-          renderer: makeRangeFilter("number")
+          renderer: makeRangeFilter('number')
         },
         cell: {
-          className: "column_head scroll_columns is_aligned_right",
+          className: 'column_head scroll_columns is_aligned_right',
           renderer: function renderer(val) {
             return formatters.numberRenderer(val, 0);
           } }
       },
       year: {
         filter: {
-          renderer: makeRangeFilter("number")
+          renderer: makeRangeFilter('number')
         },
         cell: {
           renderer: function renderer(val) {
@@ -622,7 +613,7 @@ var BETable = React.createClass({
       },
       date: {
         filter: {
-          renderer: makeRangeFilter("date")
+          renderer: makeRangeFilter('date')
         },
         cell: {
           renderer: function renderer(val) {
@@ -632,7 +623,7 @@ var BETable = React.createClass({
       },
       multiselector: {
         header: {
-          className: "check",
+          className: 'check',
           renderer: function renderer(col, state) {
             var checked = state.selectAll;
             var handler = function handler(ev) {
@@ -640,15 +631,15 @@ var BETable = React.createClass({
               _this.selectAllCallback(node.checked);
               return false;
             };
-            return React.createElement("input", { type: "checkbox",
+            return React.createElement('input', { type: 'checkbox',
               onChange: handler,
               checked: checked });
           }
         },
         filter: {
-          className: "check" },
+          className: 'check' },
         cell: {
-          className: "check",
+          className: 'check',
           renderer: function renderer(val, row, col, opts) {
             var checked = opts.isSelectedRow;
             var handler = function handler(ev) {
@@ -656,7 +647,7 @@ var BETable = React.createClass({
               _this.rowCallback(row, node.checked);
               return false;
             };
-            return React.createElement("input", { type: "checkbox",
+            return React.createElement('input', { type: 'checkbox',
               onChange: handler,
               checked: checked });
           }
@@ -669,17 +660,17 @@ var BETable = React.createClass({
     var completeType = function completeType(type) {
       return _.defaults(type, {
         cell: {
-          className: "column_head scroll_columns",
+          className: 'column_head scroll_columns',
           renderer: function renderer(val) {
             return val;
           } },
         header: {
-          className: "column_head scroll_columns",
+          className: 'column_head scroll_columns',
           renderer: function renderer(col) {
             return col.title;
           } },
         filter: {
-          className: "sub_head scroll_columns",
+          className: 'sub_head scroll_columns',
           renderer: normalFilter } });
     };
 
@@ -711,7 +702,7 @@ var BETable = React.createClass({
         ascending: ascending },
       currentPage: 1
     }, function () {
-      this.props.callback(this.state, { eventType: "columnSorted" });
+      this.props.callback(this.state, { eventType: 'columnSorted' });
     });
   },
 
@@ -720,13 +711,13 @@ var BETable = React.createClass({
       previousState.searchFilters[key] = val;
       return { searchFilters: previousState.searchFilters, currentPage: 1 };
     }, function () {
-      this.props.callback(this.state, { eventType: "filterChanged" });
+      this.props.callback(this.state, { eventType: 'filterChanged' });
     });
   },
 
   paginationCallback: function paginationCallback(state) {
     this.setState(state, function () {
-      this.props.callback(this.state, { eventType: "pagination" });
+      this.props.callback(this.state, { eventType: 'pagination' });
     });
   },
 
@@ -747,7 +738,7 @@ var BETable = React.createClass({
         selectedRows: rows
       };
     }, function () {
-      this.props.callback(this.state, { eventType: "rowClicked" });
+      this.props.callback(this.state, { eventType: 'rowClicked' });
     });
   },
 
@@ -759,7 +750,7 @@ var BETable = React.createClass({
         selectAll: !prevState.selectAll
       };
     }, function () {
-      this.props.callback(this.state, { eventType: "selectAllToggled" });
+      this.props.callback(this.state, { eventType: 'selectAllToggled' });
     });
   },
 
@@ -799,7 +790,7 @@ var BETable = React.createClass({
       return React.createElement(
         SearchFilter,
         { className: getOrCall(builder.className, col) },
-        getOrCall(builder.renderer, col, "booboo")
+        getOrCall(builder.renderer, col, 'booboo')
       );
     }).bind(this));
 
@@ -810,30 +801,30 @@ var BETable = React.createClass({
     var numberOfObjects = this.props.searchmeta.totalMatchCount || this.props.searchmeta.number_matching_search;
 
     return React.createElement(
-      "div",
+      'div',
       null,
       React.createElement(
-        "div",
-        { className: "vert_table_scroll_container" },
+        'div',
+        { className: 'vert_table_scroll_container' },
         React.createElement(
-          "table",
-          { className: "table table-striped sortable" },
+          'table',
+          { className: 'table table-striped sortable' },
           React.createElement(
-            "thead",
+            'thead',
             null,
             React.createElement(
-              "tr",
+              'tr',
               null,
               headers
             ),
             React.createElement(
-              "tr",
-              { className: "sub_head" },
+              'tr',
+              { className: 'sub_head' },
               searchFilters
             )
           ),
           React.createElement(
-            "tbody",
+            'tbody',
             null,
             rows
           )
@@ -846,14 +837,14 @@ var BETable = React.createClass({
           numberPerPage: this.state.numberPerPage,
           numberOfObjects: numberOfObjects,
           paginationCallback: this.paginationCallback },
-        " "
+        ' '
       )
     );
   }
 });
 
 var Header = React.createClass({
-  displayName: "Header",
+  displayName: 'Header',
 
   propTypes: {
     column: React.PropTypes.object.isRequired,
@@ -868,23 +859,23 @@ var Header = React.createClass({
     var content = undefined;
     var column = this.props.column;
     if (column === this.props.sorting.column) {
-      classString += " sorted";
+      classString += ' sorted';
       if (this.props.sorting.ascending) {
-        classString += " sort_asc";
+        classString += ' sort_asc';
       } else {
-        classString += " sort_desc";
+        classString += ' sort_desc';
       }
     }
 
-    if (column.type == "multiselector") {
-      classString += " check";
-      content = React.createElement("input", { type: "checkbox" });
+    if (column.type == 'multiselector') {
+      classString += ' check';
+      content = React.createElement('input', { type: 'checkbox' });
     } else {
-      classString += " column_head scroll_columns";
+      classString += ' column_head scroll_columns';
       content = this.props.column.title;
     }
     return React.createElement(
-      "th",
+      'th',
       { className: classString, onClick: this.handleClick },
       this.props.children
     );
@@ -901,22 +892,22 @@ var Header = React.createClass({
  *  - add blank and protected filters
  */
 var SearchFilter = React.createClass({
-  displayName: "SearchFilter",
+  displayName: 'SearchFilter',
 
   render: function render() {
     var content = undefined;
-    var thClassString = "sub_head scroll_columns";
+    var thClassString = 'sub_head scroll_columns';
 
     return React.createElement(
-      "th",
-      { className: thClassString + " " + this.props.className },
+      'th',
+      { className: thClassString + ' ' + this.props.className },
       this.props.children
     );
   }
 });
 
 var Row = React.createClass({
-  displayName: "Row",
+  displayName: 'Row',
 
   propTypes: {
     row: React.PropTypes.object.isRequired,
@@ -940,8 +931,8 @@ var Row = React.createClass({
       );
     }).bind(this));
     return React.createElement(
-      "tr",
-      { className: this.props.isSelectedRow ? "selected-row" : "" },
+      'tr',
+      { className: this.props.isSelectedRow ? 'selected-row' : '' },
       row
     );
   }
@@ -952,7 +943,7 @@ var Row = React.createClass({
  *   Allows custom React elements to be returned if set in BETable.types
  */
 var Cell = React.createClass({
-  displayName: "Cell",
+  displayName: 'Cell',
 
   propTypes: {
     className: React.PropTypes.string.isRequired,
@@ -962,10 +953,10 @@ var Cell = React.createClass({
   render: function render() {
     var classString = this.props.className;
     if (this.props.isSorted) {
-      classString += " sorted";
+      classString += ' sorted';
     }
     return React.createElement(
-      "td",
+      'td',
       { className: classString },
       this.props.children
     );
@@ -976,7 +967,7 @@ var Cell = React.createClass({
  * pagination footer
  */
 var TableFooter = React.createClass({
-  displayName: "TableFooter",
+  displayName: 'TableFooter',
 
   propTypes: {
     numberPerPageOptions: React.PropTypes.array,
@@ -1009,7 +1000,7 @@ var TableFooter = React.createClass({
   render: function render() {
     var options = this.props.numberPerPageOptions.map((function (opt) {
       return React.createElement(
-        "option",
+        'option',
         { value: opt },
         opt
       );
@@ -1017,77 +1008,77 @@ var TableFooter = React.createClass({
     var numberOfPages = this.numberOfPages();
     var pageStart = (this.props.currentPage - 1) * this.props.numberPerPage + 1;
     var pageEnd = this.props.currentPage === numberOfPages ? this.props.numberOfObjects : this.props.currentPage * this.props.numberPerPage;
-    var prevDisabled = this.props.currentPage <= 1 ? "disabled" : "";
-    var prevStyle = this.props.currentPage <= 1 ? {} : { cursor: "pointer" };
-    var nextDisabled = this.props.currentPage === numberOfPages ? "disabled" : "";
-    var nextStyle = this.props.currentPage === numberOfPages ? {} : { cursor: "pointer" };
+    var prevDisabled = this.props.currentPage <= 1 ? 'disabled' : '';
+    var prevStyle = this.props.currentPage <= 1 ? {} : { cursor: 'pointer' };
+    var nextDisabled = this.props.currentPage === numberOfPages ? 'disabled' : '';
+    var nextStyle = this.props.currentPage === numberOfPages ? {} : { cursor: 'pointer' };
 
     return React.createElement(
-      "div",
-      { className: "table_footer" },
+      'div',
+      { className: 'table_footer' },
       React.createElement(
-        "div",
-        { className: "display_number_entries col-sm-3 col-md-3" },
+        'div',
+        { className: 'display_number_entries col-sm-3 col-md-3' },
         React.createElement(
-          "div",
-          { className: "display_number_entries_text" },
-          "Display:"
+          'div',
+          { className: 'display_number_entries_text' },
+          'Display:'
         ),
         React.createElement(
-          "div",
-          { className: "display_number_entries_select" },
+          'div',
+          { className: 'display_number_entries_select' },
           React.createElement(
-            "select",
-            { className: "form-control input-sm col-xs-2", onChange: this.changePagination },
+            'select',
+            { className: 'form-control input-sm col-xs-2', onChange: this.changePagination },
             options
           )
         ),
         React.createElement(
-          "div",
-          { className: "display_number_entries_text" },
+          'div',
+          { className: 'display_number_entries_text' },
           this.props.objectName
         )
       ),
       React.createElement(
-        "div",
-        { className: "counts col-sm-6 col-md-6" },
+        'div',
+        { className: 'counts col-sm-6 col-md-6' },
         React.createElement(
-          "span",
+          'span',
           null,
-          "Showing ",
+          'Showing ',
           pageStart,
-          " to ",
+          ' to ',
           pageEnd,
-          " of ",
+          ' of ',
           this.props.numberOfObjects,
-          " ",
+          ' ',
           this.props.objectName
         )
       ),
       React.createElement(
-        "div",
-        { className: "pager_container col-sm-3 col-md-3" },
+        'div',
+        { className: 'pager_container col-sm-3 col-md-3' },
         React.createElement(
-          "ul",
-          { className: "pager" },
+          'ul',
+          { className: 'pager' },
           React.createElement(
-            "li",
+            'li',
             { className: prevDisabled },
             React.createElement(
-              "a",
+              'a',
               { style: prevStyle, onClick: this.prevPage },
-              React.createElement("i", { className: "fa fa-angle-double-left" }),
-              " Previous"
+              React.createElement('i', { className: 'fa fa-angle-double-left' }),
+              ' Previous'
             )
           ),
           React.createElement(
-            "li",
+            'li',
             { className: nextDisabled },
             React.createElement(
-              "a",
+              'a',
               { style: nextStyle, onClick: this.nextPage },
-              "Next ",
-              React.createElement("i", { className: "fa fa-angle-double-right" })
+              'Next ',
+              React.createElement('i', { className: 'fa fa-angle-double-right' })
             )
           )
         )
@@ -1097,7 +1088,7 @@ var TableFooter = React.createClass({
 });
 
 // last step add the react component to the mix
-getNamespace("BE", "Table").BETable = BETable;
+getNamespace('BE', 'Table').BETable = BETable;
 
 try {
   module.exports = {

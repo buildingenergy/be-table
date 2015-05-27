@@ -15,7 +15,6 @@ var wrap = require('gulp-wrap');
 
 var filePaths = {
   javascript: [
-    'src/preamble.js',
     'src/utils.js',
     'src/formatters.js',
     'src/be-table.jsx',
@@ -28,7 +27,7 @@ var swallow = notify.onError(function(err) {
 });
 
 var wrapText = [
-  '(function(){\n"use strict";\nvar require = require || function() {};\n', // prepend
+  '(function(){\n', // prepend
   '\n})();', // append
 ];
 
@@ -36,8 +35,8 @@ var wrapText = [
 var jsBuildFlow = function(outpath) {
   return lazypipe()
   // .pipe(react, {harmony: true})
-  // .pipe(babel, {modules: 'common'})
   .pipe(concat, outpath)
+  .pipe(babel)
   .pipe(wrap, wrapText[0] + '<%= contents %>' + wrapText[1]);
 }
 
@@ -50,7 +49,7 @@ gulp.task('compress', ['clean'], function () {
   // development version
   gulp.src(filePaths.javascript)
     // .pipe(react({harmony: true})).on('error', swallow)
-    .pipe(babel({modules: null})).on('error', swallow)
+    // .pipe(babel({modules: null})).on('error', swallow)
     .pipe(jsBuildFlow('be-table.js')())
     // .pipe(babel()).on('error', swallow)
     // .pipe(concat('be-table.js'))
@@ -61,7 +60,7 @@ gulp.task('compress', ['clean'], function () {
   gulp.src(filePaths.javascript)
     .pipe(sourcemaps.init())
       // .pipe(react({harmony: true})).on('error', swallow)
-      .pipe(babel({modules: null})).on('error', swallow)
+      // .pipe(babel({modules: null})).on('error', swallow)
       .pipe(jsBuildFlow('be-table.min.js')())
       // .pipe(babel()).on('error', swallow)
       // .pipe(concat('be-table.min.js'))
