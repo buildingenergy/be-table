@@ -1,6 +1,7 @@
 // sampled from https://github.com/oblador/angular-scroll/blob/master/gulpfile.js
 var gulp   = require('gulp');
 
+var babel = require('gulp-babel');
 var concat = require('gulp-concat');
 var del = require('del');
 var jshint = require('gulp-jshint');
@@ -28,6 +29,7 @@ var swallow = notify.onError(function(err) {
 var jsBuildFlow = function(outpath) {
   return lazypipe()
   // .pipe(react, {harmony: true})
+  .pipe(babel)
   .pipe(concat, outpath)
   .pipe(wrap, '(function(){\n"use strict";\n<%= contents %>\n})();');
 }
@@ -42,13 +44,20 @@ gulp.task('compress', ['clean'], function () {
   gulp.src(filePaths.javascript)
     .pipe(react({harmony: true})).on('error', swallow)
     .pipe(jsBuildFlow('be-table.js')())
+    // .pipe(babel()).on('error', swallow)
+    // .pipe(concat('be-table.js'))
+    // .pipe(wrap('(function(){\n"use strict";\n<%= contents %>\n})();'))
     .pipe(gulp.dest('build/js'));
 
   // minified version
   gulp.src(filePaths.javascript)
     .pipe(sourcemaps.init())
+      .pipe(react({harmony: true})).on('error', swallow)
       .pipe(jsBuildFlow('be-table.min.js')())
-      .pipe(uglify())
+      // .pipe(babel()).on('error', swallow)
+      // .pipe(concat('be-table.min.js'))
+      // .pipe(wrap('(function(){\n"use strict";\n<%= contents %>\n})();'))
+      .pipe(uglify()).on('error', swallow)
     .pipe(sourcemaps.write('./'))
     .pipe(gulp.dest('build/js'));
 });
