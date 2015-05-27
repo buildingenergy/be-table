@@ -669,7 +669,6 @@ var BETable = React.createClass({displayName: "BETable",
       });
     };
 
-
     let allTypes = _.mapValues(mergedTypes, completeType);
 
     return allTypes;
@@ -790,7 +789,7 @@ var BETable = React.createClass({displayName: "BETable",
     }.bind(this));
 
     var rows = this.props.rows.map(function (row) {
-      return React.createElement(Row, {row: row, isSelectedRow: this.isSelectedRow(row), columns: columnDefs, sorting: this.state.sorting, dataTypes: this.getTypes(), key: row.id});
+      return React.createElement(Row, {row: row, isSelectedRow: this.isSelectedRow(row), columns: columnDefs, sorting: this.state.sorting, dataTypes: types, key: row.id});
     }.bind(this));
 
     var numberOfObjects = this.props.searchmeta.totalMatchCount || this.props.searchmeta.number_matching_search;
@@ -894,14 +893,18 @@ var Row = React.createClass({displayName: "Row",
     dataTypes: React.PropTypes.object.isRequired
   },
   render: function() {
-    var row = this.props.columns.map(function (c) {
-      var isSorted = c === this.props.sorting.column;
+    var row = this.props.columns.map(function (col) {
+      var isSorted = col === this.props.sorting.column;
+      let cellValue = this.props.row[col.key];
+      let cellBuilder = this.props.dataTypes[col.type].cell;
+      let content = getOrCall(cellBuilder.renderer, cellValue, this.props.row, col, {isSelectedRow: this.props.isSelectedRow});
+      let className = getOrCall(cellBuilder.className, col);
       return (
-        React.createElement(Cell, {column: c, 
-              row: this.props.row, 
-              isSorted: isSorted, 
+        React.createElement(Cell, {isSorted: isSorted, 
               isSelectedRow: this.props.isSelectedRow, 
-              dataTypes: this.props.dataTypes})
+              className: className}, 
+          content
+        )
       );
     }.bind(this));
     return (
@@ -918,27 +921,17 @@ var Row = React.createClass({displayName: "Row",
  */
 var Cell = React.createClass({displayName: "Cell",
   propTypes: {
-    column: React.PropTypes.object.isRequired,
-    row: React.PropTypes.object.isRequired,
+    className: React.PropTypes.string.isRequired,
     isSorted: React.PropTypes.bool,
-    isSelectedRow: React.PropTypes.bool,
-    dataTypes: React.PropTypes.object.isRequired
+    isSelectedRow: React.PropTypes.bool
   },
   render: function () {
-    let classString = "scroll_columns is_aligned_left";
+    let classString = this.props.className;
     if (this.props.isSorted) {
       classString += " sorted";
     }
-    let cellValue = this.props.row[this.props.column.key];
-    let type = this.props.column.type || "string";
-
-    if (_.has(this.props.dataTypes, type)) {
-      let builder = (this.props.dataTypes[type].cell);
-      classString += " " + getOrCall(builder.className, this.props.column);
-      cellValue = getOrCall(builder.renderer, cellValue, this.props.row, this.props.column, {isSelectedRow: this.props.isSelectedRow});
-    }
     return (
-      React.createElement("td", {className: classString}, cellValue)
+      React.createElement("td", {className: classString}, this.props.children)
     );
   }
 });
