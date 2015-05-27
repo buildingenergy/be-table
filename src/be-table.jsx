@@ -66,6 +66,9 @@
  *   };
  */
 
+var React = window.React;
+var _ = window._;  // lodash
+
 
 var BETable = React.createClass({
   propTypes: {
