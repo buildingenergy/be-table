@@ -135,7 +135,7 @@ var BETable = React.createClass({
           renderer: makeRangeFilter('number')
         },
         cell: {
-          className: "column_head scroll_columns is_aligned_right",
+          className: "scroll_columns is_aligned_right",
           renderer: function(val) {
             return formatters.numberRenderer(val, 0);
           },
@@ -205,7 +205,7 @@ var BETable = React.createClass({
     var completeType = function(type) {
       return _.defaults(type, {
         cell: {
-          className: "column_head scroll_columns",
+          className: "scroll_columns",
           renderer: (val) => val,
         },
         header: {
@@ -394,15 +394,6 @@ var Header = React.createClass({
       }
     }
 
-    if (column.type == 'multiselector') {
-      classString += " check";
-      content = (
-        <input type="checkbox" />
-      );
-    } else {
-      classString += " column_head scroll_columns";
-      content = this.props.column.title;
-    }
     return (
       <th className={classString} onClick={this.handleClick}>
         {this.props.children}
