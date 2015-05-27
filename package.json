@@ -4,7 +4,8 @@
   "description": "",
   "main": "gulpfile.js",
   "dependencies": {
-    "gulp": "^3.8.11"
+    "gulp": "^3.8.11",
+    "jest": "^0.1.40"
   },
   "devDependencies": {
     "del": "^1.2.0",
