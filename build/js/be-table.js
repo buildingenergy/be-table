@@ -455,21 +455,23 @@ var formatters = {};
 })(formatters);
 /* jshint ignore:end */
 
-var normalFilter = function normalFilter(col) {
-  return React.createElement('input', { type: 'text',
-    name: col.key,
-    onChange: function (ev) {
-      return undefined.filterCallback(ev.target.name, ev.target.value);
-    },
-    className: 'form-control input-sm show',
-    required: 'true',
-    placeholder: col.title });
+var makeNormalFilter = function makeNormalFilter(filterCallback) {
+  return function (col) {
+    return React.createElement('input', { type: 'text',
+      name: col.key,
+      onChange: function (ev) {
+        return filterCallback(ev.target.name, ev.target.value);
+      },
+      className: 'form-control input-sm show',
+      required: 'true',
+      placeholder: col.title });
+  };
 };
 
 /** Convenience function that, given an input type, returns a function
  *  that takes a col and renders a range filter
  */
-var makeRangeFilter = function makeRangeFilter(type) {
+var makeRangeFilter = function makeRangeFilter(type, filterCallback) {
   return function (col) {
     var minKey = col.key + '__gte';
     var maxKey = col.key + '__lte';
@@ -483,7 +485,7 @@ var makeRangeFilter = function makeRangeFilter(type) {
         React.createElement('input', { type: type,
           name: minKey,
           onChange: function (ev) {
-            return undefined.filterCallback(ev.target.name, ev.target.value);
+            return filterCallback(ev.target.name, ev.target.value);
           },
           className: 'form-control input-sm',
           required: 'true',
@@ -495,7 +497,7 @@ var makeRangeFilter = function makeRangeFilter(type) {
         React.createElement('input', { type: type,
           name: maxKey,
           onChange: function (ev) {
-            return undefined.filterCallback(ev.target.name, ev.target.value);
+            return filterCallback(ev.target.name, ev.target.value);
           },
           className: 'form-control input-sm',
           required: 'true',
@@ -505,73 +507,75 @@ var makeRangeFilter = function makeRangeFilter(type) {
   };
 };
 
-var defaultTypes = {
-  hidden: {
-    header: { className: 'hidden' },
-    filter: { className: 'hidden' },
-    cell: { className: 'hidden' } },
-  string: {},
-  number: {
-    filter: {
-      renderer: makeRangeFilter('number')
+var defaultTypes = function defaultTypes(table) {
+  return {
+    hidden: {
+      header: { className: 'hidden' },
+      filter: { className: 'hidden' },
+      cell: { className: 'hidden' } },
+    string: {},
+    number: {
+      filter: {
+        renderer: makeRangeFilter('number', table.filterCallback)
+      },
+      cell: {
+        className: 'scroll_columns is_aligned_right',
+        renderer: function renderer(val) {
+          return formatters.numberRenderer(val, 0);
+        } }
     },
-    cell: {
-      className: 'scroll_columns is_aligned_right',
-      renderer: function renderer(val) {
-        return formatters.numberRenderer(val, 0);
-      } }
-  },
-  year: {
-    filter: {
-      renderer: makeRangeFilter('number')
+    year: {
+      filter: {
+        renderer: makeRangeFilter('number', table.filterCallback)
+      },
+      cell: {
+        renderer: function renderer(val) {
+          return formatters.numberRenderer(val, 0, true);
+        } }
     },
-    cell: {
-      renderer: function renderer(val) {
-        return formatters.numberRenderer(val, 0, true);
-      } }
-  },
-  date: {
-    filter: {
-      renderer: makeRangeFilter('date')
+    date: {
+      filter: {
+        renderer: makeRangeFilter('date', table.filterCallback)
+      },
+      cell: {
+        renderer: function renderer(val) {
+          return formatters.dateRenderer(val);
+        }
+      }
     },
-    cell: {
-      renderer: function renderer(val) {
-        return formatters.dateRenderer(val);
+    multiselector: {
+      header: {
+        className: 'check',
+        renderer: function renderer(col, state) {
+          var checked = state.selectAll;
+          var handler = function handler(ev) {
+            var node = ev.target;
+            table.selectAllCallback(node.checked);
+            return false;
+          };
+          return React.createElement('input', { type: 'checkbox',
+            onChange: handler,
+            checked: checked });
+        }
+      },
+      filter: {
+        className: 'check' },
+      cell: {
+        className: 'check',
+        renderer: function renderer(val, row, col, opts) {
+          var checked = opts.isSelectedRow;
+          var handler = function handler(ev) {
+            var node = ev.target;
+            table.rowCallback(row, node.checked);
+            return false;
+          };
+          return React.createElement('input', { type: 'checkbox',
+            onChange: handler,
+            checked: checked });
+        }
       }
     }
-  },
-  multiselector: {
-    header: {
-      className: 'check',
-      renderer: function renderer(col, state) {
-        var checked = state.selectAll;
-        var handler = function handler(ev) {
-          var node = ev.target;
-          undefined.selectAllCallback(node.checked);
-          return false;
-        };
-        return React.createElement('input', { type: 'checkbox',
-          onChange: handler,
-          checked: checked });
-      }
-    },
-    filter: {
-      className: 'check' },
-    cell: {
-      className: 'check',
-      renderer: function renderer(val, row, col, opts) {
-        var checked = opts.isSelectedRow;
-        var handler = function handler(ev) {
-          var node = ev.target;
-          undefined.rowCallback(row, node.checked);
-          return false;
-        };
-        return React.createElement('input', { type: 'checkbox',
-          onChange: handler,
-          checked: checked });
-      }
-    }
-  }
+  };
 };
 
 /**
@@ -579,28 +583,30 @@ var defaultTypes = {
  * @param  {object} type The type definition object
  * @return {object}      The fleshed-out type definition
  */
-var completeType = function completeType(type) {
-  return _.defaults(type, {
-    cell: {
-      className: 'scroll_columns',
-      renderer: function renderer(val) {
-        return val;
-      } },
-    header: {
-      className: 'column_head scroll_columns',
-      renderer: function renderer(col) {
-        return col.title;
-      } },
-    filter: {
-      className: 'sub_head scroll_columns',
-      renderer: normalFilter } });
+var completeType = function completeType(filterRenderer) {
+  return function (type) {
+    return _.defaults(type, {
+      cell: {
+        className: 'scroll_columns',
+        renderer: function renderer(val) {
+          return val;
+        } },
+      header: {
+        className: 'column_head scroll_columns',
+        renderer: function renderer(col) {
+          return col.title;
+        } },
+      filter: {
+        className: 'sub_head scroll_columns',
+        renderer: filterRenderer } });
+  };
 };
 
 /** Get default and custom types merged, with missing values filled with defaults */
-var getTableTypes = function getTableTypes(customTypes) {
-
-  var mergedTypes = _.assign({}, defaultTypes, customTypes);
-  var allTypes = _.mapValues(mergedTypes, completeType);
+var getTableTypes = function getTableTypes(table) {
+  var completer = completeType(makeNormalFilter(table.filterCallback));
+  var mergedTypes = _.assign({}, defaultTypes(table), table.props.customTypes);
+  var allTypes = _.mapValues(mergedTypes, completer);
   return allTypes;
 };
 
@@ -628,7 +634,7 @@ var BETable = React.createClass({
   },
 
   buildTypes: function buildTypes() {
-    return getTableTypes(this.props.customTypes);
+    return getTableTypes(this);
   },
 
   getType: function getType(type) {
