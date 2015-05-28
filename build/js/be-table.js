@@ -1,6 +1,9 @@
 (function(){
 'use strict';
 
+var React = window.React;
+var _ = window._; // lodash
+
 function getNamespace() {
   /**
    * Recursively define a nested object on ``window`` without destroying if it exists
@@ -452,12 +455,158 @@ var formatters = {};
 })(formatters);
 /* jshint ignore:end */
 
+var normalFilter = function normalFilter(col) {
+  return React.createElement('input', { type: 'text',
+    name: col.key,
+    onChange: function (ev) {
+      return undefined.filterCallback(ev.target.name, ev.target.value);
+    },
+    className: 'form-control input-sm show',
+    required: 'true',
+    placeholder: col.title });
+};
+
+/** Convenience function that, given an input type, returns a function
+ *  that takes a col and renders a range filter
+ */
+var makeRangeFilter = function makeRangeFilter(type) {
+  return function (col) {
+    var minKey = col.key + '__gte';
+    var maxKey = col.key + '__lte';
+
+    return React.createElement(
+      'div',
+      null,
+      React.createElement(
+        'div',
+        { className: 'col-xs-6' },
+        React.createElement('input', { type: type,
+          name: minKey,
+          onChange: function (ev) {
+            return undefined.filterCallback(ev.target.name, ev.target.value);
+          },
+          className: 'form-control input-sm',
+          required: 'true',
+          placeholder: 'Min' })
+      ),
+      React.createElement(
+        'div',
+        { className: 'col-xs-6' },
+        React.createElement('input', { type: type,
+          name: maxKey,
+          onChange: function (ev) {
+            return undefined.filterCallback(ev.target.name, ev.target.value);
+          },
+          className: 'form-control input-sm',
+          required: 'true',
+          placeholder: 'Max' })
+      )
+    );
+  };
+};
+
+var defaultTypes = {
+  hidden: {
+    header: { className: 'hidden' },
+    filter: { className: 'hidden' },
+    cell: { className: 'hidden' } },
+  string: {},
+  number: {
+    filter: {
+      renderer: makeRangeFilter('number')
+    },
+    cell: {
+      className: 'scroll_columns is_aligned_right',
+      renderer: function renderer(val) {
+        return formatters.numberRenderer(val, 0);
+      } }
+  },
+  year: {
+    filter: {
+      renderer: makeRangeFilter('number')
+    },
+    cell: {
+      renderer: function renderer(val) {
+        return formatters.numberRenderer(val, 0, true);
+      } }
+  },
+  date: {
+    filter: {
+      renderer: makeRangeFilter('date')
+    },
+    cell: {
+      renderer: function renderer(val) {
+        return formatters.dateRenderer(val);
+      }
+    }
+  },
+  multiselector: {
+    header: {
+      className: 'check',
+      renderer: function renderer(col, state) {
+        var checked = state.selectAll;
+        var handler = function handler(ev) {
+          var node = ev.target;
+          undefined.selectAllCallback(node.checked);
+          return false;
+        };
+        return React.createElement('input', { type: 'checkbox',
+          onChange: handler,
+          checked: checked });
+      }
+    },
+    filter: {
+      className: 'check' },
+    cell: {
+      className: 'check',
+      renderer: function renderer(val, row, col, opts) {
+        var checked = opts.isSelectedRow;
+        var handler = function handler(ev) {
+          var node = ev.target;
+          undefined.rowCallback(row, node.checked);
+          return false;
+        };
+        return React.createElement('input', { type: 'checkbox',
+          onChange: handler,
+          checked: checked });
+      }
+    }
+  }
+};
+
+/**
+ * add defaults to unspecified properties of incomplete types
+ * @param  {object} type The type definition object
+ * @return {object}      The fleshed-out type definition
+ */
+var completeType = function completeType(type) {
+  return _.defaults(type, {
+    cell: {
+      className: 'scroll_columns',
+      renderer: function renderer(val) {
+        return val;
+      } },
+    header: {
+      className: 'column_head scroll_columns',
+      renderer: function renderer(col) {
+        return col.title;
+      } },
+    filter: {
+      className: 'sub_head scroll_columns',
+      renderer: normalFilter } });
+};
+
+/** Get default and custom types merged, with missing values filled with defaults */
+var getTableTypes = function getTableTypes(customTypes) {
+
+  var mergedTypes = _.assign({}, defaultTypes, customTypes);
+  var allTypes = _.mapValues(mergedTypes, completeType);
+  return allTypes;
+};
+
 /**
  * BETable react component and table library
  */
-
-var React = window.React;
-var _ = window._; // lodash
 
 var BETable = React.createClass({
   displayName: 'BETable',
@@ -470,153 +619,21 @@ var BETable = React.createClass({
     objectname: React.PropTypes.string,
     customTypes: React.PropTypes.object
   },
+
   getDefaultProps: function getDefaultProps() {
     return {
       objectname: 'rows',
       customTypes: {}
     };
   },
-  /** Get default and custom types merged, with missing values filled with defaults */
-  getTypes: function getTypes() {
-    var _this = this;
 
-    var normalFilter = function normalFilter(col) {
-      return React.createElement('input', { type: 'text',
-        name: col.key,
-        onChange: function (ev) {
-          return _this.filterCallback(ev.target.name, ev.target.value);
-        },
-        className: 'form-control input-sm show',
-        required: 'true',
-        placeholder: col.title });
-    };
+  buildTypes: function buildTypes() {
+    return getTableTypes(this.props.customTypes);
+  },
 
-    /** Convenience function that, given an input type, returns a function
-     *  that takes a col and renders a range filter
-     */
-    var makeRangeFilter = function makeRangeFilter(type) {
-      return function (col) {
-        var minKey = col.key + '__gte';
-        var maxKey = col.key + '__lte';
-
-        return React.createElement(
-          'div',
-          null,
-          React.createElement(
-            'div',
-            { className: 'col-xs-6' },
-            React.createElement('input', { type: type,
-              name: minKey,
-              onChange: function (ev) {
-                return _this.filterCallback(ev.target.name, ev.target.value);
-              },
-              className: 'form-control input-sm',
-              required: 'true',
-              placeholder: 'Min' })
-          ),
-          React.createElement(
-            'div',
-            { className: 'col-xs-6' },
-            React.createElement('input', { type: type,
-              name: maxKey,
-              onChange: function (ev) {
-                return _this.filterCallback(ev.target.name, ev.target.value);
-              },
-              className: 'form-control input-sm',
-              required: 'true',
-              placeholder: 'Max' })
-          )
-        );
-      };
-    };
-
-    var defaultTypes = {
-      string: {},
-      number: {
-        filter: {
-          renderer: makeRangeFilter('number')
-        },
-        cell: {
-          className: 'scroll_columns is_aligned_right',
-          renderer: function renderer(val) {
-            return formatters.numberRenderer(val, 0);
-          } }
-      },
-      year: {
-        filter: {
-          renderer: makeRangeFilter('number')
-        },
-        cell: {
-          renderer: function renderer(val) {
-            return formatters.numberRenderer(val, 0, true);
-          } }
-      },
-      date: {
-        filter: {
-          renderer: makeRangeFilter('date')
-        },
-        cell: {
-          renderer: function renderer(val) {
-            return formatters.dateRenderer(val);
-          }
-        }
-      },
-      multiselector: {
-        header: {
-          className: 'check',
-          renderer: function renderer(col, state) {
-            var checked = state.selectAll;
-            var handler = function handler(ev) {
-              var node = ev.target;
-              _this.selectAllCallback(node.checked);
-              return false;
-            };
-            return React.createElement('input', { type: 'checkbox',
-              onChange: handler,
-              checked: checked });
-          }
-        },
-        filter: {
-          className: 'check' },
-        cell: {
-          className: 'check',
-          renderer: function renderer(val, row, col, opts) {
-            var checked = opts.isSelectedRow;
-            var handler = function handler(ev) {
-              var node = ev.target;
-              _this.rowCallback(row, node.checked);
-              return false;
-            };
-            return React.createElement('input', { type: 'checkbox',
-              onChange: handler,
-              checked: checked });
-          }
-        }
-      }
-    };
-
-    var mergedTypes = _.assign({}, defaultTypes, this.props.customTypes);
-
-    var completeType = function completeType(type) {
-      return _.defaults(type, {
-        cell: {
-          className: 'scroll_columns',
-          renderer: function renderer(val) {
-            return val;
-          } },
-        header: {
-          className: 'column_head scroll_columns',
-          renderer: function renderer(col) {
-            return col.title;
-          } },
-        filter: {
-          className: 'sub_head scroll_columns',
-          renderer: normalFilter } });
-    };
-
-    var allTypes = _.mapValues(mergedTypes, completeType);
-
-    return allTypes;
+  getType: function getType(type) {
+    var types = this.buildTypes();
+    return types[type] || types['hidden'];
   },
 
   getInitialState: function getInitialState() {
@@ -704,12 +721,12 @@ var BETable = React.createClass({
 
   render: function render() {
     var columnDefs = this.props.columns;
-    var types = this.getTypes();
+    var types = this.buildTypes();
 
     var headers = columnDefs.map((function (col) {
-      var _this2 = this;
+      var _this = this;
 
-      var builder = types[col.type].header;
+      var builder = this.getType(col.type).header;
       var className = getOrCall(builder.className, col);
       var content = getOrCall(builder.renderer, col, this.state);
       return React.createElement(
@@ -718,7 +735,7 @@ var BETable = React.createClass({
           column: col,
           className: className,
           handleClick: function () {
-            return _this2.sortingCallback(col);
+            return _this.sortingCallback(col);
           },
           sorting: this.state.sorting },
         content
@@ -726,7 +743,7 @@ var BETable = React.createClass({
     }).bind(this));
 
     var searchFilters = columnDefs.map((function (col) {
-      var builder = types[col.type].filter;
+      var builder = this.getType(col.type).filter;
       return React.createElement(
         SearchFilter,
         { className: getOrCall(builder.className, col) },
@@ -735,7 +752,7 @@ var BETable = React.createClass({
     }).bind(this));
 
     var rows = this.props.rows.map((function (row) {
-      return React.createElement(Row, { row: row, isSelectedRow: this.isSelectedRow(row), columns: columnDefs, sorting: this.state.sorting, dataTypes: types, key: row.id });
+      return React.createElement(Row, { row: row, isSelectedRow: this.isSelectedRow(row), columns: columnDefs, sorting: this.state.sorting, getType: this.getType, key: row.id });
     }).bind(this));
 
     var numberOfObjects = this.props.searchmeta.totalMatchCount || this.props.searchmeta.number_matching_search;
@@ -822,12 +839,6 @@ var Header = React.createClass({
 
 /**
  * SearchFilter: the filter sub header
- * TODO:
- *  - add range filter if column type is date or number or custom
- *  - add date picker to date filter
- *  - add checkbox and checkbox logic (involves checkbox header)
- *  - prevent searching on checkbox column?
- *  - add blank and protected filters
  */
 var SearchFilter = React.createClass({
   displayName: 'SearchFilter',
@@ -851,13 +862,13 @@ var Row = React.createClass({
     row: React.PropTypes.object.isRequired,
     columns: React.PropTypes.array.isRequired,
     sorting: React.PropTypes.object.isRequired,
-    dataTypes: React.PropTypes.object.isRequired
+    getType: React.PropTypes.func.isRequired
   },
   render: function render() {
     var row = this.props.columns.map((function (col) {
       var isSorted = col === this.props.sorting.column;
       var cellValue = this.props.row[col.key];
-      var cellBuilder = this.props.dataTypes[col.type].cell;
+      var cellBuilder = this.props.getType(col.type).cell;
       var content = getOrCall(cellBuilder.renderer, cellValue, this.props.row, col, { isSelectedRow: this.props.isSelectedRow });
       var className = getOrCall(cellBuilder.className, col);
       return React.createElement(
@@ -1061,10 +1072,11 @@ var TableFooter = React.createClass({
 });
 
 // last step add the react component to the mix
-getNamespace('BE', 'Table').BETable = BETable;
-getNamespace('BE', 'Table').Header = Header;
-getNamespace('BE', 'Table').Row = Row;
-getNamespace('BE', 'Table').Cell = Cell;
+var ns = getNamespace('BE', 'Table');
+ns.BETable = BETable;
+ns.Header = Header;
+ns.Row = Row;
+ns.Cell = Cell;
 
 try {
   module.exports = {

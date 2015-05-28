@@ -2,10 +2,6 @@
  * BETable react component and table library
  */
 
-var React = window.React;
-var _ = window._;  // lodash
-
-
 var BETable = React.createClass({
   propTypes: {
     columns: React.PropTypes.array.isRequired,
@@ -15,149 +11,21 @@ var BETable = React.createClass({
     objectname: React.PropTypes.string,
     customTypes: React.PropTypes.object
   },
+
   getDefaultProps: function () {
     return {
       objectname: 'rows',
       customTypes: {}
     };
   },
-  /** Get default and custom types merged, with missing values filled with defaults */
-  getTypes: function () {
 
-    let normalFilter = (col) => {
-      return (
-        <input type="text"
-               name={col.key}
-               onChange={(ev) => this.filterCallback(ev.target.name, ev.target.value)}
-               className="form-control input-sm show"
-               required="true"
-               placeholder={col.title} />
-        )
-    };
+  buildTypes: function() {
+    return getTableTypes(this.props.customTypes);
+  },
 
-    /** Convenience function that, given an input type, returns a function
-     *  that takes a col and renders a range filter
-     */
-    let makeRangeFilter = (type) => (col) => {
-      let minKey = col.key + "__gte";
-      let maxKey = col.key + "__lte";
-
-      return (
-        <div>
-          <div className="col-xs-6">
-            <input type={type}
-                   name={minKey}
-                   onChange={(ev) => this.filterCallback(ev.target.name, ev.target.value)}
-                   className="form-control input-sm"
-                   required="true"
-                   placeholder="Min" />
-          </div>
-          <div className="col-xs-6">
-            <input type={type}
-                   name={maxKey}
-                   onChange={(ev) => this.filterCallback(ev.target.name, ev.target.value)}
-                   className="form-control input-sm"
-                   required="true"
-                   placeholder="Max" />
-          </div>
-        </div>
-      );
-    };
-
-    let defaultTypes = {
-      string: {},
-      number: {
-        filter: {
-          renderer: makeRangeFilter('number')
-        },
-        cell: {
-          className: "scroll_columns is_aligned_right",
-          renderer: function(val) {
-            return formatters.numberRenderer(val, 0);
-          },
-        }
-      },
-      year: {
-        filter: {
-          renderer: makeRangeFilter('number')
-        },
-        cell: {
-          renderer: function(val) {
-            return formatters.numberRenderer(val, 0, true);
-          },
-        }
-      },
-      date: {
-        filter: {
-          renderer: makeRangeFilter('date')
-        },
-        cell: {
-          renderer: function(val) {
-            return formatters.dateRenderer(val);
-          }
-        }
-      },
-      multiselector: {
-        header: {
-          className: "check",
-          renderer: (col, state) => {
-            let checked = state.selectAll;
-            let handler = (ev) => {
-              let node = ev.target;
-              this.selectAllCallback(node.checked);
-              return false;
-            };
-            return (
-              <input type="checkbox"
-                     onChange={handler}
-                     checked={checked}/>
-            );
-          }
-        },
-        filter: {
-          className: "check",
-        },
-        cell: {
-          className: "check",
-          renderer: (val, row, col, opts) => {
-            let checked = opts.isSelectedRow;
-            let handler = (ev) => {
-              let node = ev.target;
-              this.rowCallback(row, node.checked);
-              return false;
-            };
-            return (
-              <input type="checkbox"
-                     onChange={handler}
-                     checked={checked}/>
-            );
-          }
-        }
-      }
-    };
-
-    var mergedTypes = _.assign({}, defaultTypes, this.props.customTypes);
-
-    var completeType = function(type) {
-      return _.defaults(type, {
-        cell: {
-          className: "scroll_columns",
-          renderer: (val) => val,
-        },
-        header: {
-          className: "column_head scroll_columns",
-          renderer: (col) => col.title,
-        },
-        filter: {
-          className: "sub_head scroll_columns",
-          renderer: normalFilter,
-        },
-      });
-    };
-
-    let allTypes = _.mapValues(mergedTypes, completeType);
-
-    return allTypes;
+  getType: function (type) {
+    var types = this.buildTypes();
+    return types[type] || types['hidden'];
   },
 
   getInitialState: function () {
@@ -232,14 +100,14 @@ var BETable = React.createClass({
       return {
         selectedRows: {},
         selectAll: !prevState.selectAll
-      }
+      };
     }, function () {
       this.props.callback(this.state, {eventType: 'selectAllToggled'});
     });
   },
 
   isSelectedRow: function (row) {
-    let selected = _.has(this.state.selectedRows, row.id)
+    let selected = _.has(this.state.selectedRows, row.id);
     if (this.state.selectAll) {
       selected = !selected;
     }
@@ -248,10 +116,10 @@ var BETable = React.createClass({
 
   render: function() {
     let columnDefs = this.props.columns;
-    var types = this.getTypes();
+    var types = this.buildTypes();
 
     var headers = columnDefs.map(function (col) {
-      let builder = types[col.type].header;
+      let builder = this.getType(col.type).header;
       let className = getOrCall(builder.className, col);
       let content = getOrCall(builder.renderer, col, this.state);
       return (
@@ -266,7 +134,7 @@ var BETable = React.createClass({
     }.bind(this));
 
     var searchFilters = columnDefs.map(function (col) {
-      let builder = types[col.type].filter;
+      let builder = this.getType(col.type).filter;
       return (
         <SearchFilter className={getOrCall(builder.className, col)}>
           {getOrCall(builder.renderer, col)}
@@ -275,7 +143,7 @@ var BETable = React.createClass({
     }.bind(this));
 
     var rows = this.props.rows.map(function (row) {
-      return <Row row={row} isSelectedRow={this.isSelectedRow(row)} columns={columnDefs} sorting={this.state.sorting} dataTypes={types} key={row.id}></Row>;
+      return <Row row={row} isSelectedRow={this.isSelectedRow(row)} columns={columnDefs} sorting={this.state.sorting} getType={this.getType} key={row.id}></Row>;
     }.bind(this));
 
     var numberOfObjects = this.props.searchmeta.totalMatchCount || this.props.searchmeta.number_matching_search;
@@ -346,12 +214,6 @@ var Header = React.createClass({
 
 /**
  * SearchFilter: the filter sub header
- * TODO:
- *  - add range filter if column type is date or number or custom
- *  - add date picker to date filter
- *  - add checkbox and checkbox logic (involves checkbox header)
- *  - prevent searching on checkbox column?
- *  - add blank and protected filters
  */
 var SearchFilter = React.createClass({
 
@@ -372,13 +234,13 @@ var Row = React.createClass({
     row: React.PropTypes.object.isRequired,
     columns: React.PropTypes.array.isRequired,
     sorting: React.PropTypes.object.isRequired,
-    dataTypes: React.PropTypes.object.isRequired
+    getType: React.PropTypes.func.isRequired
   },
   render: function() {
     var row = this.props.columns.map(function (col) {
       var isSorted = col === this.props.sorting.column;
       let cellValue = this.props.row[col.key];
-      let cellBuilder = this.props.dataTypes[col.type].cell;
+      let cellBuilder = this.props.getType(col.type).cell;
       let content = getOrCall(cellBuilder.renderer, cellValue, this.props.row, col, {isSelectedRow: this.props.isSelectedRow});
       let className = getOrCall(cellBuilder.className, col);
       return (
@@ -503,10 +365,11 @@ var TableFooter = React.createClass({
 });
 
 // last step add the react component to the mix
-getNamespace('BE', 'Table').BETable = BETable;
-getNamespace('BE', 'Table').Header = Header;
-getNamespace('BE', 'Table').Row = Row;
-getNamespace('BE', 'Table').Cell = Cell;
+var ns = getNamespace('BE', 'Table');
+ns.BETable = BETable;
+ns.Header = Header;
+ns.Row = Row;
+ns.Cell = Cell;
 
 try {
   module.exports = {

@@ -16,12 +16,14 @@ var wrap = require('gulp-wrap');
 
 var filePaths = {
   javascript: [
+    'src/dependencies.js',
     'src/utils.js',
     'src/formatters.js',
+    'src/default-types.jsx',
     'src/be-table.jsx'
   ],
   tests: [
-  '__tests__/*.js'
+    '__tests__/*.js'
   ]
 };
 var testWatchPaths = [].concat(filePaths.javascript, filePaths.tests);
