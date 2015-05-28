@@ -269,7 +269,7 @@ var BETable = React.createClass({
     var searchFilters = columnDefs.map(function (col) {
       let builder = types[col.type].filter;
       return (
-        <SearchFilter className={getOrCall(builder.className, col)}>
+        <SearchFilter className={getOrCall(builder.className, col)} key={col.key}>
           {getOrCall(builder.renderer, col)}
         </SearchFilter>
         );
@@ -385,7 +385,8 @@ var Row = React.createClass({
       return (
         <Cell isSorted={isSorted}
               isSelectedRow={this.props.isSelectedRow}
-              className={className}>
+              className={className}
+              key={col.key}>
           {content}
         </Cell>
       );

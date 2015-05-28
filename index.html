@@ -15,12 +15,12 @@
   </head>
 
   <body ng-app='app' ng-controller="beCtrl">
-    <betable columns="columns"
-             rows="rows"
+    <betable columns="data.columns"
+             rows="data.rows"
              searchmeta="paginationInfo"
              callback="tableCallback"
              custom-types="customTypes"
-             watch-depth="value"></betable>
+             watch-depth="reference"></betable>
   </body>
 
 </html>

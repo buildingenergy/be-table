@@ -778,7 +778,7 @@ var BETable = React.createClass({
       var builder = types[col.type].filter;
       return React.createElement(
         SearchFilter,
-        { className: getOrCall(builder.className, col) },
+        { className: getOrCall(builder.className, col), key: col.key },
         getOrCall(builder.renderer, col)
       );
     }).bind(this));
@@ -912,7 +912,8 @@ var Row = React.createClass({
         Cell,
         { isSorted: isSorted,
           isSelectedRow: this.props.isSelectedRow,
-          className: className },
+          className: className,
+          key: col.key },
         content
       );
     }).bind(this));
