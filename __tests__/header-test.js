@@ -133,9 +133,6 @@ describe('Header', function () {
   it('should call the callback with the column when clicked', function () {
     // arrange
     var content = "City";
-    var callback = function (event, column) {
-      columnFromCallback = column;
-    };
     var mockCallback = jest.genMockFunction();
     var header = renderHeader({
       column: tableAttrs.columns[0],
