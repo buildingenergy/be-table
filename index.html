@@ -8,10 +8,10 @@
     <script src="//cdnjs.cloudflare.com/ajax/libs/react/0.13.3/react.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/lodash-compat/3.9.3/lodash.min.js"></script>
     <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.8/angular.min.js"></script>
-    <script src="../bower_components/ngReact/ngReact.min.js"></script>
+    <script src="bower_components/ngReact/ngReact.min.js"></script>
 
-    <script src="app.js"></script>
-    <script src="../build/js/be-table.js"></script>
+    <script src="demo/app.js"></script>
+    <script src="build/js/be-table.js"></script>
   </head>
 
   <body ng-app='app' ng-controller="beCtrl">
@@ -19,6 +19,7 @@
              rows="rows"
              searchmeta="paginationInfo"
              callback="tableCallback"
+             custom-types="customTypes"
              watch-depth="reference"></betable>
   </body>
 

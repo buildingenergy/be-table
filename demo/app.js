@@ -27,9 +27,12 @@ angular.module('app', ['react'])
         }
       },
       header: { /* similar format to "cell" definition */ },
-    filter: { /* similar format to "cell" definition */ },
+      filter: { /* similar format to "cell" definition */ }
     }
   };
+  var Label = React.createClass({displayName: "Label", render: function () {
+    return React.createElement("span", {className: "label label-success"}, this.props.labelText);
+  }});
 }])
 .directive('betable', function(reactDirective) {
   return reactDirective(window.BE.Table.BETable);
