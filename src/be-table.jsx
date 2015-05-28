@@ -2,10 +2,6 @@
  * BETable react component and table library
  */
 
-var React = window.React;
-var _ = window._;  // lodash
-
-
 var BETable = React.createClass({
   propTypes: {
     columns: React.PropTypes.array.isRequired,

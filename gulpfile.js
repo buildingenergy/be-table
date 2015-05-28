@@ -16,6 +16,7 @@ var wrap = require('gulp-wrap');
 
 var filePaths = {
   javascript: [
+    'src/dependencies.js',
     'src/utils.js',
     'src/formatters.js',
     'src/default-types.js',

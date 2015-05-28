@@ -1,6 +1,9 @@
 (function(){
 'use strict';
 
+var React = window.React;
+var _ = window._; // lodash
+
 function getNamespace() {
   /**
    * Recursively define a nested object on ``window`` without destroying if it exists
@@ -455,9 +458,6 @@ var formatters = {};
 /**
  * BETable react component and table library
  */
-
-var React = window.React;
-var _ = window._; // lodash
 
 var BETable = React.createClass({
   displayName: 'BETable',
