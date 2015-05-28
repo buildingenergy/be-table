@@ -59,15 +59,15 @@ describe('BETable', function () {
 
     tbody = TU.findRenderedDOMComponentWithTag(table, 'tbody')
 
-    TU.Simulate.click(headers[0].getDOMNode());
+    TU.Simulate.click(React.findDOMNode(headers[0]));
     expect(table.state.sorting.column).toBe(tableAttrs.columns[0]);
     expect(table.state.sorting.ascending).toBe(false);
 
-    TU.Simulate.click(headers[0].getDOMNode());
+    TU.Simulate.click(React.findDOMNode(headers[0]));
     expect(table.state.sorting.column).toBe(tableAttrs.columns[0]);
     expect(table.state.sorting.ascending).toBe(true);
 
-    TU.Simulate.click(headers[1].getDOMNode());
+    TU.Simulate.click(React.findDOMNode(headers[1]));
     expect(table.state.sorting.column).toBe(tableAttrs.columns[1]);
     expect(table.state.sorting.ascending).toBe(false);
   });
