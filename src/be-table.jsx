@@ -66,8 +66,8 @@
  *   };
  */
 
-
 var React = window.React;
+var _ = window._;  // lodash
 
 
 var BETable = React.createClass({
@@ -135,7 +135,7 @@ var BETable = React.createClass({
           renderer: makeRangeFilter('number')
         },
         cell: {
-          className: "column_head scroll_columns is_aligned_right",
+          className: "scroll_columns is_aligned_right",
           renderer: function(val) {
             return formatters.numberRenderer(val, 0);
           },
@@ -205,7 +205,7 @@ var BETable = React.createClass({
     var completeType = function(type) {
       return _.defaults(type, {
         cell: {
-          className: "column_head scroll_columns",
+          className: "scroll_columns",
           renderer: (val) => val,
         },
         header: {
@@ -394,15 +394,6 @@ var Header = React.createClass({
       }
     }
 
-    if (column.type == 'multiselector') {
-      classString += " check";
-      content = (
-        <input type="checkbox" />
-      );
-    } else {
-      classString += " column_head scroll_columns";
-      content = this.props.column.title;
-    }
     return (
       <th className={classString} onClick={this.handleClick}>
         {this.props.children}
@@ -572,4 +563,17 @@ var TableFooter = React.createClass({
 
 // last step add the react component to the mix
 getNamespace('BE', 'Table').BETable = BETable;
+getNamespace('BE', 'Table').Header = Header;
+getNamespace('BE', 'Table').Row = Row;
+getNamespace('BE', 'Table').Cell = Cell;
 
+try {
+  module.exports = {
+    BETable: BETable,
+    Header: Header,
+    Row: Row,
+    Cell: Cell,
+  };
+} catch (e) {
+
+}
