@@ -88,7 +88,7 @@ var BETable = React.createClass({
   /** Get default and custom types merged, with missing values filled with defaults */
   getTypes: function () {
 
-    let normalFilter = (col, xaxhz) => {
+    let normalFilter = (col) => {
       return (
         <input type="text"
                name={col.key}
@@ -333,7 +333,7 @@ var BETable = React.createClass({
       let builder = types[col.type].filter;
       return (
         <SearchFilter className={getOrCall(builder.className, col)}>
-          {getOrCall(builder.renderer, col, 'booboo')}
+          {getOrCall(builder.renderer, col)}
         </SearchFilter>
         );
     }.bind(this));
