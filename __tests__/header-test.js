@@ -40,6 +40,12 @@ var renderTable = function(attrs) {
   );
 };
 
+var renderHeader = function(attrs, content) {
+  return TU.renderIntoDocument(
+    React.createElement(BE.Header, attrs, content)
+  );
+};
+
 describe('BETable', function () {
   it('renders headers', function () {
     var table = renderTable(tableAttrs);
@@ -53,5 +59,29 @@ describe('BETable', function () {
 
     expect(headers[1].key).toBe('gfa');
   });
+});
 
-})
+describe('Headers', function () {
+  it('standard display', function () {
+    var content = "City";
+    var header = renderHeader({
+      column: tableAttrs.columns[0],
+      handleClick: _.noop,
+      sorting: {column: tableAttrs.columns[0]}
+    }, content);
+    expect(header.getDOMNode().textContent).toBe(content);
+    expect(header.getDOMNode().className).toBe(" sorted sort_desc");
+  });
+  it('should take a className', function () {
+    var content = "City";
+    var header = renderHeader({
+      column: tableAttrs.columns[0],
+      handleClick: _.noop,
+      sorting: {column: tableAttrs.columns[0]},
+      className: "happy"
+    }, content);
+    expect(header.getDOMNode().textContent).toBe(content);
+    expect(header.getDOMNode().className).toBe("happy sorted sort_desc");
+  });
+});
+

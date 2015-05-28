@@ -312,14 +312,19 @@ var Header = React.createClass({
   propTypes: {
     column : React.PropTypes.object.isRequired,
     handleClick: React.PropTypes.func,
-    sorting: React.PropTypes.object.isRequired
+    sorting: React.PropTypes.object.isRequired,
+    className: React.PropTypes.string
+  },
+  getDefaultProps: function () {
+    return {
+      className: ""
+    };
   },
   handleClick: function (e) {
     this.props.handleClick(e, this.props.column);
   },
   render: function() {
     let classString = this.props.className;
-    let content;
     let column = this.props.column;
     if (column === this.props.sorting.column) {
       classString += " sorted";
