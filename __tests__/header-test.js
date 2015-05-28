@@ -84,4 +84,3 @@ describe('Headers', function () {
     expect(header.getDOMNode().className).toBe("happy sorted sort_desc");
   });
 });
-

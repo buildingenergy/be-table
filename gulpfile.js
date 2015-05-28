@@ -18,9 +18,13 @@ var filePaths = {
   javascript: [
     'src/utils.js',
     'src/formatters.js',
-    'src/be-table.jsx',
+    'src/be-table.jsx'
+  ],
+  tests: [
+  '__tests__/*.js'
   ]
 };
+var testWatchPaths = [].concat(filePaths.javascript, filePaths.tests);
 
 var swallow = notify.onError(function(err) {
   console.error('\nERROR:\n\n', err);
@@ -73,7 +77,7 @@ gulp.task('watch', function() {
 })
 
 gulp.task('watchtest', function() {
-    gulp.watch(filePaths.javascript, ['test']);
+    gulp.watch(testWatchPaths, ['test']);
 })
 
 gulp.task('test', ['build'], function () {
