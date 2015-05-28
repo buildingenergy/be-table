@@ -20,7 +20,7 @@ var BETable = React.createClass({
   },
 
   buildTypes: function() {
-    return getTableTypes(this.props.customTypes);
+    return getTableTypes(this);
   },
 
   getType: function (type) {
