@@ -12,4 +12,4 @@ the table you've been waiting for
 
 ### test
 
-    npm test
+    gulp test
