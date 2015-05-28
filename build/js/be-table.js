@@ -974,7 +974,8 @@ var TableFooter = React.createClass({
   },
   getDefaultProps: function getDefaultProps() {
     return {
-      numberPerPageOptions: [10, 25, 50, 100]
+      numberPerPageOptions: [10, 25, 50, 100],
+      enableFirstLast: true
     };
   },
   changePagination: function changePagination(r) {
@@ -982,6 +983,12 @@ var TableFooter = React.createClass({
   },
   numberOfPages: function numberOfPages() {
     return Math.ceil(this.props.numberOfObjects / this.props.numberPerPage);
+  },
+  firstPage: function firstPage() {
+    this.props.paginationCallback({ currentPage: 1 });
+  },
+  lastPage: function lastPage() {
+    this.props.paginationCallback({ currentPage: this.numberOfPages() });
   },
   nextPage: function nextPage() {
     if (this.props.currentPage < this.numberOfPages()) {
@@ -1008,6 +1015,32 @@ var TableFooter = React.createClass({
     var prevStyle = this.props.currentPage <= 1 ? {} : { cursor: 'pointer' };
     var nextDisabled = this.props.currentPage === numberOfPages ? 'disabled' : '';
     var nextStyle = this.props.currentPage === numberOfPages ? {} : { cursor: 'pointer' };
+    var firstButton;
+    var lastButton;
+    if (this.props.enableFirstLast) {
+      firstButton = React.createElement(
+        'li',
+        { className: prevDisabled },
+        React.createElement(
+          'a',
+          { style: prevStyle, onClick: this.firstPage },
+          React.createElement('i', { className: 'fa fa-angle-double-left' }),
+          React.createElement('i', { className: 'fa fa-angle-double-left' }),
+          ' First'
+        )
+      );
+      lastButton = React.createElement(
+        'li',
+        { className: nextDisabled },
+        React.createElement(
+          'a',
+          { style: nextStyle, onClick: this.lastPage },
+          'Last ',
+          React.createElement('i', { className: 'fa fa-angle-double-right' }),
+          React.createElement('i', { className: 'fa fa-angle-double-right' })
+        )
+      );
+    }
 
     return React.createElement(
       'div',
@@ -1057,6 +1090,7 @@ var TableFooter = React.createClass({
         React.createElement(
           'ul',
           { className: 'pager' },
+          firstButton,
           React.createElement(
             'li',
             { className: prevDisabled },
@@ -1076,7 +1110,8 @@ var TableFooter = React.createClass({
               'Next ',
               React.createElement('i', { className: 'fa fa-angle-double-right' })
             )
-          )
+          ),
+          lastButton
         )
       )
     );
