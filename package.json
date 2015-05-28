@@ -4,6 +4,7 @@
   "description": "",
   "main": "gulpfile.js",
   "dependencies": {
+    "classnames": "^2.1.2",
     "gulp": "^3.8.11",
     "jest": "^0.1.40",
     "jest-cli": "^0.4.5",

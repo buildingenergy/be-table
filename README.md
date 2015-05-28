@@ -31,6 +31,8 @@ node-debug --nodejs --harmony ./node_modules/jest-cli/bin/jest.js --runInBand
 
 ### usage
 
+Requires: React and lodash
+
 ```js
 cols = [
   {key: 'price', title: 'Price', subtitle: '$', type: 'number'},

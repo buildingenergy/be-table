@@ -5,6 +5,8 @@ jest.dontMock('lodash');
 
 var React = window.React = require('react/addons');
 var _ = window._ = require('lodash');
+var classNames = window.classNames = require('classNames');
+
 var BE = require(srcFile);
 var TU = React.addons.TestUtils;
 
@@ -70,7 +72,7 @@ describe('Header', function () {
       sorting: {column: tableAttrs.columns[0]}
     }, content);
     expect(React.findDOMNode(header).textContent).toBe(content);
-    expect(React.findDOMNode(header).className).toBe(" sorted sort_desc");
+    expect(React.findDOMNode(header).className).toBe("sorted sort_desc");
     expect(React.findDOMNode(header).tagName).toBe('TH');
   });
 

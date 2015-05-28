@@ -4,6 +4,7 @@
 
 var React = window.React;
 var _ = window._;  // lodash
+var classNames = window.classNames;
 
 
 var BETable = React.createClass({
@@ -324,19 +325,18 @@ var Header = React.createClass({
     this.props.handleClick(e, this.props.column);
   },
   render: function() {
-    let classString = this.props.className;
+    let classes = {};
     let column = this.props.column;
     if (column === this.props.sorting.column) {
-      classString += " sorted";
-      if (this.props.sorting.ascending) {
-        classString += " sort_asc";
-      } else {
-        classString += " sort_desc";
-      }
+      classes = {
+        sorted: true,
+        sort_asc: this.props.sorting.ascending,
+        sort_desc: !this.props.sorting.ascending,
+      };
     }
 
     return (
-      <th className={classString} onClick={this.handleClick}>
+      <th className={classNames(this.props.className, classes)} onClick={this.handleClick}>
         {this.props.children}
       </th>
     );
@@ -381,6 +381,7 @@ var Row = React.createClass({
       let cellBuilder = this.props.dataTypes[col.type].cell;
       let content = getOrCall(cellBuilder.renderer, cellValue, this.props.row, col, {isSelectedRow: this.props.isSelectedRow});
       let className = getOrCall(cellBuilder.className, col);
+
       return (
         <Cell isSorted={isSorted}
               isSelectedRow={this.props.isSelectedRow}
@@ -459,7 +460,7 @@ var TableFooter = React.createClass({
   },
   render: function () {
     var options = this.props.numberPerPageOptions.map(function (opt) {
-      return <option value={opt}>{opt}</option>;
+      return <option key={opt} value={opt}>{opt}</option>;
     }.bind(this));
     var numberOfPages = this.numberOfPages();
     var pageStart = ((this.props.currentPage - 1) * this.props.numberPerPage) + 1;

@@ -5,6 +5,8 @@ jest.dontMock('lodash');
 
 var React = window.React = require('react/addons');
 var _ = window._ = require('lodash');
+var classNames = window.classNames = require('classNames');
+
 var BE = require(srcFile);
 var TU = React.addons.TestUtils;
 

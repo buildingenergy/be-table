@@ -29,6 +29,54 @@ function getOrCall(x) {
     return x;
   }
 }
+
+/*!
+  Copyright (c) 2015 Jed Watson.
+  Licensed under the MIT License (MIT), see
+  http://jedwatson.github.io/classnames
+*/
+
+(function () {
+  'use strict';
+
+  function classNames() {
+
+    var classes = '';
+
+    for (var i = 0; i < arguments.length; i++) {
+      var arg = arguments[i];
+      if (!arg) continue;
+
+      var argType = typeof arg;
+
+      if ('string' === argType || 'number' === argType) {
+        classes += ' ' + arg;
+      } else if (Array.isArray(arg)) {
+        classes += ' ' + classNames.apply(null, arg);
+      } else if ('object' === argType) {
+        for (var key in arg) {
+          if (arg.hasOwnProperty(key) && arg[key]) {
+            classes += ' ' + key;
+          }
+        }
+      }
+    }
+
+    return classes.substr(1);
+  }
+
+  if (typeof define === 'function' && typeof define.amd === 'object' && define.amd) {
+    // AMD. Register as an anonymous module.
+    define(function () {
+      return classNames;
+    });
+  } else if (typeof module !== 'undefined' && module.exports) {
+    module.exports = classNames;
+  } else {
+    window.classNames = classNames;
+  }
+})();
+
 /* jshint ignore:start */
 
 var formatters = {};
@@ -458,6 +506,7 @@ var formatters = {};
 
 var React = window.React;
 var _ = window._; // lodash
+var classNames = window.classNames;
 
 var BETable = React.createClass({
   displayName: 'BETable',
@@ -801,20 +850,18 @@ var Header = React.createClass({
     this.props.handleClick(e, this.props.column);
   },
   render: function render() {
-    var classString = this.props.className;
+    var classes = {};
     var column = this.props.column;
     if (column === this.props.sorting.column) {
-      classString += ' sorted';
-      if (this.props.sorting.ascending) {
-        classString += ' sort_asc';
-      } else {
-        classString += ' sort_desc';
-      }
+      classes = {
+        sorted: true,
+        sort_asc: this.props.sorting.ascending,
+        sort_desc: !this.props.sorting.ascending };
     }
 
     return React.createElement(
       'th',
-      { className: classString, onClick: this.handleClick },
+      { className: classNames(this.props.className, classes), onClick: this.handleClick },
       this.props.children
     );
   }
@@ -860,6 +907,7 @@ var Row = React.createClass({
       var cellBuilder = this.props.dataTypes[col.type].cell;
       var content = getOrCall(cellBuilder.renderer, cellValue, this.props.row, col, { isSelectedRow: this.props.isSelectedRow });
       var className = getOrCall(cellBuilder.className, col);
+
       return React.createElement(
         Cell,
         { isSorted: isSorted,
@@ -946,7 +994,7 @@ var TableFooter = React.createClass({
     var options = this.props.numberPerPageOptions.map((function (opt) {
       return React.createElement(
         'option',
-        { value: opt },
+        { key: opt, value: opt },
         opt
       );
     }).bind(this));
