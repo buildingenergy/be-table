@@ -46,6 +46,11 @@ describe('BETable', function () {
     var thead = TU.findRenderedDOMComponentWithTag(table, 'thead')
     var headers = thead.props.children[0].props.children;
     expect(headers[0].key).toBe('city');
+    expect(headers[0].props.column.title).toBe('City');
+    expect(headers[0].props.column.type).toBe('string');
+    expect(headers[0].props.column.key).toBe('city');
+    expect(headers[0].props.className).toBe('column_head scroll_columns');
+
     expect(headers[1].key).toBe('gfa');
   });
 

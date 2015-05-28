@@ -72,7 +72,11 @@ gulp.task('watch', function() {
     gulp.watch(filePaths.javascript, ['build']);
 })
 
-gulp.task('test', function () {
+gulp.task('watchtest', function() {
+    gulp.watch(filePaths.javascript, ['test']);
+})
+
+gulp.task('test', ['build'], function () {
   return gulp.src('__tests__')
     .pipe(jest({
       testDirectoryName: "__tests__",
