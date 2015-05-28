@@ -18,6 +18,7 @@ var filePaths = {
   javascript: [
     'src/utils.js',
     'src/formatters.js',
+    'src/default-types.js',
     'src/be-table.jsx'
   ],
   tests: [
