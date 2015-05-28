@@ -14,25 +14,28 @@ angular.module('app', ['react'])
     {item: 'kale', price: 4.34, label: {color: 'green', text: 'Leafy'}},
     {item: 'almonds', price: 5.44, label: {color: 'blue', text: 'Nutty'}},
   ];
-  $scope.tableCallback = function (state) {console.log (state);};
+  $scope.tableCallback = function (state) {
+    $log.info(state);
+  };
   $scope.paginationInfo = {totalMatchCount: 2000};
   $scope.customTypes = {
     label: {
       cell: {
-        className: 'label',
+        className: 'scroll_columns',
         renderer: function(value, row, col, state) {
-          return React.createElement(Label, {
-            color: value.color,
-          }, [value.name]);
+          return React.createElement(Label, {}, [value.text]);
         }
-      },
-      header: { /* similar format to "cell" definition */ },
-      filter: { /* similar format to "cell" definition */ }
+      }
     }
   };
-  var Label = React.createClass({displayName: "Label", render: function () {
-    return React.createElement("span", {className: "label label-success"}, this.props.labelText);
-  }});
+  var Label = React.createClass(
+    {
+      displayName: "Label",
+      render: function () {
+        return React.createElement("span", {className: "label label-success"}, this.props.children);
+      }
+    }
+  );
 }])
 .directive('betable', function(reactDirective) {
   return reactDirective(window.BE.Table.BETable);

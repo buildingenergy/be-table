@@ -681,7 +681,7 @@ var BETable = React.createClass({
   },
 
   sortingCallback: function sortingCallback(obj) {
-    if (!obj.sortable) {
+    if (obj.sortable === false) {
       return;
     }
     var ascending = this.state.sorting.column === obj ? !this.state.sorting.ascending : false;
