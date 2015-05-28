@@ -1,6 +1,6 @@
 /* jshint ignore:start */
 
-var formatters = {};
+window.formatters = window.formatters || {};
 
 (function (ns){
   /**

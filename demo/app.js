@@ -14,17 +14,20 @@ angular.module('app', ['react'])
   $scope.data.rows = [
     {id: 1, item: 'kale', price: 4.34, label: {text: 'Leafy'}},
     {id: 2, item: 'almonds', price: 5.44, label: {text: 'Nutty'}},
-    {id: 3, item: 'strawberries', price: 3.20, label: {text: 'Ripe'}}
+    {id: 3, item: 'strawberries', price: 3.50, label: {text: 'Ripe'}},
+    {id: 4, item: 'apples', price: 14, label: {text: 'Pucker'}},
+    {id: 5, item: 'grapes', price: 1.00, label: {text: 'Red'}},
+    {id: 6, item: 'grapes', price: 1.20, label: {text: 'Green'}},
+    {id: 7, item: 'oranges', price: 2.10, label: {text: 'Cali'}},
+    {id: 8, item: 'oats', price: .20, label: {text: 'Steel'}},
+    {id: 9, item: 'dates', price: 13.20},
+    {id: 10, item: 'granola', price: 7.40, label: {text: 'Honey'}}
   ];
   $scope.tableCallback = function (state, tableEvent) {
     $log.info(state, tableEvent);
     if (tableEvent && tableEvent.eventType && tableEvent.eventType === 'columnSorted') {
-      var temp = _.cloneDeep($scope.data.rows);
-      $scope.data.rows = _.sortBy(temp, state.sorting.column.key);
-      if (state.sorting.ascending) {
-        $scope.data.rows.reverse();
-      }
-      $log.info(_.pluck($scope.data.rows, state.sorting.column.key));
+      // _.sortBy breaks the angular reference to `rows`
+      $scope.data.rows.sort(sortBy(state.sorting.column.key, state.sorting.ascending));
     }
   };
   $scope.paginationInfo = {totalMatchCount: 3};
@@ -38,7 +41,19 @@ angular.module('app', ['react'])
       cell: {
         className: 'scroll_columns',
         renderer: function(value, row, col, state) {
-          return React.createElement(Label, {}, [value.text]);
+          if (_.isEmpty(value)){
+            return "";
+          } else {
+            return React.createElement(Label, {}, [value.text]);
+          }
+        }
+      }
+    },
+    price: {
+      cell: {
+        className: 'scroll_columns',
+        renderer: function (value, row, col, state) {
+          return _.partialRight(window.formatters.numberFormatter, 2, true);
         }
       }
     }
@@ -55,3 +70,34 @@ angular.module('app', ['react'])
 .directive('betable', function(reactDirective) {
   return reactDirective(window.BE.Table.BETable);
 });
+
+
+//http://stackoverflow.com/questions/1129216/sort-array-of-objects-by-property-value-in-javascript
+function sortBy(key, reverse) {
+  // Move smaller items towards the front
+  // or back of the array depending on if
+  // we want to sort the array in reverse
+  // order or not.
+  var moveSmaller = reverse ? 1 : -1;
+
+  // Move larger items towards the front
+  // or back of the array depending on if
+  // we want to sort the array in reverse
+  // order or not.
+  var moveLarger = reverse ? -1 : 1;
+
+  /**
+   * @param  {*} a
+   * @param  {*} b
+   * @return {Number}
+   */
+  return function(a, b) {
+    if (a[key] < b[key]) {
+      return moveSmaller;
+    }
+    if (a[key] > b[key]) {
+      return moveLarger;
+    }
+    return 0;
+  };
+};
