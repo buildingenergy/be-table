@@ -46,7 +46,7 @@ var renderHeader = function(attrs, content) {
   );
 };
 
-describe('BETable', function () {
+describe('BETable headers', function () {
   it('renders headers', function () {
     var table = renderTable(tableAttrs);
     var thead = TU.findRenderedDOMComponentWithTag(table, 'thead')
@@ -61,8 +61,8 @@ describe('BETable', function () {
   });
 });
 
-describe('Headers', function () {
-  it('standard display', function () {
+describe('Header', function () {
+  it('displays a header!', function () {
     var content = "City";
     var header = renderHeader({
       column: tableAttrs.columns[0],
@@ -72,6 +72,7 @@ describe('Headers', function () {
     expect(header.getDOMNode().textContent).toBe(content);
     expect(header.getDOMNode().className).toBe(" sorted sort_desc");
   });
+
   it('should take a className', function () {
     var content = "City";
     var header = renderHeader({
@@ -83,4 +84,69 @@ describe('Headers', function () {
     expect(header.getDOMNode().textContent).toBe(content);
     expect(header.getDOMNode().className).toBe("happy sorted sort_desc");
   });
+
+  it('should show the desc sort class when selected and not ascending', function () {
+    var content = "City";
+    var header = renderHeader({
+      column: tableAttrs.columns[0],
+      handleClick: _.noop,
+      sorting: {
+        column: tableAttrs.columns[0],
+        ascending: false
+      },
+      className: "happy"
+    }, content);
+    expect(header.getDOMNode().textContent).toBe(content);
+    expect(header.getDOMNode().className).toBe("happy sorted sort_desc");
+  });
+
+  it('should show the asc sort class when selected and ascending', function () {
+    var content = "City";
+    var header = renderHeader({
+      column: tableAttrs.columns[0],
+      handleClick: _.noop,
+      sorting: {
+        column: tableAttrs.columns[0],
+        ascending: true
+      },
+      className: "happy"
+    }, content);
+    expect(header.getDOMNode().textContent).toBe(content);
+    expect(header.getDOMNode().className).toBe("happy sorted sort_asc");
+  });
+
+  it('should show no sorting classes when not selected', function () {
+    var content = "City";
+    var header = renderHeader({
+      column: tableAttrs.columns[0],
+      handleClick: _.noop,
+      sorting: {
+        column: tableAttrs.columns[1],
+        ascending: true
+      },
+      className: "happy"
+    }, content);
+    expect(header.getDOMNode().textContent).toBe(content);
+    expect(header.getDOMNode().className).toBe("happy");
+  });
+
+  it('should call the callback with the column when clicked', function () {
+    var content = "City";
+    var columnFromCallback;
+    var callback = function (event, column) {
+      columnFromCallback = column;
+    };
+    var header = renderHeader({
+      column: tableAttrs.columns[0],
+      handleClick: callback,
+      sorting: {
+        column: tableAttrs.columns[1],
+        ascending: true
+      },
+      className: "happy"
+    }, content);
+    TU.Simulate.click(header.getDOMNode());
+    expect(columnFromCallback).toEqual(tableAttrs.columns[0]);
+  });
+
 });
