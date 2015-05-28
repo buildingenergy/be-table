@@ -1085,10 +1085,15 @@ var TableFooter = React.createClass({
 
 // last step add the react component to the mix
 getNamespace('BE', 'Table').BETable = BETable;
+getNamespace('BE', 'Table').Header = Header;
+getNamespace('BE', 'Table').Row = Row;
+getNamespace('BE', 'Table').Cell = Cell;
 
 try {
   module.exports = {
-    BETable: BETable
-  };
+    BETable: BETable,
+    Header: Header,
+    Row: Row,
+    Cell: Cell };
 } catch (e) {}
 })();
