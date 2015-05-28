@@ -454,69 +454,6 @@ var formatters = {};
 
 /**
  * BETable react component and table library
- *
- * Developer QuickStart:
- *   # install react-tools to compile be-table.jsx to be-table.js
- *   npm install -g react-tools
- *   jsx --watch --extension jsx seed/static/seed/js/jsx/ seed/static/seed/js/jsx/
- *
- * TODO:
- *   - add tests
- *   - implement rowCallback
- *   - implement selectedRows state managment
- *   - implemenet select all???
- *   - move tableCallback into search_service for ease of reuse on the seed app
- *   - extend to handle multiple types for table filter and cells: labels, ranges, year_built, extra_data!, checkbox, date, map pin icon
- *   - range filters
- *   - allow filters to be extended just like cells
- *   - move into its beFrontEndComponents
- *   - conformatters into this code at build time, i.e. make the closure at build time and put the pieces into a src dir, like d3, etc.
- *
- * Usage:
- * JS:
- *   cols = [
- *     {key: 'price', title: 'Price', subtitle: '$', type: 'number'},
- *     {key: 'item', title: 'Item', type: 'string'}
- *   ];
- *   rows = [{item: 'kale', price: 4.34}, {item: 'almonds', price: 5.44}];
- *   tableCallback = function (state) {console.log (state);};
- *   paginationInfo = {totalMatchCount: 2000};
- *
- * HTML:
- *   <BETable columns="cols"
- *            rows="rows"
- *            searchmeta="paginationInfo"
- *            callback="tableCallback"
- *            objectname="'items'"
- *            custom-types="customTypes"
- *            watch-depth="reference"></BETable>
- */
-
-/**
- * EXPERIMENTAL, but mostly working!
- * global types that can be extended via plugin
- *
- * renderer can be either a string or function to be called as a renderer.
- *
- * usage:
- *   // basic example
- *   var customTypes = {};
- *   customTypes.year_built = {
- *     renderer: formatters.numberRenderer,
- *     rendererArgs: [0, false]  // no decimals, no commas
- *   };
- *
- *   // custom React components cells
- *   var Label = React.createClass({displayName: "Label", render: function () {
- *    return React.createElement("span", {className: "label label-success"}, this.props.labelText);
- *    }
- *   });
- *   var customTypes = {};
- *   customTypes.label = {
- *     renderer: function (val) {
- *       return React.createElement(Label, {labelText: val});
- *     }
- *   };
  */
 
 var React = window.React;
@@ -543,7 +480,7 @@ var BETable = React.createClass({
   getTypes: function getTypes() {
     var _this = this;
 
-    var normalFilter = function normalFilter(col, xaxhz) {
+    var normalFilter = function normalFilter(col) {
       return React.createElement('input', { type: 'text',
         name: col.key,
         onChange: function (ev) {
@@ -793,7 +730,7 @@ var BETable = React.createClass({
       return React.createElement(
         SearchFilter,
         { className: getOrCall(builder.className, col) },
-        getOrCall(builder.renderer, col, 'booboo')
+        getOrCall(builder.renderer, col)
       );
     }).bind(this));
 
@@ -852,14 +789,19 @@ var Header = React.createClass({
   propTypes: {
     column: React.PropTypes.object.isRequired,
     handleClick: React.PropTypes.func,
-    sorting: React.PropTypes.object.isRequired
+    sorting: React.PropTypes.object.isRequired,
+    className: React.PropTypes.string
+  },
+  getDefaultProps: function getDefaultProps() {
+    return {
+      className: ''
+    };
   },
   handleClick: function handleClick(e) {
     this.props.handleClick(e, this.props.column);
   },
   render: function render() {
     var classString = this.props.className;
-    var content = undefined;
     var column = this.props.column;
     if (column === this.props.sorting.column) {
       classString += ' sorted';

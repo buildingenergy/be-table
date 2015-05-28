@@ -24,7 +24,7 @@ var BETable = React.createClass({
   /** Get default and custom types merged, with missing values filled with defaults */
   getTypes: function () {
 
-    let normalFilter = (col, xaxhz) => {
+    let normalFilter = (col) => {
       return (
         <input type="text"
                name={col.key}
@@ -269,7 +269,7 @@ var BETable = React.createClass({
       let builder = types[col.type].filter;
       return (
         <SearchFilter className={getOrCall(builder.className, col)}>
-          {getOrCall(builder.renderer, col, 'booboo')}
+          {getOrCall(builder.renderer, col)}
         </SearchFilter>
         );
     }.bind(this));
@@ -312,14 +312,19 @@ var Header = React.createClass({
   propTypes: {
     column : React.PropTypes.object.isRequired,
     handleClick: React.PropTypes.func,
-    sorting: React.PropTypes.object.isRequired
+    sorting: React.PropTypes.object.isRequired,
+    className: React.PropTypes.string
+  },
+  getDefaultProps: function () {
+    return {
+      className: ""
+    };
   },
   handleClick: function (e) {
     this.props.handleClick(e, this.props.column);
   },
   render: function() {
     let classString = this.props.className;
-    let content;
     let column = this.props.column;
     if (column === this.props.sorting.column) {
       classString += " sorted";

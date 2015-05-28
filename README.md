@@ -57,6 +57,7 @@ table property (see usage example)
 ## test
 
     gulp test
+    gulp watchtest  # for live reload of tests
 
 
 ## usage
