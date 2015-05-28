@@ -131,22 +131,26 @@ describe('Header', function () {
   });
 
   it('should call the callback with the column when clicked', function () {
+    // arrange
     var content = "City";
-    var columnFromCallback;
     var callback = function (event, column) {
       columnFromCallback = column;
     };
+    var mockCallback = jest.genMockFunction();
     var header = renderHeader({
       column: tableAttrs.columns[0],
-      handleClick: callback,
+      handleClick: mockCallback,
       sorting: {
         column: tableAttrs.columns[1],
         ascending: true
       },
       className: "happy"
     }, content);
+    // act
     TU.Simulate.click(header.getDOMNode());
-    expect(columnFromCallback).toEqual(tableAttrs.columns[0]);
+    // assert
+    expect(mockCallback.mock.calls.length).toBe(1);
+    expect(mockCallback.mock.calls[0][1]).toBe(tableAttrs.columns[0]);
   });
 
 });
