@@ -455,6 +455,155 @@ var formatters = {};
 })(formatters);
 /* jshint ignore:end */
 
+var normalFilter = function normalFilter(col) {
+  return React.createElement('input', { type: 'text',
+    name: col.key,
+    onChange: function (ev) {
+      return undefined.filterCallback(ev.target.name, ev.target.value);
+    },
+    className: 'form-control input-sm show',
+    required: 'true',
+    placeholder: col.title });
+};
+
+/** Convenience function that, given an input type, returns a function
+ *  that takes a col and renders a range filter
+ */
+var makeRangeFilter = function makeRangeFilter(type) {
+  return function (col) {
+    var minKey = col.key + '__gte';
+    var maxKey = col.key + '__lte';
+
+    return React.createElement(
+      'div',
+      null,
+      React.createElement(
+        'div',
+        { className: 'col-xs-6' },
+        React.createElement('input', { type: type,
+          name: minKey,
+          onChange: function (ev) {
+            return undefined.filterCallback(ev.target.name, ev.target.value);
+          },
+          className: 'form-control input-sm',
+          required: 'true',
+          placeholder: 'Min' })
+      ),
+      React.createElement(
+        'div',
+        { className: 'col-xs-6' },
+        React.createElement('input', { type: type,
+          name: maxKey,
+          onChange: function (ev) {
+            return undefined.filterCallback(ev.target.name, ev.target.value);
+          },
+          className: 'form-control input-sm',
+          required: 'true',
+          placeholder: 'Max' })
+      )
+    );
+  };
+};
+
+var defaultTypes = {
+  hidden: {
+    header: { className: 'hidden' },
+    filter: { className: 'hidden' },
+    cell: { className: 'hidden' } },
+  string: {},
+  number: {
+    filter: {
+      renderer: makeRangeFilter('number')
+    },
+    cell: {
+      className: 'scroll_columns is_aligned_right',
+      renderer: function renderer(val) {
+        return formatters.numberRenderer(val, 0);
+      } }
+  },
+  year: {
+    filter: {
+      renderer: makeRangeFilter('number')
+    },
+    cell: {
+      renderer: function renderer(val) {
+        return formatters.numberRenderer(val, 0, true);
+      } }
+  },
+  date: {
+    filter: {
+      renderer: makeRangeFilter('date')
+    },
+    cell: {
+      renderer: function renderer(val) {
+        return formatters.dateRenderer(val);
+      }
+    }
+  },
+  multiselector: {
+    header: {
+      className: 'check',
+      renderer: function renderer(col, state) {
+        var checked = state.selectAll;
+        var handler = function handler(ev) {
+          var node = ev.target;
+          undefined.selectAllCallback(node.checked);
+          return false;
+        };
+        return React.createElement('input', { type: 'checkbox',
+          onChange: handler,
+          checked: checked });
+      }
+    },
+    filter: {
+      className: 'check' },
+    cell: {
+      className: 'check',
+      renderer: function renderer(val, row, col, opts) {
+        var checked = opts.isSelectedRow;
+        var handler = function handler(ev) {
+          var node = ev.target;
+          undefined.rowCallback(row, node.checked);
+          return false;
+        };
+        return React.createElement('input', { type: 'checkbox',
+          onChange: handler,
+          checked: checked });
+      }
+    }
+  }
+};
+
+/**
+ * add defaults to unspecified properties of incomplete types
+ * @param  {object} type The type definition object
+ * @return {object}      The fleshed-out type definition
+ */
+var completeType = function completeType(type) {
+  return _.defaults(type, {
+    cell: {
+      className: 'scroll_columns',
+      renderer: function renderer(val) {
+        return val;
+      } },
+    header: {
+      className: 'column_head scroll_columns',
+      renderer: function renderer(col) {
+        return col.title;
+      } },
+    filter: {
+      className: 'sub_head scroll_columns',
+      renderer: normalFilter } });
+};
+
+/** Get default and custom types merged, with missing values filled with defaults */
+var getTableTypes = function getTableTypes(customTypes) {
+
+  var mergedTypes = _.assign({}, defaultTypes, customTypes);
+  var allTypes = _.mapValues(mergedTypes, completeType);
+  return allTypes;
+};
+
 /**
  * BETable react component and table library
  */
@@ -478,8 +627,12 @@ var BETable = React.createClass({
     };
   },
 
+  buildTypes: function buildTypes() {
+    return getTableTypes(this.props.customTypes);
+  },
+
   getType: function getType(type) {
-    var types = getTableTypes.apply(this);
+    var types = this.buildTypes();
     return types[type] || types['hidden'];
   },
 
@@ -568,7 +721,7 @@ var BETable = React.createClass({
 
   render: function render() {
     var columnDefs = this.props.columns;
-    var types = getTableTypes.apply(this);
+    var types = this.buildTypes();
 
     var headers = columnDefs.map((function (col) {
       var _this = this;

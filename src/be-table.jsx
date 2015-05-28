@@ -19,8 +19,12 @@ var BETable = React.createClass({
     };
   },
 
+  buildTypes: function() {
+    return getTableTypes(this.props.customTypes);
+  },
+
   getType: function (type) {
-    var types = getTableTypes.apply(this);
+    var types = this.buildTypes();
     return types[type] || types['hidden'];
   },
 
@@ -96,14 +100,14 @@ var BETable = React.createClass({
       return {
         selectedRows: {},
         selectAll: !prevState.selectAll
-      }
+      };
     }, function () {
       this.props.callback(this.state, {eventType: 'selectAllToggled'});
     });
   },
 
   isSelectedRow: function (row) {
-    let selected = _.has(this.state.selectedRows, row.id)
+    let selected = _.has(this.state.selectedRows, row.id);
     if (this.state.selectAll) {
       selected = !selected;
     }
@@ -112,7 +116,7 @@ var BETable = React.createClass({
 
   render: function() {
     let columnDefs = this.props.columns;
-    var types = getTableTypes.apply(this);
+    var types = this.buildTypes();
 
     var headers = columnDefs.map(function (col) {
       let builder = this.getType(col.type).header;
