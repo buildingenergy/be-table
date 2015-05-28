@@ -8,7 +8,8 @@ function getNamespace() {
    *   // keeps existing objects intact if extant, otherwise creates empty objects
    */
   var o = window;
-  for (var k of arguments) {
+  for (var i in arguments) {
+    var k = arguments[i];
     o[k] = o[k] || {};
     o = o[k];
   }

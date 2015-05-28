@@ -1,73 +1,9 @@
 /**
  * BETable react component and table library
- *
- * Developer QuickStart:
- *   # install react-tools to compile be-table.jsx to be-table.js
- *   npm install -g react-tools
- *   jsx --watch --extension jsx seed/static/seed/js/jsx/ seed/static/seed/js/jsx/
- *
- * TODO:
- *   - add tests
- *   - implement rowCallback
- *   - implement selectedRows state managment
- *   - implemenet select all???
- *   - move tableCallback into search_service for ease of reuse on the seed app
- *   - extend to handle multiple types for table filter and cells: labels, ranges, year_built, extra_data!, checkbox, date, map pin icon
- *   - range filters
- *   - allow filters to be extended just like cells
- *   - move into its beFrontEndComponents
- *   - conformatters into this code at build time, i.e. make the closure at build time and put the pieces into a src dir, like d3, etc.
- *
- * Usage:
- * JS:
- *   cols = [
- *     {key: 'price', title: 'Price', subtitle: '$', type: 'number'},
- *     {key: 'item', title: 'Item', type: 'string'}
- *   ];
- *   rows = [{item: 'kale', price: 4.34}, {item: 'almonds', price: 5.44}];
- *   tableCallback = function (state) {console.log (state);};
- *   paginationInfo = {totalMatchCount: 2000};
- *
- * HTML:
- *   <BETable columns="cols"
- *            rows="rows"
- *            searchmeta="paginationInfo"
- *            callback="tableCallback"
- *            objectname="'items'"
- *            custom-types="customTypes"
- *            watch-depth="reference"></BETable>
  */
-
-
-/**
- * EXPERIMENTAL, but mostly working!
- * global types that can be extended via plugin
- *
- * renderer can be either a string or function to be called as a renderer.
- *
- * usage:
- *   // basic example
- *   var customTypes = {};
- *   customTypes.year_built = {
- *     renderer: formatters.numberRenderer,
- *     rendererArgs: [0, false]  // no decimals, no commas
- *   };
- *
- *   // custom React components cells
- *   var Label = React.createClass({displayName: "Label", render: function () {
- *    return React.createElement("span", {className: "label label-success"}, this.props.labelText);
- *    }
- *   });
- *   var customTypes = {};
- *   customTypes.label = {
- *     renderer: function (val) {
- *       return React.createElement(Label, {labelText: val});
- *     }
- *   };
- */
-
 
 var React = window.React;
+var _ = window._;  // lodash
 
 
 var BETable = React.createClass({
@@ -88,7 +24,7 @@ var BETable = React.createClass({
   /** Get default and custom types merged, with missing values filled with defaults */
   getTypes: function () {
 
-    let normalFilter = (col, xaxhz) => {
+    let normalFilter = (col) => {
       return (
         <input type="text"
                name={col.key}
@@ -140,7 +76,7 @@ var BETable = React.createClass({
           renderer: makeRangeFilter('number')
         },
         cell: {
-          className: "column_head scroll_columns is_aligned_right",
+          className: "scroll_columns is_aligned_right",
           renderer: function(val) {
             return formatters.numberRenderer(val, 0);
           },
@@ -211,7 +147,7 @@ var BETable = React.createClass({
     var completeType = function(type) {
       return _.defaults(type, {
         cell: {
-          className: "column_head scroll_columns",
+          className: "scroll_columns",
           renderer: (val) => val,
         },
         header: {
@@ -344,7 +280,7 @@ var BETable = React.createClass({
       let builder = this.getType(col.type).filter;
       return (
         <SearchFilter className={getOrCall(builder.className, col)}>
-          {getOrCall(builder.renderer, col, 'booboo')}
+          {getOrCall(builder.renderer, col)}
         </SearchFilter>
         );
     }.bind(this));
@@ -387,14 +323,19 @@ var Header = React.createClass({
   propTypes: {
     column : React.PropTypes.object.isRequired,
     handleClick: React.PropTypes.func,
-    sorting: React.PropTypes.object.isRequired
+    sorting: React.PropTypes.object.isRequired,
+    className: React.PropTypes.string
+  },
+  getDefaultProps: function () {
+    return {
+      className: ""
+    };
   },
   handleClick: function (e) {
     this.props.handleClick(e, this.props.column);
   },
   render: function() {
     let classString = this.props.className;
-    let content;
     let column = this.props.column;
     if (column === this.props.sorting.column) {
       classString += " sorted";
@@ -405,15 +346,6 @@ var Header = React.createClass({
       }
     }
 
-    if (column.type == 'multiselector') {
-      classString += " check";
-      content = (
-        <input type="checkbox" />
-      );
-    } else {
-      classString += " column_head scroll_columns";
-      content = this.props.column.title;
-    }
     return (
       <th className={classString} onClick={this.handleClick}>
         {this.props.children}
@@ -510,7 +442,8 @@ var TableFooter = React.createClass({
   },
   getDefaultProps: function () {
     return {
-      numberPerPageOptions: [10, 25, 50, 100]
+      numberPerPageOptions: [10, 25, 50, 100],
+      enableFirstLast: true
     };
   },
   changePagination: function (r) {
@@ -518,6 +451,12 @@ var TableFooter = React.createClass({
   },
   numberOfPages: function () {
     return Math.ceil(this.props.numberOfObjects / this.props.numberPerPage);
+  },
+  firstPage: function() {
+    this.props.paginationCallback({currentPage: 1});
+  },
+  lastPage: function() {
+    this.props.paginationCallback({currentPage: this.numberOfPages()});
   },
   nextPage: function () {
     if (this.props.currentPage < this.numberOfPages()) {
@@ -540,6 +479,12 @@ var TableFooter = React.createClass({
     var prevStyle = this.props.currentPage <= 1 ? {} : {cursor: "pointer"};
     var nextDisabled = this.props.currentPage === numberOfPages ? "disabled" : "";
     var nextStyle = this.props.currentPage === numberOfPages ? {} : {cursor: "pointer"};
+    var firstButton;
+    var lastButton;
+    if (this.props.enableFirstLast) {
+        firstButton = (<li className={prevDisabled}><a style={prevStyle} onClick={this.firstPage}><i className="fa fa-angle-double-left"></i><i className="fa fa-angle-double-left"></i> First</a></li>);
+        lastButton = (<li className={nextDisabled}><a style={nextStyle} onClick={this.lastPage}>Last <i className="fa fa-angle-double-right"></i><i className="fa fa-angle-double-right"></i></a></li>)
+    }
 
     return (
       <div className="table_footer">
@@ -557,8 +502,10 @@ var TableFooter = React.createClass({
         </div>
         <div className="pager_container col-sm-3 col-md-3">
           <ul className="pager">
+            {firstButton}
             <li className={prevDisabled}><a style={prevStyle} onClick={this.prevPage}><i className="fa fa-angle-double-left"></i> Previous</a></li>
             <li className={nextDisabled}><a style={nextStyle} onClick={this.nextPage}>Next <i className="fa fa-angle-double-right"></i></a></li>
+            {lastButton}
           </ul>
         </div>
       </div>

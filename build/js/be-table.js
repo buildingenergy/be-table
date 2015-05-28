@@ -1,5 +1,5 @@
 (function(){
-"use strict";
+'use strict';
 
 function getNamespace() {
   /**
@@ -10,14 +10,19 @@ function getNamespace() {
    *   // keeps existing objects intact if extant, otherwise creates empty objects
    */
   var o = window;
-  for (var k of arguments) {
+  for (var i in arguments) {
+    var k = arguments[i];
     o[k] = o[k] || {};
     o = o[k];
   }
   return o;
 }
 
-function getOrCall(x ) {for (var params=[],$__0=1,$__1=arguments.length;$__0<$__1;$__0++) params.push(arguments[$__0]);
+function getOrCall(x) {
+  for (var _len = arguments.length, params = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+    params[_key - 1] = arguments[_key];
+  }
+
   if (_.isFunction(x)) {
     return x.apply(this, params);
   } else {
@@ -28,7 +33,7 @@ function getOrCall(x ) {for (var params=[],$__0=1,$__1=arguments.length;$__0<$__
 
 var formatters = {};
 
-(function (ns){
+(function (ns) {
   /**
    * @ngdoc filter
    * @name date
@@ -117,26 +122,32 @@ var formatters = {};
   function dateRenderer(date, format) {
     var toString = Object.prototype.toString;
     var slice = [].slice;
-    function isString(value){return typeof value === 'string';}
+    function isString(value) {
+      return typeof value === 'string';
+    }
     function int(str) {
       return parseInt(str, 10);
     }
-    function isNumber(value){return typeof value === 'number';}
+    function isNumber(value) {
+      return typeof value === 'number';
+    }
     function isDate(value) {
       return toString.call(value) === '[object Date]';
     }
     function concat(array1, array2, index) {
       return array1.concat(slice.call(array2, index));
     }
-    var uppercase = function(string){return isString(string) ? string.toUpperCase() : string;};
+    var uppercase = function uppercase(string) {
+      return isString(string) ? string.toUpperCase() : string;
+    };
     function padNumber(num, digits, trim) {
       var neg = '';
       if (num < 0) {
-        neg =  '-';
+        neg = '-';
         num = -num;
       }
       num = '' + num;
-      while(num.length < digits) {
+      while (num.length < digits) {
         num = '0' + num;
       }
       if (trim) {
@@ -147,12 +158,12 @@ var formatters = {};
 
     function dateGetter(name, size, offset, trim) {
       offset = offset || 0;
-      return function(date) {
+      return function (date) {
         var value = date['get' + name]();
-        if (offset > 0 || value > -offset){
+        if (offset > 0 || value > -offset) {
           value += offset;
         }
-        if (value === 0 && offset === -12 ) {
+        if (value === 0 && offset === -12) {
           value = 12;
         }
         return padNumber(value, size, trim);
@@ -163,31 +174,28 @@ var formatters = {};
     }
     function timeZoneGetter(date) {
       var zone = -1 * date.getTimezoneOffset();
-      var paddedZone = (zone >= 0) ? "+" : "";
+      var paddedZone = zone >= 0 ? '+' : '';
 
-      paddedZone += padNumber(Math[zone > 0 ? 'floor' : 'ceil'](zone / 60), 2) +
-                    padNumber(Math.abs(zone % 60), 2);
+      paddedZone += padNumber(Math[zone > 0 ? 'floor' : 'ceil'](zone / 60), 2) + padNumber(Math.abs(zone % 60), 2);
 
       return paddedZone;
     }
 
     function dateStrGetter(name, shortForm) {
-      return function(date, formats) {
+      return function (date, formats) {
         var value = date['get' + name]();
-        var get = uppercase(shortForm ? ('SHORT' + name) : name);
+        var get = uppercase(shortForm ? 'SHORT' + name : name);
 
         return formats[get][value];
       };
     }
     var $locale = $locale || {};
     $locale.DATETIME_FORMATS = {
-      MONTH:
-          'January,February,March,April,May,June,July,August,September,October,November,December'
-          .split(','),
-      SHORTMONTH:  'Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec'.split(','),
+      MONTH: 'January,February,March,April,May,June,July,August,September,October,November,December'.split(','),
+      SHORTMONTH: 'Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec'.split(','),
       DAY: 'Sunday,Monday,Tuesday,Wednesday,Thursday,Friday,Saturday'.split(','),
       SHORTDAY: 'Sun,Mon,Tue,Wed,Thu,Fri,Sat'.split(','),
-      AMPMS: ['AM','PM'],
+      AMPMS: ['AM', 'PM'],
       medium: 'MMM d, y h:mm:ss a',
       short: 'M/d/yy h:mm a',
       fullDate: 'EEEE, MMMM d, y',
@@ -199,41 +207,41 @@ var formatters = {};
     };
     var DATE_FORMATS = {
       yyyy: dateGetter('FullYear', 4),
-        yy: dateGetter('FullYear', 2, 0, true),
-         y: dateGetter('FullYear', 1),
+      yy: dateGetter('FullYear', 2, 0, true),
+      y: dateGetter('FullYear', 1),
       MMMM: dateStrGetter('Month'),
-       MMM: dateStrGetter('Month', true),
-        MM: dateGetter('Month', 2, 1),
-         M: dateGetter('Month', 1, 1),
-        dd: dateGetter('Date', 2),
-         d: dateGetter('Date', 1),
-        HH: dateGetter('Hours', 2),
-         H: dateGetter('Hours', 1),
-        hh: dateGetter('Hours', 2, -12),
-         h: dateGetter('Hours', 1, -12),
-        mm: dateGetter('Minutes', 2),
-         m: dateGetter('Minutes', 1),
-        ss: dateGetter('Seconds', 2),
-         s: dateGetter('Seconds', 1),
-         // while ISO 8601 requires fractions to be prefixed with `.` or `,`
-         // we can be just safely rely on using `sss` since we currently don't support single or two digit fractions
-       sss: dateGetter('Milliseconds', 3),
+      MMM: dateStrGetter('Month', true),
+      MM: dateGetter('Month', 2, 1),
+      M: dateGetter('Month', 1, 1),
+      dd: dateGetter('Date', 2),
+      d: dateGetter('Date', 1),
+      HH: dateGetter('Hours', 2),
+      H: dateGetter('Hours', 1),
+      hh: dateGetter('Hours', 2, -12),
+      h: dateGetter('Hours', 1, -12),
+      mm: dateGetter('Minutes', 2),
+      m: dateGetter('Minutes', 1),
+      ss: dateGetter('Seconds', 2),
+      s: dateGetter('Seconds', 1),
+      // while ISO 8601 requires fractions to be prefixed with `.` or `,`
+      // we can be just safely rely on using `sss` since we currently don't support single or two digit fractions
+      sss: dateGetter('Milliseconds', 3),
       EEEE: dateStrGetter('Day'),
-       EEE: dateStrGetter('Day', true),
-         a: ampmGetter,
-         Z: timeZoneGetter
+      EEE: dateStrGetter('Day', true),
+      a: ampmGetter,
+      Z: timeZoneGetter
     };
 
     var DATE_FORMATS_SPLIT = /((?:[^yMdHhmsaZE']+)|(?:'(?:[^']|'')*')|(?:E+|y+|M+|d+|H+|h+|m+|s+|a|Z))(.*)/,
         NUMBER_STRING = /^\-?\d+$/;
     var R_ISO8601_STR = /^(\d{4})-?(\d\d)-?(\d\d)(?:T(\d\d)(?::?(\d\d)(?::?(\d\d)(?:\.(\d+))?)?)?(Z|([+-])(\d\d):?(\d\d))?)?$/;
-                       // 1        2       3         4          5          6          7          8  9     10      11
+    // 1        2       3         4          5          6          7          8  9     10      11
     function jsonStringToDate(string) {
       var match;
       if (match = string.match(R_ISO8601_STR)) {
         var date = new Date(0),
             tzHour = 0,
-            tzMin  = 0,
+            tzMin = 0,
             dateSetter = match[8] ? date.setUTCFullYear : date.setFullYear,
             timeSetter = match[8] ? date.setUTCHours : date.setHours;
 
@@ -242,21 +250,21 @@ var formatters = {};
           tzMin = int(match[9] + match[11]);
         }
         dateSetter.call(date, int(match[1]), int(match[2]) - 1, int(match[3]));
-        var h = int(match[4]||0) - tzHour;
-        var m = int(match[5]||0) - tzMin;
-        var s = int(match[6]||0);
-        var ms = Math.round(parseFloat('0.' + (match[7]||0)) * 1000);
+        var h = int(match[4] || 0) - tzHour;
+        var m = int(match[5] || 0) - tzMin;
+        var s = int(match[6] || 0);
+        var ms = Math.round(parseFloat('0.' + (match[7] || 0)) * 1000);
         timeSetter.call(date, h, m, s, ms);
         return date;
       }
       return string;
     }
 
-
     function formatter(date, format) {
       var text = '',
           parts = [],
-          fn, match;
+          fn,
+          match;
 
       format = format || 'mediumDate';
       format = $locale.DATETIME_FORMATS[format] || format;
@@ -272,7 +280,7 @@ var formatters = {};
         return date;
       }
 
-      while(format) {
+      while (format) {
         match = DATE_FORMATS_SPLIT.exec(format);
         if (match) {
           parts = concat(parts, match, 1);
@@ -283,19 +291,15 @@ var formatters = {};
         }
       }
 
-      _.each(parts, function(value){
+      _.each(parts, function (value) {
         fn = DATE_FORMATS[value];
-        text += fn ? fn(date, $locale.DATETIME_FORMATS)
-                   : value.replace(/(^'|'$)/g, '').replace(/''/g, "'");
+        text += fn ? fn(date, $locale.DATETIME_FORMATS) : value.replace(/(^'|'$)/g, '').replace(/''/g, '\'');
       });
 
       return text;
     }
     return formatter(date, format);
   }
-
-
-
 
   /**
    * formats numbers or number strings to proper fractionSize, lifted from
@@ -334,7 +338,7 @@ var formatters = {};
    * @param  {bool} commas
    * @return {str}
    */
-  function numberRenderer(number, fractionSize, noCommas){
+  function numberRenderer(number, fractionSize, noCommas) {
     var pattern = { // Decimal Pattern
       minInt: 1,
       minFrac: 0,
@@ -351,7 +355,6 @@ var formatters = {};
     var isUndefined = _.isUndefined;
     var isObject = _.isObject;
     var DECIMAL_SEP = '.';
-
 
     /**
      * lifted from AngularJS
@@ -400,14 +403,15 @@ var formatters = {};
         var whole = fraction[0];
         fraction = fraction[1] || '';
 
-        var i, pos = 0,
+        var i,
+            pos = 0,
             lgroup = pattern.lgSize,
             group = pattern.gSize;
 
-        if (whole.length >= (lgroup + group)) {
+        if (whole.length >= lgroup + group) {
           pos = whole.length - lgroup;
           for (i = 0; i < pos; i++) {
-            if ((pos - i)%group === 0 && i !== 0 && !noGroupSep) {
+            if ((pos - i) % group === 0 && i !== 0 && !noGroupSep) {
               formatedText += groupSep;
             }
             formatedText += whole.charAt(i);
@@ -415,18 +419,18 @@ var formatters = {};
         }
 
         for (i = pos; i < whole.length; i++) {
-          if ((whole.length - i)%lgroup === 0 && i !== 0 && !noGroupSep) {
+          if ((whole.length - i) % lgroup === 0 && i !== 0 && !noGroupSep) {
             formatedText += groupSep;
           }
           formatedText += whole.charAt(i);
         }
 
         // format fraction part.
-        while(fraction.length < fractionSize) {
+        while (fraction.length < fractionSize) {
           fraction += '0';
         }
 
-        if (fractionSize && fractionSize !== "0") {
+        if (fractionSize && fractionSize !== '0') {
           formatedText += decimalSep + fraction.substr(0, fractionSize);
         }
       } else {
@@ -450,77 +454,14 @@ var formatters = {};
 
 /**
  * BETable react component and table library
- *
- * Developer QuickStart:
- *   # install react-tools to compile be-table.jsx to be-table.js
- *   npm install -g react-tools
- *   jsx --watch --extension jsx seed/static/seed/js/jsx/ seed/static/seed/js/jsx/
- *
- * TODO:
- *   - add tests
- *   - implement rowCallback
- *   - implement selectedRows state managment
- *   - implemenet select all???
- *   - move tableCallback into search_service for ease of reuse on the seed app
- *   - extend to handle multiple types for table filter and cells: labels, ranges, year_built, extra_data!, checkbox, date, map pin icon
- *   - range filters
- *   - allow filters to be extended just like cells
- *   - move into its beFrontEndComponents
- *   - conformatters into this code at build time, i.e. make the closure at build time and put the pieces into a src dir, like d3, etc.
- *
- * Usage:
- * JS:
- *   cols = [
- *     {key: 'price', title: 'Price', subtitle: '$', type: 'number'},
- *     {key: 'item', title: 'Item', type: 'string'}
- *   ];
- *   rows = [{item: 'kale', price: 4.34}, {item: 'almonds', price: 5.44}];
- *   tableCallback = function (state) {console.log (state);};
- *   paginationInfo = {totalMatchCount: 2000};
- *
- * HTML:
- *   <BETable columns="cols"
- *            rows="rows"
- *            searchmeta="paginationInfo"
- *            callback="tableCallback"
- *            objectname="'items'"
- *            custom-types="customTypes"
- *            watch-depth="reference"></BETable>
  */
-
-
-/**
- * EXPERIMENTAL, but mostly working!
- * global types that can be extended via plugin
- *
- * renderer can be either a string or function to be called as a renderer.
- *
- * usage:
- *   // basic example
- *   var customTypes = {};
- *   customTypes.year_built = {
- *     renderer: formatters.numberRenderer,
- *     rendererArgs: [0, false]  // no decimals, no commas
- *   };
- *
- *   // custom React components cells
- *   var Label = React.createClass({displayName: "Label", render: function () {
- *    return React.createElement("span", {className: "label label-success"}, this.props.labelText);
- *    }
- *   });
- *   var customTypes = {};
- *   customTypes.label = {
- *     renderer: function (val) {
- *       return React.createElement(Label, {labelText: val});
- *     }
- *   };
- */
-
 
 var React = window.React;
+var _ = window._; // lodash
 
+var BETable = React.createClass({
+  displayName: 'BETable',
 
-var BETable = React.createClass({displayName: "BETable",
   propTypes: {
     columns: React.PropTypes.array.isRequired,
     rows: React.PropTypes.array.isRequired,
@@ -529,128 +470,131 @@ var BETable = React.createClass({displayName: "BETable",
     objectname: React.PropTypes.string,
     customTypes: React.PropTypes.object
   },
-  getDefaultProps: function () {
+  getDefaultProps: function getDefaultProps() {
     return {
       objectname: 'rows',
       customTypes: {}
     };
   },
   /** Get default and custom types merged, with missing values filled with defaults */
-  getTypes: function () {
+  getTypes: function getTypes() {
+    var _this = this;
 
-    let normalFilter = function(col, xaxhz)  {
-      return (
-        React.createElement("input", {type: "text", 
-               name: col.key, 
-               onChange: function(ev)  {return this.filterCallback(ev.target.name, ev.target.value);}.bind(this), 
-               className: "form-control input-sm show", 
-               required: "true", 
-               placeholder: col.title})
-        )
-    }.bind(this);
+    var normalFilter = function normalFilter(col) {
+      return React.createElement('input', { type: 'text',
+        name: col.key,
+        onChange: function (ev) {
+          return _this.filterCallback(ev.target.name, ev.target.value);
+        },
+        className: 'form-control input-sm show',
+        required: 'true',
+        placeholder: col.title });
+    };
 
     /** Convenience function that, given an input type, returns a function
      *  that takes a col and renders a range filter
      */
-    let makeRangeFilter = function(type)  {return function(col)  {
-      let minKey = col.key + "__gte";
-      let maxKey = col.key + "__lte";
+    var makeRangeFilter = function makeRangeFilter(type) {
+      return function (col) {
+        var minKey = col.key + '__gte';
+        var maxKey = col.key + '__lte';
 
-      return (
-        React.createElement("div", null, 
-          React.createElement("div", {className: "col-xs-6"}, 
-            React.createElement("input", {type: type, 
-                   name: minKey, 
-                   onChange: function(ev)  {return this.filterCallback(ev.target.name, ev.target.value);}.bind(this), 
-                   className: "form-control input-sm", 
-                   required: "true", 
-                   placeholder: "Min"})
-          ), 
-          React.createElement("div", {className: "col-xs-6"}, 
-            React.createElement("input", {type: type, 
-                   name: maxKey, 
-                   onChange: function(ev)  {return this.filterCallback(ev.target.name, ev.target.value);}.bind(this), 
-                   className: "form-control input-sm", 
-                   required: "true", 
-                   placeholder: "Max"})
+        return React.createElement(
+          'div',
+          null,
+          React.createElement(
+            'div',
+            { className: 'col-xs-6' },
+            React.createElement('input', { type: type,
+              name: minKey,
+              onChange: function (ev) {
+                return _this.filterCallback(ev.target.name, ev.target.value);
+              },
+              className: 'form-control input-sm',
+              required: 'true',
+              placeholder: 'Min' })
+          ),
+          React.createElement(
+            'div',
+            { className: 'col-xs-6' },
+            React.createElement('input', { type: type,
+              name: maxKey,
+              onChange: function (ev) {
+                return _this.filterCallback(ev.target.name, ev.target.value);
+              },
+              className: 'form-control input-sm',
+              required: 'true',
+              placeholder: 'Max' })
           )
-        )
-      );
-    }.bind(this);}.bind(this);
+        );
+      };
+    };
 
-    let defaultTypes = {
+    var defaultTypes = {
       hidden: {
-        header: {className: 'hidden'},
-        filter: {className: 'hidden'},
-        cell: {className: 'hidden'},
-      },
+        header: { className: 'hidden' },
+        filter: { className: 'hidden' },
+        cell: { className: 'hidden' } },
       string: {},
       number: {
         filter: {
           renderer: makeRangeFilter('number')
         },
         cell: {
-          className: "column_head scroll_columns is_aligned_right",
-          renderer: function(val) {
+          className: 'scroll_columns is_aligned_right',
+          renderer: function renderer(val) {
             return formatters.numberRenderer(val, 0);
-          },
-        }
+          } }
       },
       year: {
         filter: {
           renderer: makeRangeFilter('number')
         },
         cell: {
-          renderer: function(val) {
+          renderer: function renderer(val) {
             return formatters.numberRenderer(val, 0, true);
-          },
-        }
+          } }
       },
       date: {
         filter: {
           renderer: makeRangeFilter('date')
         },
         cell: {
-          renderer: function(val) {
+          renderer: function renderer(val) {
             return formatters.dateRenderer(val);
           }
         }
       },
       multiselector: {
         header: {
-          className: "check",
-          renderer: function(col, state)  {
-            let checked = state.selectAll;
-            let handler = function(ev)  {
-              let node = ev.target;
-              this.selectAllCallback(node.checked);
+          className: 'check',
+          renderer: function renderer(col, state) {
+            var checked = state.selectAll;
+            var handler = function handler(ev) {
+              var node = ev.target;
+              _this.selectAllCallback(node.checked);
               return false;
-            }.bind(this);
-            return (
-              React.createElement("input", {type: "checkbox", 
-                     onChange: handler, 
-                     checked: checked})
-            );
-          }.bind(this)
+            };
+            return React.createElement('input', { type: 'checkbox',
+              onChange: handler,
+              checked: checked });
+          }
         },
         filter: {
-          className: "check",
-        },
+          className: 'check' },
         cell: {
-          className: "check",
-          renderer: function(val, row, col, opts)  {
-            let checked = opts.isSelectedRow;
-            let handler = function(ev)  {
-              let node = ev.target;
-              this.rowCallback(row, node.checked);
+          className: 'check',
+          renderer: function renderer(val, row, col, opts) {
+            var checked = opts.isSelectedRow;
+            var handler = function handler(ev) {
+              var node = ev.target;
+              _this.rowCallback(row, node.checked);
               return false;
-            }.bind(this);
-            return (
-              React.createElement("input", {type: "checkbox", 
-                     onChange: handler, 
-                     checked: checked})
-            );
-          }.bind(this)
+            };
+            return React.createElement('input', { type: 'checkbox',
+              onChange: handler,
+              checked: checked });
+          }
         }
       }
     };
@@ -658,79 +602,76 @@ var BETable = React.createClass({displayName: "BETable",
     var mergedTypes = _.assign({}, defaultTypes, this.props.customTypes);
 
     // TODO: move className out
-    var completeType = function(type) {
+    var completeType = function completeType(type) {
       return _.defaults(type, {
         cell: {
-          className: "column_head scroll_columns",
-          renderer: function(val)  {return val;},
-        },
+          className: 'scroll_columns',
+          renderer: function renderer(val) {
+            return val;
+          } },
         header: {
-          className: "column_head scroll_columns",
-          renderer: function(col)  {return col.title;},
-        },
+          className: 'column_head scroll_columns',
+          renderer: function renderer(col) {
+            return col.title;
+          } },
         filter: {
-          className: "sub_head scroll_columns",
-          renderer: normalFilter,
-        },
-      });
+          className: 'sub_head scroll_columns',
+          renderer: normalFilter } });
     };
 
-    let allTypes = _.mapValues(mergedTypes, completeType);
+    var allTypes = _.mapValues(mergedTypes, completeType);
 
     return allTypes;
   },
 
-  getType: function (type) {
+  getType: function getType(type) {
     var types = this.getTypes();
     return types[type] || types['hidden'];
   },
 
-  getInitialState: function () {
+  getInitialState: function getInitialState() {
     return {
       sorting: {
         column: {},
-        ascending: true,
-      },
+        ascending: true },
       searchFilters: {},
       currentPage: 1,
       numberPerPage: 10,
       selectedRows: {},
-      selectAll: false,
-    };
+      selectAll: false };
   },
 
-  sortingCallback: function (obj) {
+  sortingCallback: function sortingCallback(obj) {
     if (!obj.sortable) {
       return;
     }
-    var ascending = (this.state.sorting.column === obj) ? !this.state.sorting.ascending : false;
+    var ascending = this.state.sorting.column === obj ? !this.state.sorting.ascending : false;
     this.setState({
       sorting: {
         column: obj,
-        ascending: ascending,
-      },
+        ascending: ascending },
       currentPage: 1
     }, function () {
-      this.props.callback(this.state, {eventType: 'columnSorted'});
+      this.props.callback(this.state, { eventType: 'columnSorted' });
     });
   },
 
-  filterCallback: function (key, val) {
+  filterCallback: function filterCallback(key, val) {
     this.setState(function (previousState, currentProps) {
       previousState.searchFilters[key] = val;
-      return {searchFilters: previousState.searchFilters, currentPage: 1};
+      return { searchFilters: previousState.searchFilters, currentPage: 1 };
     }, function () {
-      this.props.callback(this.state, {eventType: 'filterChanged'});
+      this.props.callback(this.state, { eventType: 'filterChanged' });
     });
   },
 
-  paginationCallback: function (state) {
+  paginationCallback: function paginationCallback(state) {
     this.setState(state, function () {
-      this.props.callback(this.state, {eventType: 'pagination'});
+      this.props.callback(this.state, { eventType: 'pagination' });
     });
   },
 
-  rowCallback: function (row, insert) {
+  rowCallback: function rowCallback(row, insert) {
     this.setState(function (previousState, currentProps) {
       var rows = previousState.selectedRows;
       if (previousState.selectAll) {
@@ -740,138 +681,154 @@ var BETable = React.createClass({displayName: "BETable",
       if (insert) {
         rows[row.id] = row;
       } else {
-        delete(rows[row.id]);
+        delete rows[row.id];
       }
 
       return {
         selectedRows: rows
       };
     }, function () {
-      this.props.callback(this.state, {eventType: 'rowClicked'});
+      this.props.callback(this.state, { eventType: 'rowClicked' });
     });
   },
 
-  selectAllCallback: function () {
-    this.setState(function(prevState)  {
-      let selectAll = !prevState.selectAll;
+  selectAllCallback: function selectAllCallback() {
+    this.setState(function (prevState) {
+      var selectAll = !prevState.selectAll;
       return {
         selectedRows: {},
         selectAll: !prevState.selectAll
-      }
+      };
     }, function () {
-      this.props.callback(this.state, {eventType: 'selectAllToggled'});
+      this.props.callback(this.state, { eventType: 'selectAllToggled' });
     });
   },
 
-  isSelectedRow: function (row) {
-    let selected = _.has(this.state.selectedRows, row.id)
+  isSelectedRow: function isSelectedRow(row) {
+    var selected = _.has(this.state.selectedRows, row.id);
     if (this.state.selectAll) {
       selected = !selected;
     }
     return selected;
   },
 
-  render: function() {
-    let columnDefs = this.props.columns;
+  render: function render() {
+    var columnDefs = this.props.columns;
     var types = this.getTypes();
 
-    var headers = columnDefs.map(function (col) {
-      let builder = this.getType(col.type).header;
-      let className = getOrCall(builder.className, col);
-      let content = getOrCall(builder.renderer, col, this.state);
-      return (
-        React.createElement(Header, {key: col.key, 
-                column: col, 
-                className: className, 
-                handleClick: function()  {return this.sortingCallback(col);}.bind(this), 
-                sorting: this.state.sorting}, 
-          content
-        )
+    var headers = columnDefs.map((function (col) {
+      var _this2 = this;
+
+      var builder = this.getType(col.type).header;
+      var className = getOrCall(builder.className, col);
+      var content = getOrCall(builder.renderer, col, this.state);
+      return React.createElement(
+        Header,
+        { key: col.key,
+          column: col,
+          className: className,
+          handleClick: function () {
+            return _this2.sortingCallback(col);
+          },
+          sorting: this.state.sorting },
+        content
       );
-    }.bind(this));
+    }).bind(this));
 
-    var searchFilters = columnDefs.map(function (col) {
-      let builder = this.getType(col.type).filter;
-      return (
-        React.createElement(SearchFilter, {className: getOrCall(builder.className, col)}, 
-          getOrCall(builder.renderer, col, 'booboo')
-        )
-        );
-    }.bind(this));
+    var searchFilters = columnDefs.map((function (col) {
+      var builder = this.getType(col.type).filter;
+      return React.createElement(
+        SearchFilter,
+        { className: getOrCall(builder.className, col) },
+        getOrCall(builder.renderer, col)
+      );
+    }).bind(this));
 
-    var rows = this.props.rows.map(function (row) {
-      return React.createElement(Row, {row: row, isSelectedRow: this.isSelectedRow(row), columns: columnDefs, sorting: this.state.sorting, getType: this.getType, key: row.id});
-    }.bind(this));
+    var rows = this.props.rows.map((function (row) {
+      return React.createElement(Row, { row: row, isSelectedRow: this.isSelectedRow(row), columns: columnDefs, sorting: this.state.sorting, getType: this.getType, key: row.id });
+    }).bind(this));
 
     var numberOfObjects = this.props.searchmeta.totalMatchCount || this.props.searchmeta.number_matching_search;
 
-    return (
-      React.createElement("div", null, 
-        React.createElement("div", {className: "vert_table_scroll_container"}, 
-          React.createElement("table", {className: "table table-striped sortable"}, 
-            React.createElement("thead", null, 
-              React.createElement("tr", null, 
-                headers
-              ), 
-              React.createElement("tr", {className: "sub_head"}, 
-                searchFilters
-              )
-            ), 
-            React.createElement("tbody", null, 
-              rows
+    return React.createElement(
+      'div',
+      null,
+      React.createElement(
+        'div',
+        { className: 'vert_table_scroll_container' },
+        React.createElement(
+          'table',
+          { className: 'table table-striped sortable' },
+          React.createElement(
+            'thead',
+            null,
+            React.createElement(
+              'tr',
+              null,
+              headers
+            ),
+            React.createElement(
+              'tr',
+              { className: 'sub_head' },
+              searchFilters
             )
+          ),
+          React.createElement(
+            'tbody',
+            null,
+            rows
           )
-        ), 
-        React.createElement(TableFooter, {objectName: this.props.objectname, 
-                     currentPage: this.state.currentPage, 
-                     numberPerPage: this.state.numberPerPage, 
-                     numberOfObjects: numberOfObjects, 
-                     paginationCallback: this.paginationCallback}, " ")
+        )
+      ),
+      React.createElement(
+        TableFooter,
+        { objectName: this.props.objectname,
+          currentPage: this.state.currentPage,
+          numberPerPage: this.state.numberPerPage,
+          numberOfObjects: numberOfObjects,
+          paginationCallback: this.paginationCallback },
+        ' '
       )
     );
   }
 });
 
+var Header = React.createClass({
+  displayName: 'Header',
 
-var Header = React.createClass({displayName: "Header",
   propTypes: {
-    column : React.PropTypes.object.isRequired,
+    column: React.PropTypes.object.isRequired,
     handleClick: React.PropTypes.func,
-    sorting: React.PropTypes.object.isRequired
+    sorting: React.PropTypes.object.isRequired,
+    className: React.PropTypes.string
   },
-  handleClick: function (e) {
+  getDefaultProps: function getDefaultProps() {
+    return {
+      className: ''
+    };
+  },
+  handleClick: function handleClick(e) {
     this.props.handleClick(e, this.props.column);
   },
-  render: function() {
-    let classString = this.props.className;
-    let content;
-    let column = this.props.column;
+  render: function render() {
+    var classString = this.props.className;
+    var column = this.props.column;
     if (column === this.props.sorting.column) {
-      classString += " sorted";
+      classString += ' sorted';
       if (this.props.sorting.ascending) {
-        classString += " sort_asc";
+        classString += ' sort_asc';
       } else {
-        classString += " sort_desc";
+        classString += ' sort_desc';
       }
     }
 
-    if (column.type == 'multiselector') {
-      classString += " check";
-      content = (
-        React.createElement("input", {type: "checkbox"})
-      );
-    } else {
-      classString += " column_head scroll_columns";
-      content = this.props.column.title;
-    }
-    return (
-      React.createElement("th", {className: classString, onClick: this.handleClick}, 
-        this.props.children
-      )
+    return React.createElement(
+      'th',
+      { className: classString, onClick: this.handleClick },
+      this.props.children
     );
   }
 });
-
 
 /**
  * SearchFilter: the filter sub header
@@ -882,46 +839,49 @@ var Header = React.createClass({displayName: "Header",
  *  - prevent searching on checkbox column?
  *  - add blank and protected filters
  */
-var SearchFilter = React.createClass({displayName: "SearchFilter",
+var SearchFilter = React.createClass({
+  displayName: 'SearchFilter',
 
-  render: function() {
-    let content;
-    var thClassString = "sub_head scroll_columns";
+  render: function render() {
+    var content = undefined;
+    var thClassString = 'sub_head scroll_columns';
 
-    return (
-      React.createElement("th", {className: thClassString + " " + this.props.className}, 
-        this.props.children
-      )
+    return React.createElement(
+      'th',
+      { className: thClassString + ' ' + this.props.className },
+      this.props.children
     );
   }
 });
 
-var Row = React.createClass({displayName: "Row",
+var Row = React.createClass({
+  displayName: 'Row',
+
   propTypes: {
     row: React.PropTypes.object.isRequired,
     columns: React.PropTypes.array.isRequired,
     sorting: React.PropTypes.object.isRequired,
     getType: React.PropTypes.func.isRequired
   },
-  render: function() {
-    var row = this.props.columns.map(function (col) {
+  render: function render() {
+    var row = this.props.columns.map((function (col) {
       var isSorted = col === this.props.sorting.column;
-      let cellValue = this.props.row[col.key];
-      let cellBuilder = this.props.getType(col.type).cell;
-      let content = getOrCall(cellBuilder.renderer, cellValue, this.props.row, col, {isSelectedRow: this.props.isSelectedRow});
-      let className = getOrCall(cellBuilder.className, col);
-      return (
-        React.createElement(Cell, {isSorted: isSorted, 
-              isSelectedRow: this.props.isSelectedRow, 
-              className: className}, 
-          content
-        )
+      var cellValue = this.props.row[col.key];
+      var cellBuilder = this.props.getType(col.type).cell;
+      var content = getOrCall(cellBuilder.renderer, cellValue, this.props.row, col, { isSelectedRow: this.props.isSelectedRow });
+      var className = getOrCall(cellBuilder.className, col);
+      return React.createElement(
+        Cell,
+        { isSorted: isSorted,
+          isSelectedRow: this.props.isSelectedRow,
+          className: className },
+        content
       );
-    }.bind(this));
-    return (
-      React.createElement("tr", {className: this.props.isSelectedRow ? 'selected-row' : ''}, 
-        row
-      )
+    }).bind(this));
+    return React.createElement(
+      'tr',
+      { className: this.props.isSelectedRow ? 'selected-row' : '' },
+      row
     );
   }
 });
@@ -930,19 +890,23 @@ var Row = React.createClass({displayName: "Row",
  * Cell: table row cell: `td`
  *   Allows custom React elements to be returned if set in BETable.types
  */
-var Cell = React.createClass({displayName: "Cell",
+var Cell = React.createClass({
+  displayName: 'Cell',
+
   propTypes: {
     className: React.PropTypes.string.isRequired,
     isSorted: React.PropTypes.bool,
     isSelectedRow: React.PropTypes.bool
   },
-  render: function () {
-    let classString = this.props.className;
+  render: function render() {
+    var classString = this.props.className;
     if (this.props.isSorted) {
-      classString += " sorted";
+      classString += ' sorted';
     }
-    return (
-      React.createElement("td", {className: classString}, this.props.children)
+    return React.createElement(
+      'td',
+      { className: classString },
+      this.props.children
     );
   }
 });
@@ -950,7 +914,9 @@ var Cell = React.createClass({displayName: "Cell",
 /**
  * pagination footer
  */
-var TableFooter = React.createClass({displayName: "TableFooter",
+var TableFooter = React.createClass({
+  displayName: 'TableFooter',
+
   propTypes: {
     numberPerPageOptions: React.PropTypes.array,
     numberPerPage: React.PropTypes.number,
@@ -958,58 +924,146 @@ var TableFooter = React.createClass({displayName: "TableFooter",
     numberOfObjects: React.PropTypes.number,
     paginationCallback: React.PropTypes.func
   },
-  getDefaultProps: function () {
+  getDefaultProps: function getDefaultProps() {
     return {
-      numberPerPageOptions: [10, 25, 50, 100]
+      numberPerPageOptions: [10, 25, 50, 100],
+      enableFirstLast: true
     };
   },
-  changePagination: function (r) {
-    this.props.paginationCallback({numberPerPage: +r.target.value, currentPage: 1});
+  changePagination: function changePagination(r) {
+    this.props.paginationCallback({ numberPerPage: +r.target.value, currentPage: 1 });
   },
-  numberOfPages: function () {
+  numberOfPages: function numberOfPages() {
     return Math.ceil(this.props.numberOfObjects / this.props.numberPerPage);
   },
-  nextPage: function () {
+  firstPage: function firstPage() {
+    this.props.paginationCallback({ currentPage: 1 });
+  },
+  lastPage: function lastPage() {
+    this.props.paginationCallback({ currentPage: this.numberOfPages() });
+  },
+  nextPage: function nextPage() {
     if (this.props.currentPage < this.numberOfPages()) {
-      this.props.paginationCallback({currentPage: this.props.currentPage + 1});
+      this.props.paginationCallback({ currentPage: this.props.currentPage + 1 });
     }
   },
-  prevPage: function () {
+  prevPage: function prevPage() {
     if (this.props.currentPage > 1) {
-      this.props.paginationCallback({currentPage: this.props.currentPage - 1});
+      this.props.paginationCallback({ currentPage: this.props.currentPage - 1 });
     }
   },
-  render: function () {
-    var options = this.props.numberPerPageOptions.map(function (opt) {
-      return React.createElement("option", {value: opt}, opt);
-    }.bind(this));
+  render: function render() {
+    var options = this.props.numberPerPageOptions.map((function (opt) {
+      return React.createElement(
+        'option',
+        { value: opt },
+        opt
+      );
+    }).bind(this));
     var numberOfPages = this.numberOfPages();
-    var pageStart = ((this.props.currentPage - 1) * this.props.numberPerPage) + 1;
-    var pageEnd = (this.props.currentPage === numberOfPages) ? this.props.numberOfObjects : this.props.currentPage * this.props.numberPerPage;
-    var prevDisabled = this.props.currentPage <= 1 ? "disabled" : "";
-    var prevStyle = this.props.currentPage <= 1 ? {} : {cursor: "pointer"};
-    var nextDisabled = this.props.currentPage === numberOfPages ? "disabled" : "";
-    var nextStyle = this.props.currentPage === numberOfPages ? {} : {cursor: "pointer"};
+    var pageStart = (this.props.currentPage - 1) * this.props.numberPerPage + 1;
+    var pageEnd = this.props.currentPage === numberOfPages ? this.props.numberOfObjects : this.props.currentPage * this.props.numberPerPage;
+    var prevDisabled = this.props.currentPage <= 1 ? 'disabled' : '';
+    var prevStyle = this.props.currentPage <= 1 ? {} : { cursor: 'pointer' };
+    var nextDisabled = this.props.currentPage === numberOfPages ? 'disabled' : '';
+    var nextStyle = this.props.currentPage === numberOfPages ? {} : { cursor: 'pointer' };
+    var firstButton;
+    var lastButton;
+    if (this.props.enableFirstLast) {
+      firstButton = React.createElement(
+        'li',
+        { className: prevDisabled },
+        React.createElement(
+          'a',
+          { style: prevStyle, onClick: this.firstPage },
+          React.createElement('i', { className: 'fa fa-angle-double-left' }),
+          React.createElement('i', { className: 'fa fa-angle-double-left' }),
+          ' First'
+        )
+      );
+      lastButton = React.createElement(
+        'li',
+        { className: nextDisabled },
+        React.createElement(
+          'a',
+          { style: nextStyle, onClick: this.lastPage },
+          'Last ',
+          React.createElement('i', { className: 'fa fa-angle-double-right' }),
+          React.createElement('i', { className: 'fa fa-angle-double-right' })
+        )
+      );
+    }
 
-    return (
-      React.createElement("div", {className: "table_footer"}, 
-        React.createElement("div", {className: "display_number_entries col-sm-3 col-md-3"}, 
-          React.createElement("div", {className: "display_number_entries_text"}, "Display:"), 
-          React.createElement("div", {className: "display_number_entries_select"}, 
-            React.createElement("select", {className: "form-control input-sm col-xs-2", onChange: this.changePagination}, 
-              options
-            )
-          ), 
-          React.createElement("div", {className: "display_number_entries_text"}, this.props.objectName)
-        ), 
-        React.createElement("div", {className: "counts col-sm-6 col-md-6"}, 
-          React.createElement("span", null, "Showing ", pageStart, " to ", pageEnd, " of ", this.props.numberOfObjects, " ", this.props.objectName)
-        ), 
-        React.createElement("div", {className: "pager_container col-sm-3 col-md-3"}, 
-          React.createElement("ul", {className: "pager"}, 
-            React.createElement("li", {className: prevDisabled}, React.createElement("a", {style: prevStyle, onClick: this.prevPage}, React.createElement("i", {className: "fa fa-angle-double-left"}), " Previous")), 
-            React.createElement("li", {className: nextDisabled}, React.createElement("a", {style: nextStyle, onClick: this.nextPage}, "Next ", React.createElement("i", {className: "fa fa-angle-double-right"})))
+    return React.createElement(
+      'div',
+      { className: 'table_footer' },
+      React.createElement(
+        'div',
+        { className: 'display_number_entries col-sm-3 col-md-3' },
+        React.createElement(
+          'div',
+          { className: 'display_number_entries_text' },
+          'Display:'
+        ),
+        React.createElement(
+          'div',
+          { className: 'display_number_entries_select' },
+          React.createElement(
+            'select',
+            { className: 'form-control input-sm col-xs-2', onChange: this.changePagination },
+            options
           )
+        ),
+        React.createElement(
+          'div',
+          { className: 'display_number_entries_text' },
+          this.props.objectName
+        )
+      ),
+      React.createElement(
+        'div',
+        { className: 'counts col-sm-6 col-md-6' },
+        React.createElement(
+          'span',
+          null,
+          'Showing ',
+          pageStart,
+          ' to ',
+          pageEnd,
+          ' of ',
+          this.props.numberOfObjects,
+          ' ',
+          this.props.objectName
+        )
+      ),
+      React.createElement(
+        'div',
+        { className: 'pager_container col-sm-3 col-md-3' },
+        React.createElement(
+          'ul',
+          { className: 'pager' },
+          firstButton,
+          React.createElement(
+            'li',
+            { className: prevDisabled },
+            React.createElement(
+              'a',
+              { style: prevStyle, onClick: this.prevPage },
+              React.createElement('i', { className: 'fa fa-angle-double-left' }),
+              ' Previous'
+            )
+          ),
+          React.createElement(
+            'li',
+            { className: nextDisabled },
+            React.createElement(
+              'a',
+              { style: nextStyle, onClick: this.nextPage },
+              'Next ',
+              React.createElement('i', { className: 'fa fa-angle-double-right' })
+            )
+          ),
+          lastButton
         )
       )
     );
@@ -1028,10 +1082,6 @@ try {
     BETable: BETable,
     Header: Header,
     Row: Row,
-    Cell: Cell,
-  };
-} catch (e) {
-
-}
-
+    Cell: Cell };
+} catch (e) {}
 })();
