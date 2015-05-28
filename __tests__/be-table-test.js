@@ -58,13 +58,17 @@ describe('BETable', function () {
     expect(headers.length).toBe(2);
 
     tbody = TU.findRenderedDOMComponentWithTag(table, 'tbody')
-    tableRows = TU.scryRenderedDOMComponentsWithTag(tbody, 'tr');
-    first = TU.scryRenderedDOMComponentsWithTag(tableRows[0], 'td')[0];
 
     TU.Simulate.click(headers[0].getDOMNode());
-    // expect(first.props.children).toEqual('Seattle');
+    expect(table.state.sorting.column).toBe(tableAttrs.columns[0]);
+    expect(table.state.sorting.ascending).toBe(false);
 
     TU.Simulate.click(headers[0].getDOMNode());
-    // expect(first.props.children).toEqual('Portland');
+    expect(table.state.sorting.column).toBe(tableAttrs.columns[0]);
+    expect(table.state.sorting.ascending).toBe(true);
+
+    TU.Simulate.click(headers[1].getDOMNode());
+    expect(table.state.sorting.column).toBe(tableAttrs.columns[1]);
+    expect(table.state.sorting.ascending).toBe(false);
   });
 })
