@@ -129,6 +129,11 @@ var BETable = React.createClass({
     };
 
     let defaultTypes = {
+      hidden: {
+        header: {className: 'hidden'},
+        filter: {className: 'hidden'},
+        cell: {className: 'hidden'},
+      },
       string: {},
       number: {
         filter: {
@@ -202,6 +207,7 @@ var BETable = React.createClass({
 
     var mergedTypes = _.assign({}, defaultTypes, this.props.customTypes);
 
+    // TODO: move className out
     var completeType = function(type) {
       return _.defaults(type, {
         cell: {
@@ -222,6 +228,11 @@ var BETable = React.createClass({
     let allTypes = _.mapValues(mergedTypes, completeType);
 
     return allTypes;
+  },
+
+  getType: function (type) {
+    var types = this.getTypes();
+    return types[type] || types['hidden'];
   },
 
   getInitialState: function () {
@@ -315,7 +326,7 @@ var BETable = React.createClass({
     var types = this.getTypes();
 
     var headers = columnDefs.map(function (col) {
-      let builder = types[col.type].header;
+      let builder = this.getType(col.type).header;
       let className = getOrCall(builder.className, col);
       let content = getOrCall(builder.renderer, col, this.state);
       return (
@@ -330,7 +341,7 @@ var BETable = React.createClass({
     }.bind(this));
 
     var searchFilters = columnDefs.map(function (col) {
-      let builder = types[col.type].filter;
+      let builder = this.getType(col.type).filter;
       return (
         <SearchFilter className={getOrCall(builder.className, col)}>
           {getOrCall(builder.renderer, col, 'booboo')}
@@ -339,7 +350,7 @@ var BETable = React.createClass({
     }.bind(this));
 
     var rows = this.props.rows.map(function (row) {
-      return <Row row={row} isSelectedRow={this.isSelectedRow(row)} columns={columnDefs} sorting={this.state.sorting} dataTypes={types} key={row.id}></Row>;
+      return <Row row={row} isSelectedRow={this.isSelectedRow(row)} columns={columnDefs} sorting={this.state.sorting} getType={this.getType} key={row.id}></Row>;
     }.bind(this));
 
     var numberOfObjects = this.props.searchmeta.totalMatchCount || this.props.searchmeta.number_matching_search;
@@ -440,13 +451,13 @@ var Row = React.createClass({
     row: React.PropTypes.object.isRequired,
     columns: React.PropTypes.array.isRequired,
     sorting: React.PropTypes.object.isRequired,
-    dataTypes: React.PropTypes.object.isRequired
+    getType: React.PropTypes.func.isRequired
   },
   render: function() {
     var row = this.props.columns.map(function (col) {
       var isSorted = col === this.props.sorting.column;
       let cellValue = this.props.row[col.key];
-      let cellBuilder = this.props.dataTypes[col.type].cell;
+      let cellBuilder = this.props.getType(col.type).cell;
       let content = getOrCall(cellBuilder.renderer, cellValue, this.props.row, col, {isSelectedRow: this.props.isSelectedRow});
       let className = getOrCall(cellBuilder.className, col);
       return (
@@ -556,5 +567,19 @@ var TableFooter = React.createClass({
 });
 
 // last step add the react component to the mix
-getNamespace('BE', 'Table').BETable = BETable;
+var ns = getNamespace('BE', 'Table');
+ns.BETable = BETable;
+ns.Header = Header;
+ns.Row = Row;
+ns.Cell = Cell;
 
+try {
+  module.exports = {
+    BETable: BETable,
+    Header: Header,
+    Row: Row,
+    Cell: Cell,
+  };
+} catch (e) {
+
+}
