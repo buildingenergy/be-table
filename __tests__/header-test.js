@@ -69,8 +69,9 @@ describe('Header', function () {
       handleClick: _.noop,
       sorting: {column: tableAttrs.columns[0]}
     }, content);
-    expect(header.getDOMNode().textContent).toBe(content);
-    expect(header.getDOMNode().className).toBe(" sorted sort_desc");
+    expect(React.findDOMNode(header).textContent).toBe(content);
+    expect(React.findDOMNode(header).className).toBe(" sorted sort_desc");
+    expect(React.findDOMNode(header).tagName).toBe('TH');
   });
 
   it('should take a className', function () {
@@ -81,8 +82,8 @@ describe('Header', function () {
       sorting: {column: tableAttrs.columns[0]},
       className: "happy"
     }, content);
-    expect(header.getDOMNode().textContent).toBe(content);
-    expect(header.getDOMNode().className).toBe("happy sorted sort_desc");
+    expect(React.findDOMNode(header).textContent).toBe(content);
+    expect(React.findDOMNode(header).className).toBe("happy sorted sort_desc");
   });
 
   it('should show the desc sort class when selected and not ascending', function () {
@@ -96,8 +97,8 @@ describe('Header', function () {
       },
       className: "happy"
     }, content);
-    expect(header.getDOMNode().textContent).toBe(content);
-    expect(header.getDOMNode().className).toBe("happy sorted sort_desc");
+    expect(React.findDOMNode(header).textContent).toBe(content);
+    expect(React.findDOMNode(header).className).toBe("happy sorted sort_desc");
   });
 
   it('should show the asc sort class when selected and ascending', function () {
@@ -111,8 +112,8 @@ describe('Header', function () {
       },
       className: "happy"
     }, content);
-    expect(header.getDOMNode().textContent).toBe(content);
-    expect(header.getDOMNode().className).toBe("happy sorted sort_asc");
+    expect(React.findDOMNode(header).textContent).toBe(content);
+    expect(React.findDOMNode(header).className).toBe("happy sorted sort_asc");
   });
 
   it('should show no sorting classes when not selected', function () {
@@ -126,8 +127,8 @@ describe('Header', function () {
       },
       className: "happy"
     }, content);
-    expect(header.getDOMNode().textContent).toBe(content);
-    expect(header.getDOMNode().className).toBe("happy");
+    expect(React.findDOMNode(header).textContent).toBe(content);
+    expect(React.findDOMNode(header).className).toBe("happy");
   });
 
   it('should call the callback with the column when clicked', function () {
@@ -144,7 +145,7 @@ describe('Header', function () {
       className: "happy"
     }, content);
     // act
-    TU.Simulate.click(header.getDOMNode());
+    TU.Simulate.click(React.findDOMNode(header));
     // assert
     expect(mockCallback.mock.calls.length).toBe(1);
     expect(mockCallback.mock.calls[0][1]).toBe(tableAttrs.columns[0]);
