@@ -13,6 +13,7 @@ the table you've been waiting for
 ### test
 
     gulp test
+    gulp watchtest  # for live reload of tests
 
 
 ### usage
