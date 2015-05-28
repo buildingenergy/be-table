@@ -24,11 +24,11 @@ var tableAttrs = {
     },
   ],
   rows: [
-    {'city': 'San Francisco', 'gfa': 1000},
-    {'city': 'San Francisco', 'gfa': 2000},
-    {'city': 'San Francisco', 'gfa': 3000},
     {'city': 'Portland', 'gfa': 1000},
     {'city': 'Portland', 'gfa': 2000},
+    {'city': 'Seattle', 'gfa': 1000},
+    {'city': 'Seattle', 'gfa': 2000},
+    {'city': 'Seattle', 'gfa': 3000},
   ],
   callback: function () {},
   searchmeta: {},
@@ -53,19 +53,21 @@ describe('BETable', function () {
 
   it('sorts', function () {
     var table = renderTable(tableAttrs);
-    var headers = TU.scryRenderedDOMComponentsWithClass(table, 'column_head');
-    var tbody = TU.findRenderedDOMComponentWithTag(table, 'tbody')
-    var tableRows, first;
+    var headers = TU.scryRenderedComponentsWithType(table, BE.Header);
+    var tbody, tableRows, first;
     expect(headers.length).toBe(2);
 
-    TU.Simulate.click(headers[0]);
+    tbody = TU.findRenderedDOMComponentWithTag(table, 'tbody')
     tableRows = TU.scryRenderedDOMComponentsWithTag(tbody, 'tr');
     first = TU.scryRenderedDOMComponentsWithTag(tableRows[0], 'td')[0];
-    expect(first.props.children).toEqual('San Francisco');
 
-    TU.Simulate.click(headers[0]);
-    tableRows = TU.scryRenderedDOMComponentsWithTag(tbody, 'tr');
-    first = TU.scryRenderedDOMComponentsWithTag(tableRows[0], 'td')[0];
+    TU.Simulate.click(headers[0].getDOMNode());
+    expect(first.props.children).toEqual('Seattle');
+
+    TU.Simulate.click(headers[0].getDOMNode());
+    // tbody = TU.findRenderedDOMComponentWithTag(table, 'tbody')
+    // tableRows = TU.scryRenderedDOMComponentsWithTag(tbody, 'tr');
+    // first = TU.scryRenderedDOMComponentsWithTag(tableRows[0], 'td')[0];
     expect(first.props.children).toEqual('Portland');
   });
 })
