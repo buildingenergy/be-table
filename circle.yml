@@ -9,4 +9,4 @@ test:
     override:
         - jsxhint -e .jsx ./src/*.jsx
         - jshint ./src/*.js
-        - gulp test
+        - gulp circletest

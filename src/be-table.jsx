@@ -26,7 +26,7 @@ var BETable = React.createClass({
 
   getType: function (type) {
     var types = this.buildTypes();
-    return types[type] || types['hidden'];
+    return types[type] || types.hidden;
   },
 
   getInitialState: function () {
@@ -218,11 +218,10 @@ var Header = React.createClass({
 var SearchFilter = React.createClass({
 
   render: function() {
-    let content;
-    var thClassString = "sub_head scroll_columns";
+    var thClassString = "sub_head scroll_columns" + " " + this.props.className;
 
     return (
-      <th className={thClassString + " " + this.props.className}>
+      <th className={thClassString}>
         {this.props.children}
       </th>
     );

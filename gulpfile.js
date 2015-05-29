@@ -92,6 +92,19 @@ gulp.task('test', ['build'], function () {
     }));
 });
 
+/**
+ * doesn't build
+ */
+gulp.task('circletest', function () {
+  return gulp.src('__tests__')
+    .pipe(jest({
+      testDirectoryName: "__tests__",
+      unmockedModulePathPatterns: [
+        "node_modules/react"
+      ]
+    }));
+});
+
 gulp.task('build', ['clean', 'compress']);
 gulp.task('dev', ['build', 'watch']);
 gulp.task('default', ['test', 'build']);

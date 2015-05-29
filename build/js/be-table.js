@@ -505,6 +505,8 @@ getNamespace('BE', 'Table').formatters = formatters;
 })(formatters);
 /* jshint ignore:end */
 
+/*jshint esnext: true */
+
 var makeNormalFilter = function makeNormalFilter(filterCallback) {
   return function (col) {
     return React.createElement('input', { type: 'text',
@@ -690,7 +692,7 @@ var BETable = React.createClass({
 
   getType: function getType(type) {
     var types = this.buildTypes();
-    return types[type] || types['hidden'];
+    return types[type] || types.hidden;
   },
 
   getInitialState: function getInitialState() {
@@ -899,12 +901,11 @@ var SearchFilter = React.createClass({
   displayName: 'SearchFilter',
 
   render: function render() {
-    var content = undefined;
-    var thClassString = 'sub_head scroll_columns';
+    var thClassString = 'sub_head scroll_columns' + ' ' + this.props.className;
 
     return React.createElement(
       'th',
-      { className: thClassString + ' ' + this.props.className },
+      { className: thClassString },
       this.props.children
     );
   }
