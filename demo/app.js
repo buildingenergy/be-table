@@ -30,7 +30,7 @@ angular.module('app', ['react'])
       $scope.data.rows.sort(sortBy(state.sorting.column.key, state.sorting.ascending));
     }
   };
-  $scope.paginationInfo = {totalMatchCount: 3};
+  $scope.paginationInfo = {totalMatchCount: 11};
 
 
   /**

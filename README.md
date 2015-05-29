@@ -54,18 +54,44 @@ data.rows = [
     {id: 9, item: 'dates', price: 13.20},
     {id: 10, item: 'granola', price: 7.40, label: {text: 'Honey'}}
 ];
-tableCallback = function (state, tableEvent) {
+var tableCallback = function (state, tableEvent) {
     console.log(state, tableEvent);
-    if (tableEvent && tableEvent.eventType && tableEvent.eventType === 'columnSorted') {
-        // _.sortBy breaks the angular reference to `rows`
-        data.rows.sort(sortBy(state.sorting.column.key, state.sorting.ascending));
-    }
 };
-paginationInfo = {totalMatchCount: 3};
+var paginationInfo = {totalMatchCount: 10};
 
-React.createElement(BETable, {
-    columns: cols,
-    rows: rows,
+var customTypes = {
+label: {
+  cell: {
+    className: 'scroll_columns',
+    renderer: function(value, row, col, state) {
+      if (_.isEmpty(value)){
+        return "";
+      } else {
+        return React.createElement(Label, {}, [value.text]);
+      }
+    }
+  }
+},
+price: {
+  cell: {
+    className: 'scroll_columns text-right',
+    renderer: function (value, row, col, state) {
+      return window.formatters.numberRenderer(value, 2, true);
+    }
+  }
+}
+};
+var Label = React.createClass({
+  displayName: "Label",
+  render: function () {
+    return React.createElement("span", {className: "label label-success"}, this.props.children);
+  }
+});
+
+
+React.createElement(BE.Table.BETable, {
+    columns: data.columns,
+    rows: data.rows,
     callback: tableCallback,
     objectname: "items",
     customTypes: customTypes,
