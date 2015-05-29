@@ -7,7 +7,7 @@ angular.module('app', ['react'])
 .controller('beCtrl', ['$scope', '$log', '$filter', function ($scope, $log, $filter) {
   $scope.data = {};
   $scope.data.columns = [
-    {key: 'price', title: 'Price', subtitle: '$', type: 'number'},
+    {key: 'price', title: 'Price', subtitle: '$', type: 'price'},
     {key: 'item', title: 'Item', type: 'string'},
     {key: 'label', title: 'Label', type: 'label'}
   ];
@@ -51,9 +51,9 @@ angular.module('app', ['react'])
     },
     price: {
       cell: {
-        className: 'scroll_columns',
+        className: 'scroll_columns text-right',
         renderer: function (value, row, col, state) {
-          return _.partialRight(window.formatters.numberFormatter, 2, true);
+          return window.formatters.numberRenderer(value, 2, true);
         }
       }
     }
