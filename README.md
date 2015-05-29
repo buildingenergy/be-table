@@ -33,32 +33,35 @@ node-debug --nodejs --harmony ./node_modules/jest-cli/bin/jest.js --runInBand
 
 Requires: React and lodash
 
+See the demo: index.html
+
 ```js
-cols = [
-  {key: 'price', title: 'Price', subtitle: '$', type: 'number'},
-  {key: 'item', title: 'Item', type: 'string'},
-  {key: 'label', title: 'Label', type: 'label'},
+var data = {};
+data.columns = [
+    {key: 'price', title: 'Price', subtitle: '$', type: 'price'},
+    {key: 'item', title: 'Item', type: 'string'},
+    {key: 'label', title: 'Label', type: 'label'}
 ];
-rows = [
-    {item: 'kale', price: 4.34, label: {color: 'green', text: 'Leafy'}},
-    {item: 'almonds', price: 5.44, label: {color: 'blue', text: 'Nutty'}},
+data.rows = [
+    {id: 1, item: 'kale', price: 4.34, label: {text: 'Leafy'}},
+    {id: 2, item: 'almonds', price: 5.44, label: {text: 'Nutty'}},
+    {id: 3, item: 'strawberries', price: 3.50, label: {text: 'Ripe'}},
+    {id: 4, item: 'apples', price: 14, label: {text: 'Pucker'}},
+    {id: 5, item: 'grapes', price: 1.00, label: {text: 'Red'}},
+    {id: 6, item: 'grapes', price: 1.20, label: {text: 'Green'}},
+    {id: 7, item: 'oranges', price: 2.10, label: {text: 'Cali'}},
+    {id: 8, item: 'oats', price: .20, label: {text: 'Steel'}},
+    {id: 9, item: 'dates', price: 13.20},
+    {id: 10, item: 'granola', price: 7.40, label: {text: 'Honey'}}
 ];
-tableCallback = function (state) {console.log (state);};
-paginationInfo = {totalMatchCount: 2000};
-customTypes = {
-    label: {
-        cell: {
-            className: 'label',
-            renderer: function(value, row, col, state) {
-                return React.createElement(Label, {
-                    color: value.color,
-                }, [value.name]);
-            }
-        },
-        header: { /* similar format to "cell" definition */ },
-        filter: { /* similar format to "cell" definition */ },
-    },
+tableCallback = function (state, tableEvent) {
+    console.log(state, tableEvent);
+    if (tableEvent && tableEvent.eventType && tableEvent.eventType === 'columnSorted') {
+        // _.sortBy breaks the angular reference to `rows`
+        data.rows.sort(sortBy(state.sorting.column.key, state.sorting.ascending));
+    }
 };
+paginationInfo = {totalMatchCount: 3};
 
 React.createElement(BETable, {
     columns: cols,
