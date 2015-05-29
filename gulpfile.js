@@ -1,7 +1,7 @@
 // sampled from https://github.com/oblador/angular-scroll/blob/master/gulpfile.js
 var gulp   = require('gulp');
 
-require('harmonize')()
+require('harmonize')();
 var babel = require('gulp-babel');
 var concat = require('gulp-concat');
 var del = require('del');
@@ -44,7 +44,7 @@ var jsBuildFlow = function(outpath) {
   .pipe(concat, outpath)
   .pipe(babel)
   .pipe(wrap, wrapText[0] + '<%= contents %>' + wrapText[1]);
-}
+};
 
 gulp.task('clean', function (cb) {
   return del(['build'], cb);
@@ -76,11 +76,11 @@ gulp.task('lint', function() {
 
 gulp.task('watch', function() {
     gulp.watch(filePaths.javascript, ['build']);
-})
+});
 
 gulp.task('watchtest', function() {
     gulp.watch(testWatchPaths, ['test']);
-})
+});
 
 gulp.task('test', ['build'], function () {
   return gulp.src('__tests__')
@@ -89,7 +89,20 @@ gulp.task('test', ['build'], function () {
       unmockedModulePathPatterns: [
         "node_modules/react"
       ]
-    }))
+    }));
+});
+
+/**
+ * doesn't build
+ */
+gulp.task('circletest', function () {
+  return gulp.src('__tests__')
+    .pipe(jest({
+      testDirectoryName: "__tests__",
+      unmockedModulePathPatterns: [
+        "node_modules/react"
+      ]
+    }));
 });
 
 gulp.task('build', ['clean', 'compress']);

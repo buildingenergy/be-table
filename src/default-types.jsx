@@ -1,4 +1,4 @@
-
+/*jshint esnext: true */
 
 let makeNormalFilter = (filterCallback) => (col) => {
   return (
@@ -117,7 +117,7 @@ let defaultTypes = function (table) {
         }
       }
     }
-  }
+  };
 };
 
 /**

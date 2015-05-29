@@ -5,6 +5,8 @@ jest.dontMock('lodash');
 
 var React = window.React = require('react/addons');
 var _ = window._ = require('lodash');
+var classNames = window.classNames = require('classnames');
+
 var BE = require(srcFile);
 var TU = React.addons.TestUtils;
 
@@ -49,7 +51,7 @@ var renderHeader = function(attrs, content) {
 describe('BETable headers', function () {
   it('renders headers', function () {
     var table = renderTable(tableAttrs);
-    var thead = TU.findRenderedDOMComponentWithTag(table, 'thead')
+    var thead = TU.findRenderedDOMComponentWithTag(table, 'thead');
     var headers = thead.props.children[0].props.children;
     expect(headers[0].key).toBe('city');
     expect(headers[0].props.column.title).toBe('City');
@@ -70,7 +72,7 @@ describe('Header', function () {
       sorting: {column: tableAttrs.columns[0]}
     }, content);
     expect(React.findDOMNode(header).textContent).toBe(content);
-    expect(React.findDOMNode(header).className).toBe(" sorted sort_desc");
+    expect(React.findDOMNode(header).className).toBe("sorted sort_desc");
     expect(React.findDOMNode(header).tagName).toBe('TH');
   });
 

@@ -4,6 +4,7 @@
 var React = window.React;
 var _ = window._; // lodash
 
+/*jshint esnext: true */
 function getNamespace() {
   /**
    * Recursively define a nested object on ``window`` without destroying if it exists
@@ -32,9 +33,58 @@ function getOrCall(x) {
     return x;
   }
 }
+
+/*!
+  Copyright (c) 2015 Jed Watson.
+  Licensed under the MIT License (MIT), see
+  http://jedwatson.github.io/classnames
+*/
+
+(function () {
+  'use strict';
+
+  function classNames() {
+
+    var classes = '';
+
+    for (var i = 0; i < arguments.length; i++) {
+      var arg = arguments[i];
+      if (!arg) continue;
+
+      var argType = typeof arg;
+
+      if ('string' === argType || 'number' === argType) {
+        classes += ' ' + arg;
+      } else if (Array.isArray(arg)) {
+        classes += ' ' + classNames.apply(null, arg);
+      } else if ('object' === argType) {
+        for (var key in arg) {
+          if (arg.hasOwnProperty(key) && arg[key]) {
+            classes += ' ' + key;
+          }
+        }
+      }
+    }
+
+    return classes.substr(1);
+  }
+
+  if (typeof define === 'function' && typeof define.amd === 'object' && define.amd) {
+    // AMD. Register as an anonymous module.
+    define(function () {
+      return classNames;
+    });
+  } else if (typeof module !== 'undefined' && module.exports) {
+    module.exports = classNames;
+  } else {
+    window.classNames = classNames;
+  }
+})();
+
 /* jshint ignore:start */
 
 var formatters = {};
+getNamespace('BE', 'Table').formatters = formatters;
 
 (function (ns) {
   /**
@@ -455,6 +505,8 @@ var formatters = {};
 })(formatters);
 /* jshint ignore:end */
 
+/*jshint esnext: true */
+
 var makeNormalFilter = function makeNormalFilter(filterCallback) {
   return function (col) {
     return React.createElement('input', { type: 'text',
@@ -610,6 +662,7 @@ var getTableTypes = function getTableTypes(table) {
   return allTypes;
 };
 
+/*jshint esnext: true */
 /**
  * BETable react component and table library
  */
@@ -639,7 +692,7 @@ var BETable = React.createClass({
 
   getType: function getType(type) {
     var types = this.buildTypes();
-    return types[type] || types['hidden'];
+    return types[type] || types.hidden;
   },
 
   getInitialState: function getInitialState() {
@@ -655,7 +708,7 @@ var BETable = React.createClass({
   },
 
   sortingCallback: function sortingCallback(obj) {
-    if (!obj.sortable) {
+    if (obj.sortable === false) {
       return;
     }
     var ascending = this.state.sorting.column === obj ? !this.state.sorting.ascending : false;
@@ -752,7 +805,7 @@ var BETable = React.createClass({
       var builder = this.getType(col.type).filter;
       return React.createElement(
         SearchFilter,
-        { className: getOrCall(builder.className, col) },
+        { className: getOrCall(builder.className, col), key: col.key },
         getOrCall(builder.renderer, col)
       );
     }).bind(this));
@@ -824,20 +877,18 @@ var Header = React.createClass({
     this.props.handleClick(e, this.props.column);
   },
   render: function render() {
-    var classString = this.props.className;
+    var classes = {};
     var column = this.props.column;
     if (column === this.props.sorting.column) {
-      classString += ' sorted';
-      if (this.props.sorting.ascending) {
-        classString += ' sort_asc';
-      } else {
-        classString += ' sort_desc';
-      }
+      classes = {
+        sorted: true,
+        sort_asc: this.props.sorting.ascending,
+        sort_desc: !this.props.sorting.ascending };
     }
 
     return React.createElement(
       'th',
-      { className: classString, onClick: this.handleClick },
+      { className: classNames(this.props.className, classes), onClick: this.handleClick },
       this.props.children
     );
   }
@@ -850,12 +901,11 @@ var SearchFilter = React.createClass({
   displayName: 'SearchFilter',
 
   render: function render() {
-    var content = undefined;
-    var thClassString = 'sub_head scroll_columns';
+    var thClassString = 'sub_head scroll_columns' + ' ' + this.props.className;
 
     return React.createElement(
       'th',
-      { className: thClassString + ' ' + this.props.className },
+      { className: thClassString },
       this.props.children
     );
   }
@@ -877,11 +927,13 @@ var Row = React.createClass({
       var cellBuilder = this.props.getType(col.type).cell;
       var content = getOrCall(cellBuilder.renderer, cellValue, this.props.row, col, { isSelectedRow: this.props.isSelectedRow });
       var className = getOrCall(cellBuilder.className, col);
+
       return React.createElement(
         Cell,
         { isSorted: isSorted,
           isSelectedRow: this.props.isSelectedRow,
-          className: className },
+          className: className,
+          key: col.key },
         content
       );
     }).bind(this));
@@ -963,7 +1015,7 @@ var TableFooter = React.createClass({
     var options = this.props.numberPerPageOptions.map((function (opt) {
       return React.createElement(
         'option',
-        { value: opt },
+        { key: opt, value: opt },
         opt
       );
     }).bind(this));

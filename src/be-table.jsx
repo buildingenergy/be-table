@@ -1,3 +1,4 @@
+/*jshint esnext: true */
 /**
  * BETable react component and table library
  */
@@ -25,7 +26,7 @@ var BETable = React.createClass({
 
   getType: function (type) {
     var types = this.buildTypes();
-    return types[type] || types['hidden'];
+    return types[type] || types.hidden;
   },
 
   getInitialState: function () {
@@ -43,7 +44,7 @@ var BETable = React.createClass({
   },
 
   sortingCallback: function (obj) {
-    if (!obj.sortable) {
+    if (obj.sortable === false) {
       return;
     }
     var ascending = (this.state.sorting.column === obj) ? !this.state.sorting.ascending : false;
@@ -136,7 +137,7 @@ var BETable = React.createClass({
     var searchFilters = columnDefs.map(function (col) {
       let builder = this.getType(col.type).filter;
       return (
-        <SearchFilter className={getOrCall(builder.className, col)}>
+        <SearchFilter className={getOrCall(builder.className, col)} key={col.key}>
           {getOrCall(builder.renderer, col)}
         </SearchFilter>
         );
@@ -192,19 +193,18 @@ var Header = React.createClass({
     this.props.handleClick(e, this.props.column);
   },
   render: function() {
-    let classString = this.props.className;
+    let classes = {};
     let column = this.props.column;
     if (column === this.props.sorting.column) {
-      classString += " sorted";
-      if (this.props.sorting.ascending) {
-        classString += " sort_asc";
-      } else {
-        classString += " sort_desc";
-      }
+      classes = {
+        sorted: true,
+        sort_asc: this.props.sorting.ascending,
+        sort_desc: !this.props.sorting.ascending,
+      };
     }
 
     return (
-      <th className={classString} onClick={this.handleClick}>
+      <th className={classNames(this.props.className, classes)} onClick={this.handleClick}>
         {this.props.children}
       </th>
     );
@@ -218,11 +218,10 @@ var Header = React.createClass({
 var SearchFilter = React.createClass({
 
   render: function() {
-    let content;
-    var thClassString = "sub_head scroll_columns";
+    var thClassString = "sub_head scroll_columns" + " " + this.props.className;
 
     return (
-      <th className={thClassString + " " + this.props.className}>
+      <th className={thClassString}>
         {this.props.children}
       </th>
     );
@@ -243,10 +242,12 @@ var Row = React.createClass({
       let cellBuilder = this.props.getType(col.type).cell;
       let content = getOrCall(cellBuilder.renderer, cellValue, this.props.row, col, {isSelectedRow: this.props.isSelectedRow});
       let className = getOrCall(cellBuilder.className, col);
+
       return (
         <Cell isSorted={isSorted}
               isSelectedRow={this.props.isSelectedRow}
-              className={className}>
+              className={className}
+              key={col.key}>
           {content}
         </Cell>
       );
@@ -321,7 +322,7 @@ var TableFooter = React.createClass({
   },
   render: function () {
     var options = this.props.numberPerPageOptions.map(function (opt) {
-      return <option value={opt}>{opt}</option>;
+      return <option key={opt} value={opt}>{opt}</option>;
     }.bind(this));
     var numberOfPages = this.numberOfPages();
     var pageStart = ((this.props.currentPage - 1) * this.props.numberPerPage) + 1;
@@ -334,7 +335,7 @@ var TableFooter = React.createClass({
     var lastButton;
     if (this.props.enableFirstLast) {
         firstButton = (<li className={prevDisabled}><a style={prevStyle} onClick={this.firstPage}><i className="fa fa-angle-double-left"></i><i className="fa fa-angle-double-left"></i> First</a></li>);
-        lastButton = (<li className={nextDisabled}><a style={nextStyle} onClick={this.lastPage}>Last <i className="fa fa-angle-double-right"></i><i className="fa fa-angle-double-right"></i></a></li>)
+        lastButton = (<li className={nextDisabled}><a style={nextStyle} onClick={this.lastPage}>Last <i className="fa fa-angle-double-right"></i><i className="fa fa-angle-double-right"></i></a></li>);
     }
 
     return (
