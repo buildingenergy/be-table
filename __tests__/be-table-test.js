@@ -45,8 +45,8 @@ var renderTable = function(attrs) {
 describe('BETable', function () {
   it('renders rows', function () {
     var table = renderTable(tableAttrs);
-    var thead = TU.findRenderedDOMComponentWithTag(table, 'thead')
-    var tbody = TU.findRenderedDOMComponentWithTag(table, 'tbody')
+    var thead = TU.findRenderedDOMComponentWithTag(table, 'thead');
+    var tbody = TU.findRenderedDOMComponentWithTag(table, 'tbody');
     var headRows = TU.scryRenderedDOMComponentsWithTag(thead, 'tr');
     var bodyRows = TU.scryRenderedDOMComponentsWithTag(tbody, 'tr');
     expect(headRows.length).toBe(2);
@@ -59,7 +59,7 @@ describe('BETable', function () {
     var tbody, tableRows, first;
     expect(headers.length).toBe(2);
 
-    tbody = TU.findRenderedDOMComponentWithTag(table, 'tbody')
+    tbody = TU.findRenderedDOMComponentWithTag(table, 'tbody');
 
     TU.Simulate.click(React.findDOMNode(headers[0]));
     expect(table.state.sorting.column).toBe(tableAttrs.columns[0]);
@@ -73,4 +73,4 @@ describe('BETable', function () {
     expect(table.state.sorting.column).toBe(tableAttrs.columns[1]);
     expect(table.state.sorting.ascending).toBe(false);
   });
-})
+});

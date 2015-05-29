@@ -51,7 +51,7 @@ var renderHeader = function(attrs, content) {
 describe('BETable headers', function () {
   it('renders headers', function () {
     var table = renderTable(tableAttrs);
-    var thead = TU.findRenderedDOMComponentWithTag(table, 'thead')
+    var thead = TU.findRenderedDOMComponentWithTag(table, 'thead');
     var headers = thead.props.children[0].props.children;
     expect(headers[0].key).toBe('city');
     expect(headers[0].props.column.title).toBe('City');

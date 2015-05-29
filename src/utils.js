@@ -1,4 +1,4 @@
-
+/*jshint esnext: true */
 function getNamespace() {
   /**
    * Recursively define a nested object on ``window`` without destroying if it exists

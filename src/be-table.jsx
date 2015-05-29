@@ -1,3 +1,4 @@
+/*jshint esnext: true */
 /**
  * BETable react component and table library
  */
@@ -33,7 +34,7 @@ var BETable = React.createClass({
                className="form-control input-sm show"
                required="true"
                placeholder={col.title} />
-        )
+        );
     };
 
     /** Convenience function that, given an input type, returns a function
@@ -233,14 +234,14 @@ var BETable = React.createClass({
       return {
         selectedRows: {},
         selectAll: !prevState.selectAll
-      }
+      };
     }, function () {
       this.props.callback(this.state, {eventType: 'selectAllToggled'});
     });
   },
 
   isSelectedRow: function (row) {
-    let selected = _.has(this.state.selectedRows, row.id)
+    let selected = _.has(this.state.selectedRows, row.id);
     if (this.state.selectAll) {
       selected = !selected;
     }
@@ -474,7 +475,7 @@ var TableFooter = React.createClass({
     var lastButton;
     if (this.props.enableFirstLast) {
         firstButton = (<li className={prevDisabled}><a style={prevStyle} onClick={this.firstPage}><i className="fa fa-angle-double-left"></i><i className="fa fa-angle-double-left"></i> First</a></li>);
-        lastButton = (<li className={nextDisabled}><a style={nextStyle} onClick={this.lastPage}>Last <i className="fa fa-angle-double-right"></i><i className="fa fa-angle-double-right"></i></a></li>)
+        lastButton = (<li className={nextDisabled}><a style={nextStyle} onClick={this.lastPage}>Last <i className="fa fa-angle-double-right"></i><i className="fa fa-angle-double-right"></i></a></li>);
     }
 
     return (
