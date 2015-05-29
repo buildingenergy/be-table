@@ -1,4 +1,5 @@
 (function(){
+/*jshint esnext: true */
 'use strict';
 
 function getNamespace() {
@@ -79,7 +80,8 @@ function getOrCall(x) {
 
 /* jshint ignore:start */
 
-window.formatters = window.formatters || {};
+var formatters = {};
+getNamespace('BE', 'Table').formatters = formatters;
 
 (function (ns) {
   /**
@@ -500,6 +502,7 @@ window.formatters = window.formatters || {};
 })(formatters);
 /* jshint ignore:end */
 
+/*jshint esnext: true */
 /**
  * BETable react component and table library
  */

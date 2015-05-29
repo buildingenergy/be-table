@@ -53,7 +53,7 @@ angular.module('app', ['react'])
       cell: {
         className: 'scroll_columns text-right',
         renderer: function (value, row, col, state) {
-          return window.formatters.numberRenderer(value, 2, true);
+          return window.BE.Table.formatters.numberRenderer(value, 2, true);
         }
       }
     }
