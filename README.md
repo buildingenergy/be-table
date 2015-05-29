@@ -1,6 +1,6 @@
 # be-table
 
-the table you've been waiting for
+the table you've been waiting for http://buildingenergy.github.io/be-table/
 
 ### dev
 
