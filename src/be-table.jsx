@@ -216,7 +216,6 @@ var Header = React.createClass({
  * SearchFilter: the filter sub header
  */
 var SearchFilter = React.createClass({
-
   render: function() {
     var thClassString = "sub_head scroll_columns" + " " + this.props.className;
 
