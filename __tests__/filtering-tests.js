@@ -76,12 +76,15 @@ describe('SearchFilter', function () {
     var table = renderTable(tableAttrs);
     var filters = TU.scryRenderedComponentsWithType(table, BE.SearchFilter);
     var cityInput = TU.findRenderedDOMComponentWithTag(filters[0], "input");
+    var stateInput = TU.findRenderedDOMComponentWithTag(filters[1], "input");
     // act
     TU.Simulate.change(cityInput, {target: {value: "Port"}});
+    TU.Simulate.change(stateInput, {target: {value: "OR"}});
     // assert
     expect(cityInput.tagName).toBe("INPUT");
-    expect(mockCallback.mock.calls.length).toBe(1);
+    expect(mockCallback.mock.calls.length).toBe(2);
     expect(mockCallback.mock.calls[0][1].eventType).toBe("filterChanged");
-    expect(mockCallback.mock.calls[0][0].searchFilters).toBe("filterChanged");
+    expect(table.state.searchFilters).toBe({"state": "OR", "city": "Port"});
+    expect(mockCallback.mock.calls[1][0].searchFilters).toBe({"state": "OR", "city": "Port"});
   });
 });
