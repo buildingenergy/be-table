@@ -32,13 +32,13 @@ var tableAttrs = {
     },
   ],
   rows: [
-    {'id': 1, 'city': 'Portland', 'gfa': 1000},
-    {'id': 2, 'city': 'Portland', 'gfa': 2000},
-    {'id': 3, 'city': 'Seattle', 'gfa': 1000},
-    {'id': 4, 'city': 'Seattle', 'gfa': 2000},
-    {'id': 5, 'city': 'Seattle', 'gfa': 3000},
+    {'id': 1, 'city': 'Portland', 'gfa': 1000, 'state': 'OR'},
+    {'id': 2, 'city': 'Portland', 'gfa': 2000, 'state': 'OR'},
+    {'id': 3, 'city': 'Seattle', 'gfa': 1000, 'state': 'WA'},
+    {'id': 4, 'city': 'Seattle', 'gfa': 2000, 'state': 'WA'},
+    {'id': 5, 'city': 'Seattle', 'gfa': 3000, 'state': 'WA'},
   ],
-  callback: function () {},
+  callback: _.noop,
   searchmeta: {},
 };
 
@@ -65,5 +65,23 @@ describe('BETable', function () {
     expect(cityFilterInput.getAttribute("placeholder")).toBe("City");
     expect(gfaInputFilters[0].getAttribute("placeholder")).toBe("Min");
     expect(gfaInputFilters[1].getAttribute("placeholder")).toBe("Max");
+  });
+});
+
+describe('SearchFilter', function () {
+  it('calls the table callback with a "filterChanged" eventType', function () {
+    // arrange
+    var mockCallback = jest.genMockFunction();
+    tableAttrs.callback = mockCallback;
+    var table = renderTable(tableAttrs);
+    var filters = TU.scryRenderedComponentsWithType(table, BE.SearchFilter);
+    var cityInput = TU.findRenderedDOMComponentWithTag(filters[0], "input");
+    // act
+    TU.Simulate.change(cityInput, {target: {value: "Port"}});
+    // assert
+    expect(cityInput.tagName).toBe("INPUT");
+    expect(mockCallback.mock.calls.length).toBe(1);
+    expect(mockCallback.mock.calls[0][1].eventType).toBe("filterChanged");
+    expect(mockCallback.mock.calls[0][0].searchFilters).toBe("filterChanged");
   });
 });
