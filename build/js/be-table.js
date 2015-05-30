@@ -1135,12 +1135,15 @@ ns.BETable = BETable;
 ns.Header = Header;
 ns.Row = Row;
 ns.Cell = Cell;
+ns.SearchFilter = SearchFilter;
 
 try {
   module.exports = {
     BETable: BETable,
     Header: Header,
     Row: Row,
-    Cell: Cell };
+    Cell: Cell,
+    SearchFilter: SearchFilter
+  };
 } catch (e) {}
 })();
