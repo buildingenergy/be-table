@@ -1,7 +1,8 @@
 
 var srcFile = '../build/js/be-table';
-jest.dontMock(srcFile + '.js');
+jest.dontMock(srcFile);
 jest.dontMock('lodash');
+jest.dontMock('classnames');
 
 var React = window.React = require('react/addons');
 var _ = window._ = require('lodash');
@@ -78,13 +79,14 @@ describe('SearchFilter', function () {
     var cityInput = TU.findRenderedDOMComponentWithTag(filters[0], "input");
     var stateInput = TU.findRenderedDOMComponentWithTag(filters[1], "input");
     // act
-    TU.Simulate.change(cityInput, {target: {value: "Port"}});
-    TU.Simulate.change(stateInput, {target: {value: "OR"}});
+    TU.Simulate.change(cityInput, {target: {value: "Port", name: "city"}});
+    TU.Simulate.change(stateInput, {target: {value: "OR", name: "state"}});
     // assert
     expect(cityInput.tagName).toBe("INPUT");
     expect(mockCallback.mock.calls.length).toBe(2);
+    // expect(cityInput.value).toEqual("Port");
     expect(mockCallback.mock.calls[0][1].eventType).toBe("filterChanged");
-    expect(table.state.searchFilters).toBe({"state": "OR", "city": "Port"});
-    expect(mockCallback.mock.calls[1][0].searchFilters).toBe({"state": "OR", "city": "Port"});
+    expect(table.state.searchFilters).toEqual({"state": "OR", "city": "Port"});
+    expect(mockCallback.mock.calls[1][0].searchFilters).toEqual({"state": "OR", "city": "Port"});
   });
 });
