@@ -77,13 +77,16 @@ describe('SearchFilter', function () {
     var table = renderTable(tableAttrs);
     var filters = TU.scryRenderedComponentsWithType(table, BE.SearchFilter);
     var cityInput = TU.findRenderedDOMComponentWithTag(filters[0], "input");
+    cityInput = React.findDOMNode(cityInput);
     var stateInput = TU.findRenderedDOMComponentWithTag(filters[1], "input");
+    stateInput = React.findDOMNode(stateInput);
     // act
     TU.Simulate.change(cityInput, {target: {value: "Port", name: "city"}});
     TU.Simulate.change(stateInput, {target: {value: "OR", name: "state"}});
     // assert
     expect(cityInput.tagName).toBe("INPUT");
     expect(mockCallback.mock.calls.length).toBe(2);
+    // this breaks
     // expect(cityInput.value).toEqual("Port");
     expect(mockCallback.mock.calls[0][1].eventType).toBe("filterChanged");
     expect(table.state.searchFilters).toEqual({"state": "OR", "city": "Port"});
