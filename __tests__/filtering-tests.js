@@ -86,7 +86,7 @@ describe('SearchFilter', function () {
     // assert
     expect(cityInput.tagName).toBe("INPUT");
     expect(mockCallback.mock.calls.length).toBe(2);
-    // this breaks
+    // this breaks https://github.com/facebook/react/issues/3151
     // expect(cityInput.value).toEqual("Port");
     expect(mockCallback.mock.calls[0][1].eventType).toBe("filterChanged");
     expect(table.state.searchFilters).toEqual({"state": "OR", "city": "Port"});
