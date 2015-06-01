@@ -84,7 +84,7 @@ describe('SearchFilter', function () {
     expect(cityInput.tagName).toBe("INPUT");
     expect(mockCallback.mock.calls.length).toBe(2);
     expect(mockCallback.mock.calls[0][1].eventType).toBe("filterChanged");
-    expect(table.state.searchFilters).toBe({"state": "OR", "city": "Port"});
-    expect(mockCallback.mock.calls[1][0].searchFilters).toBe({"state": "OR", "city": "Port"});
+    expect(table.state.searchFilters).toEqual({"state": "OR", "city": "Port"});
+    expect(mockCallback.mock.calls[1][0].searchFilters).toEqual({"state": "OR", "city": "Port"});
   });
 });
