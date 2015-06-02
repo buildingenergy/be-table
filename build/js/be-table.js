@@ -676,8 +676,8 @@ var BETable = React.createClass({
     callback: React.PropTypes.func,
     searchmeta: React.PropTypes.object,
     objectname: React.PropTypes.string,
-    customTypes: React.PropTypes.object
-  },
+    customTypes: React.PropTypes.object,
+    customComponents: React.PropTypes.object },
 
   getDefaultProps: function getDefaultProps() {
     return {
@@ -811,7 +811,8 @@ var BETable = React.createClass({
     }).bind(this));
 
     var rows = this.props.rows.map((function (row) {
-      return React.createElement(Row, { row: row, isSelectedRow: this.isSelectedRow(row), columns: columnDefs, sorting: this.state.sorting, getType: this.getType, key: row.id });
+      var RowComponent = (this.props.customComponents || {}).row || Row;
+      return React.createElement(RowComponent, { row: row, isSelectedRow: this.isSelectedRow(row), columns: columnDefs, sorting: this.state.sorting, getType: this.getType, key: row.id });
     }).bind(this));
 
     var numberOfObjects = this.props.searchmeta.totalMatchCount || this.props.searchmeta.number_matching_search;
