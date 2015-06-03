@@ -509,6 +509,8 @@ getNamespace('BE', 'Table').formatters = formatters;
 
 var makeNormalFilter = function makeNormalFilter(filterCallback) {
   return function (col) {
+    if (col.filterable === false) return;
+
     return React.createElement('input', { type: 'text',
       name: col.key,
       onChange: function (ev) {
@@ -525,6 +527,8 @@ var makeNormalFilter = function makeNormalFilter(filterCallback) {
  */
 var makeRangeFilter = function makeRangeFilter(type, filterCallback) {
   return function (col) {
+    if (col.filterable === false) return;
+
     var minKey = col.key + '__gte';
     var maxKey = col.key + '__lte';
 

@@ -1,6 +1,8 @@
 /*jshint esnext: true */
 
 let makeNormalFilter = (filterCallback) => (col) => {
+  if (col.filterable === false) return;
+
   return (
     <input type="text"
            name={col.key}
@@ -15,6 +17,8 @@ let makeNormalFilter = (filterCallback) => (col) => {
  *  that takes a col and renders a range filter
  */
 let makeRangeFilter = (type, filterCallback) => (col) => {
+  if (col.filterable === false) return;
+
   let minKey = col.key + "__gte";
   let maxKey = col.key + "__lte";
 
@@ -39,7 +43,6 @@ let makeRangeFilter = (type, filterCallback) => (col) => {
     </div>
   );
 };
-
 
 let defaultTypes = function (table) {
   return {
