@@ -1,13 +1,16 @@
 /*jshint esnext: true */
 
 let makeNormalFilter = (filterCallback) => (col) => {
-  if (col.filterable === false) return;
+  let classes = classNames("form-control input-sm show", {
+    disabled: col.filterable === false
+  });
 
   return (
     <input type="text"
            name={col.key}
            onChange={(ev) => filterCallback(ev.target.name, ev.target.value)}
-           className="form-control input-sm show"
+           className={classes}
+           disabled={col.filterable === false ? 'disabled' : ''}
            required="true"
            placeholder={col.title} />
     );
@@ -17,10 +20,12 @@ let makeNormalFilter = (filterCallback) => (col) => {
  *  that takes a col and renders a range filter
  */
 let makeRangeFilter = (type, filterCallback) => (col) => {
-  if (col.filterable === false) return;
-
   let minKey = col.key + "__gte";
   let maxKey = col.key + "__lte";
+
+  let classes = classNames("form-control input-sm show", {
+    disabled: col.filterable === false
+  });
 
   return (
     <div>
@@ -28,7 +33,8 @@ let makeRangeFilter = (type, filterCallback) => (col) => {
         <input type={type}
                name={minKey}
                onChange={(ev) => filterCallback(ev.target.name, ev.target.value)}
-               className="form-control input-sm"
+               className={classes}
+               disabled={col.filterable === false ? 'disabled' : ''}
                required="true"
                placeholder="Min" />
       </div>
@@ -36,7 +42,8 @@ let makeRangeFilter = (type, filterCallback) => (col) => {
         <input type={type}
                name={maxKey}
                onChange={(ev) => filterCallback(ev.target.name, ev.target.value)}
-               className="form-control input-sm"
+               className={classes}
+               disabled={col.filterable === false ? 'disabled' : ''}
                required="true"
                placeholder="Max" />
       </div>

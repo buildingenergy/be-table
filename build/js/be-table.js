@@ -509,14 +509,17 @@ getNamespace('BE', 'Table').formatters = formatters;
 
 var makeNormalFilter = function makeNormalFilter(filterCallback) {
   return function (col) {
-    if (col.filterable === false) return;
+    var classes = classNames('form-control input-sm show', {
+      disabled: col.filterable === false
+    });
 
     return React.createElement('input', { type: 'text',
       name: col.key,
       onChange: function (ev) {
         return filterCallback(ev.target.name, ev.target.value);
       },
-      className: 'form-control input-sm show',
+      className: classes,
+      disabled: col.filterable === false ? 'disabled' : '',
       required: 'true',
       placeholder: col.title });
   };
@@ -527,10 +530,12 @@ var makeNormalFilter = function makeNormalFilter(filterCallback) {
  */
 var makeRangeFilter = function makeRangeFilter(type, filterCallback) {
   return function (col) {
-    if (col.filterable === false) return;
-
     var minKey = col.key + '__gte';
     var maxKey = col.key + '__lte';
+
+    var classes = classNames('form-control input-sm show', {
+      disabled: col.filterable === false
+    });
 
     return React.createElement(
       'div',
@@ -543,7 +548,8 @@ var makeRangeFilter = function makeRangeFilter(type, filterCallback) {
           onChange: function (ev) {
             return filterCallback(ev.target.name, ev.target.value);
           },
-          className: 'form-control input-sm',
+          className: classes,
+          disabled: col.filterable === false ? 'disabled' : '',
           required: 'true',
           placeholder: 'Min' })
       ),
@@ -555,7 +561,8 @@ var makeRangeFilter = function makeRangeFilter(type, filterCallback) {
           onChange: function (ev) {
             return filterCallback(ev.target.name, ev.target.value);
           },
-          className: 'form-control input-sm',
+          className: classes,
+          disabled: col.filterable === false ? 'disabled' : '',
           required: 'true',
           placeholder: 'Max' })
       )
