@@ -1,4 +1,4 @@
-# cljsjs/papaparse
+# be-table
 
 # Instalation
 ```sh
