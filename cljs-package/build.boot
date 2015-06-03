@@ -3,9 +3,11 @@
   :dependencies '[[adzerk/bootlaces   "0.1.11" :scope "test"]
                   [cljsjs/boot-cljsjs "0.4.8" :scope "test"]])
 
-(require '[boot.core :as boot-core]
+(require '[boot.core :as c]
+         '[boot.tmpdir :as tmpd]
          '[adzerk.bootlaces :refer :all]
-         '[cljsjs.boot-cljsjs.packaging :refer :all])
+         '[cljsjs.boot-cljsjs.packaging :refer :all]
+         '[clojure.java.io :as io])
 
 (def be-table-version "0.0.1")
 (def +version+ (str be-table-version "-0"))
@@ -30,12 +32,29 @@
    (download :url (lodash-url "lodash.js"))
    (download :url (lodash-url "lodash.min.js"))))
 
+(defn find-file [fs filename]
+  (->> fs c/input-files (c/by-name [filename]) first))
+
+(deftask concatenate-files []
+  (c/with-pre-wrap fileset
+    (let [tmp (c/temp-dir!)
+          new-dev-file (io/file tmp "cljsjs/be-table/development/be-table.inc.js")
+          new-min-file (io/file tmp "cljsjs/be-table/production/be-table.min.inc.js")
+          lodash-dev-file (find-file fileset "lodash.js")
+          lodash-min-file (find-file fileset "lodash.min.js")
+          table-dev-file (find-file fileset "be-table.js")
+          table-min-file (find-file fileset"be-table.min.js")]
+      (io/make-parents new-dev-file)
+      (io/make-parents new-min-file)
+      (spit new-dev-file (str (-> lodash-dev-file tmpd/file slurp)
+                              (-> table-dev-file tmpd/file slurp)))
+      (spit new-min-file (str (-> lodash-min-file tmpd/file slurp)
+                              (-> table-min-file tmpd/file slurp)))
+      (-> fileset (c/add-resource tmp) c/commit!))))
+
 (deftask package []
   (comp
    (download-lodash)
-   (sift :move {#"^lodash.js" "cljsjs/be-table/development/lodash.inc.js"
-                #"^lodash.min.js" "cljsjs/be-table/production/lodash.min.inc.js"
-                #"^js/be-table.js" "cljsjs/be-table/development/be-table.inc.js"
-                #"^js/be-table.min.js" "cljsjs/be-table/production/be-table.min.inc.js"})
-   (sift :include #{#"^cljsjs"})
-   (deps-cljs :name "cljsjs.be-table")))
+   (concatenate-files)
+   (deps-cljs :name "cljsjs.be-table")
+   (sift :include #{#"^cljsjs" #"^deps\.cljs$"})))
