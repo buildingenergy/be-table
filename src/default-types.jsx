@@ -1,11 +1,16 @@
 /*jshint esnext: true */
 
 let makeNormalFilter = (filterCallback) => (col) => {
+  let classes = classNames("form-control input-sm show", {
+    disabled: col.filterable === false
+  });
+
   return (
     <input type="text"
            name={col.key}
            onChange={(ev) => filterCallback(col.key, ev.target.value)}
-           className="form-control input-sm show"
+           className={classes}
+           disabled={col.filterable === false ? 'disabled' : ''}
            required="true"
            placeholder={col.title} />
     );
@@ -18,13 +23,18 @@ let makeRangeFilter = (type, filterCallback) => (col) => {
   let minKey = col.key + "__gte";
   let maxKey = col.key + "__lte";
 
+  let classes = classNames("form-control input-sm show", {
+    disabled: col.filterable === false
+  });
+
   return (
     <div>
       <div className="col-xs-6">
         <input type={type}
                name={minKey}
                onChange={(ev) => filterCallback(minKey, ev.target.value)}
-               className="form-control input-sm"
+               className={classes}
+               disabled={col.filterable === false ? 'disabled' : ''}
                required="true"
                placeholder="Min" />
       </div>
@@ -32,14 +42,14 @@ let makeRangeFilter = (type, filterCallback) => (col) => {
         <input type={type}
                name={maxKey}
                onChange={(ev) => filterCallback(maxKey, ev.target.value)}
-               className="form-control input-sm"
+               className={classes}
+               disabled={col.filterable === false ? 'disabled' : ''}
                required="true"
                placeholder="Max" />
       </div>
     </div>
   );
 };
-
 
 let defaultTypes = function (table) {
   return {

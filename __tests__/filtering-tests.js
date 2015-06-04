@@ -31,6 +31,18 @@ var tableAttrs = {
       sortable: true,
       type: 'number'
     },
+    {
+      key: 'unfilterable_string',
+      title: 'Unfilterable String',
+      filterable: false,
+      type: 'string'
+    },
+    {
+      key: 'unfilterable_number',
+      title: 'Unfilterable Number',
+      filterable: false,
+      type: 'number'
+    },
   ],
   rows: [
     {'id': 1, 'city': 'Portland', 'gfa': 1000, 'state': 'OR'},
@@ -58,7 +70,7 @@ describe('BETable', function () {
     var cityFilterInput = cityFilter.children[0];
     var gfaInputFilters = React.findDOMNode(filters[2]).getElementsByTagName("INPUT");
     // assert
-    expect(filters.length).toBe(3);
+    expect(filters.length).toBe(5);
     expect(filters[0].props.className).toBe("sub_head scroll_columns");
     expect(filters[1].props.className).toBe("sub_head scroll_columns");
     expect(cityFilter.tagName).toBe("TH");
@@ -66,6 +78,22 @@ describe('BETable', function () {
     expect(cityFilterInput.getAttribute("placeholder")).toBe("City");
     expect(gfaInputFilters[0].getAttribute("placeholder")).toBe("Min");
     expect(gfaInputFilters[1].getAttribute("placeholder")).toBe("Max");
+  });
+
+  it('renders disabled filters', function () {
+    // arrange
+    var table = renderTable(tableAttrs);
+    var filters = TU.scryRenderedComponentsWithType(table, BE.SearchFilter);
+    var stringFilter = React.findDOMNode(filters[3]);
+    var stringFilterInput = stringFilter.children[0];
+    var numberFilters = React.findDOMNode(filters[4]).getElementsByTagName("INPUT");
+    // assert
+    expect(stringFilterInput.tagName).toBe("INPUT");
+    expect(stringFilterInput.className).toContain('disabled');
+    expect(numberFilters[0].className).toContain('disabled');
+    expect(numberFilters[1].className).toContain('disabled');
+    // NB: should also have "disabled" attribute set, but jest's DOM
+    // doesn't know about it.
   });
 });
 
