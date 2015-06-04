@@ -8,7 +8,7 @@ let makeNormalFilter = (filterCallback) => (col) => {
   return (
     <input type="text"
            name={col.key}
-           onChange={(ev) => filterCallback(ev.target.name, ev.target.value)}
+           onChange={(ev) => filterCallback(col.key, ev.target.value)}
            className={classes}
            disabled={col.filterable === false ? 'disabled' : ''}
            required="true"
@@ -32,7 +32,7 @@ let makeRangeFilter = (type, filterCallback) => (col) => {
       <div className="col-xs-6">
         <input type={type}
                name={minKey}
-               onChange={(ev) => filterCallback(ev.target.name, ev.target.value)}
+               onChange={(ev) => filterCallback(minKey, ev.target.value)}
                className={classes}
                disabled={col.filterable === false ? 'disabled' : ''}
                required="true"
@@ -41,7 +41,7 @@ let makeRangeFilter = (type, filterCallback) => (col) => {
       <div className="col-xs-6">
         <input type={type}
                name={maxKey}
-               onChange={(ev) => filterCallback(ev.target.name, ev.target.value)}
+               onChange={(ev) => filterCallback(maxKey, ev.target.value)}
                className={classes}
                disabled={col.filterable === false ? 'disabled' : ''}
                required="true"

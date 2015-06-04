@@ -216,7 +216,6 @@ var Header = React.createClass({
  * SearchFilter: the filter sub header
  */
 var SearchFilter = React.createClass({
-
   render: function() {
     var thClassString = "sub_head scroll_columns" + " " + this.props.className;
 
@@ -371,6 +370,7 @@ ns.BETable = BETable;
 ns.Header = Header;
 ns.Row = Row;
 ns.Cell = Cell;
+ns.SearchFilter = SearchFilter;
 
 try {
   module.exports = {
@@ -378,6 +378,7 @@ try {
     Header: Header,
     Row: Row,
     Cell: Cell,
+    SearchFilter: SearchFilter
   };
 } catch (e) {
 

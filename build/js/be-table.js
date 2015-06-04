@@ -516,7 +516,7 @@ var makeNormalFilter = function makeNormalFilter(filterCallback) {
     return React.createElement('input', { type: 'text',
       name: col.key,
       onChange: function (ev) {
-        return filterCallback(ev.target.name, ev.target.value);
+        return filterCallback(col.key, ev.target.value);
       },
       className: classes,
       disabled: col.filterable === false ? 'disabled' : '',
@@ -546,7 +546,7 @@ var makeRangeFilter = function makeRangeFilter(type, filterCallback) {
         React.createElement('input', { type: type,
           name: minKey,
           onChange: function (ev) {
-            return filterCallback(ev.target.name, ev.target.value);
+            return filterCallback(minKey, ev.target.value);
           },
           className: classes,
           disabled: col.filterable === false ? 'disabled' : '',
@@ -559,7 +559,7 @@ var makeRangeFilter = function makeRangeFilter(type, filterCallback) {
         React.createElement('input', { type: type,
           name: maxKey,
           onChange: function (ev) {
-            return filterCallback(ev.target.name, ev.target.value);
+            return filterCallback(maxKey, ev.target.value);
           },
           className: classes,
           disabled: col.filterable === false ? 'disabled' : '',
@@ -1146,12 +1146,15 @@ ns.BETable = BETable;
 ns.Header = Header;
 ns.Row = Row;
 ns.Cell = Cell;
+ns.SearchFilter = SearchFilter;
 
 try {
   module.exports = {
     BETable: BETable,
     Header: Header,
     Row: Row,
-    Cell: Cell };
+    Cell: Cell,
+    SearchFilter: SearchFilter
+  };
 } catch (e) {}
 })();
