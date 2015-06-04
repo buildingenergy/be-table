@@ -14,8 +14,8 @@ function getNamespace() {
    *   // keeps existing objects intact if extant, otherwise creates empty objects
    */
   var o = window;
-  for (var i in arguments) {
-    var k = arguments[i];
+  for (var _i in arguments) {
+    var k = arguments[_i];
     o[k] = o[k] || {};
     o = o[k];
   }
@@ -47,8 +47,8 @@ function getOrCall(x) {
 
     var classes = '';
 
-    for (var i = 0; i < arguments.length; i++) {
-      var arg = arguments[i];
+    for (var _i2 = 0; _i2 < arguments.length; _i2++) {
+      var arg = arguments[_i2];
       if (!arg) continue;
 
       var argType = typeof arg;
@@ -1037,8 +1037,8 @@ var TableFooter = React.createClass({
     var prevStyle = this.props.currentPage <= 1 ? {} : { cursor: 'pointer' };
     var nextDisabled = this.props.currentPage === numberOfPages ? 'disabled' : '';
     var nextStyle = this.props.currentPage === numberOfPages ? {} : { cursor: 'pointer' };
-    var firstButton;
-    var lastButton;
+    var firstButton = undefined;
+    var lastButton = undefined;
     if (this.props.enableFirstLast) {
       firstButton = React.createElement(
         'li',

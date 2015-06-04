@@ -7,9 +7,9 @@ function getNamespace() {
    *   getNamespace('BE', 'utils', 'formatting') === window.BE.utils.formatting
    *   // keeps existing objects intact if extant, otherwise creates empty objects
    */
-  var o = window;
-  for (var i in arguments) {
-    var k = arguments[i];
+  let o = window;
+  for (let i in arguments) {
+    let k = arguments[i];
     o[k] = o[k] || {};
     o = o[k];
   }
@@ -35,13 +35,13 @@ function getOrCall(x, ...params) {
 
   function classNames () {
 
-    var classes = '';
+    let classes = '';
 
-    for (var i = 0; i < arguments.length; i++) {
-      var arg = arguments[i];
+    for (let i = 0; i < arguments.length; i++) {
+      let arg = arguments[i];
       if (!arg) continue;
 
-      var argType = typeof arg;
+      let argType = typeof arg;
 
       if ('string' === argType || 'number' === argType) {
         classes += ' ' + arg;
@@ -50,7 +50,7 @@ function getOrCall(x, ...params) {
         classes += ' ' + classNames.apply(null, arg);
 
       } else if ('object' === argType) {
-        for (var key in arg) {
+        for (let key in arg) {
           if (arg.hasOwnProperty(key) && arg[key]) {
             classes += ' ' + key;
           }
