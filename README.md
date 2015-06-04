@@ -2,7 +2,51 @@
 
 the table you've been waiting for http://buildingenergy.github.io/be-table/
 
-### dev
+## overview
+
+The table takes at least:
+- a list of columns
+- a list of rows
+- a callback for table events
+- an object describing pagination behavior
+- (optional) a list of custom column types
+
+### Rows
+
+A row is simply an key-value object describing the table data
+
+### Columns
+
+A column definitions has the following members:
+- `key` *string*: the key into the row
+- `title` *string*: the value to display in the header
+- `sortable` *boolean*: enable/disable column sorting
+- `type` *object*: see *Types*
+
+### Types
+
+A column type is a description of how a column of data should render.
+
+Each column consists of three sub-objects:
+- `header`: for the table header
+- `filter`: for the search filters
+- `cell`: for each cell of data in this column
+
+Each of these sub-objects has two members:
+- `className` *string*|*function*:
+- `renderer` *string*|*function*:
+
+BE-Table comes with several default types:
+- `"hidden"` (completely suppresses the column)
+- `"string"` (no special formatting)
+- `"number"` (uses a range filter, right-aligns data)
+- `"date"` (similar to number, but uses a date-picker for filtering)
+
+These default types can be extended with custom types through the `customType`
+table property (see usage example)
+
+
+## dev
 
 ```console
 git clone git@github.com:buildingenergy/be-table.git
@@ -11,7 +55,7 @@ npm install
 gulp watch
 ```
 
-### test
+## test
 
 ```console
 gulp test
@@ -29,7 +73,7 @@ npm install node-inspector
 node-debug --nodejs --harmony ./node_modules/jest-cli/bin/jest.js --runInBand
 ```
 
-### usage
+## usage
 
 Requires: React and lodash
 
