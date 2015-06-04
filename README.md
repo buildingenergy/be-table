@@ -21,7 +21,7 @@ gulp watchtest  # for live reload of tests
 ##### debugging tests
 *from: http://stackoverflow.com/questions/25142173/debugging-jest-test-cases-using-node-inspector/26415442#26415442*
 
-comment out `harmonize()` in `node_modules/jest-cli/jest.js`
+comment out `harmonize()` in `node_modules/jest-cli/bin/jest.js`
 
 ```console
 npm install node-debug
