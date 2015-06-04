@@ -75,7 +75,6 @@ describe('BETable', function () {
     expect(filters[1].props.className).toBe("sub_head scroll_columns");
     expect(cityFilter.tagName).toBe("TH");
     expect(cityFilterInput.tagName).toBe("INPUT");
-    console.log(cityFilterInput.getAttribute("type"));
     expect(cityFilterInput.getAttribute("placeholder")).toBe("City");
     expect(gfaInputFilters[0].getAttribute("placeholder")).toBe("Min");
     expect(gfaInputFilters[1].getAttribute("placeholder")).toBe("Max");
