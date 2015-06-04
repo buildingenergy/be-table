@@ -135,7 +135,7 @@ let defaultTypes = function (table) {
  * @param  {object} type The type definition object
  * @return {object}      The fleshed-out type definition
  */
-var completeType = (filterRenderer) => (type) => {
+let completeType = (filterRenderer) => (type) => {
   return _.defaults(type, {
     cell: {
       className: "scroll_columns",
@@ -154,9 +154,9 @@ var completeType = (filterRenderer) => (type) => {
 
 
 /** Get default and custom types merged, with missing values filled with defaults */
-var getTableTypes = function (table) {
-  var completer = completeType(makeNormalFilter(table.filterCallback));
-  var mergedTypes = _.assign({}, defaultTypes(table), table.props.customTypes);
+let getTableTypes = function (table) {
+  let completer = completeType(makeNormalFilter(table.filterCallback));
+  let mergedTypes = _.assign({}, defaultTypes(table), table.props.customTypes);
   let allTypes = _.mapValues(mergedTypes, completer);
   return allTypes;
 };
