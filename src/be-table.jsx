@@ -1,12 +1,9 @@
+/*jshint esnext: true */
 /**
  * BETable react component and table library
  */
 
-var React = window.React;
-var _ = window._;  // lodash
-
-
-var BETable = React.createClass({
+let BETable = React.createClass({
   propTypes: {
     columns: React.PropTypes.array.isRequired,
     rows: React.PropTypes.array.isRequired,
@@ -15,149 +12,21 @@ var BETable = React.createClass({
     objectname: React.PropTypes.string,
     customTypes: React.PropTypes.object
   },
+
   getDefaultProps: function () {
     return {
       objectname: 'rows',
       customTypes: {}
     };
   },
-  /** Get default and custom types merged, with missing values filled with defaults */
-  getTypes: function () {
 
-    let normalFilter = (col) => {
-      return (
-        <input type="text"
-               name={col.key}
-               onChange={(ev) => this.filterCallback(ev.target.name, ev.target.value)}
-               className="form-control input-sm show"
-               required="true"
-               placeholder={col.title} />
-        )
-    };
+  buildTypes: function() {
+    return getTableTypes(this);
+  },
 
-    /** Convenience function that, given an input type, returns a function
-     *  that takes a col and renders a range filter
-     */
-    let makeRangeFilter = (type) => (col) => {
-      let minKey = col.key + "__gte";
-      let maxKey = col.key + "__lte";
-
-      return (
-        <div>
-          <div className="col-xs-6">
-            <input type={type}
-                   name={minKey}
-                   onChange={(ev) => this.filterCallback(ev.target.name, ev.target.value)}
-                   className="form-control input-sm"
-                   required="true"
-                   placeholder="Min" />
-          </div>
-          <div className="col-xs-6">
-            <input type={type}
-                   name={maxKey}
-                   onChange={(ev) => this.filterCallback(ev.target.name, ev.target.value)}
-                   className="form-control input-sm"
-                   required="true"
-                   placeholder="Max" />
-          </div>
-        </div>
-      );
-    };
-
-    let defaultTypes = {
-      string: {},
-      number: {
-        filter: {
-          renderer: makeRangeFilter('number')
-        },
-        cell: {
-          className: "scroll_columns is_aligned_right",
-          renderer: function(val) {
-            return formatters.numberRenderer(val, 0);
-          },
-        }
-      },
-      year: {
-        filter: {
-          renderer: makeRangeFilter('number')
-        },
-        cell: {
-          renderer: function(val) {
-            return formatters.numberRenderer(val, 0, true);
-          },
-        }
-      },
-      date: {
-        filter: {
-          renderer: makeRangeFilter('date')
-        },
-        cell: {
-          renderer: function(val) {
-            return formatters.dateRenderer(val);
-          }
-        }
-      },
-      multiselector: {
-        header: {
-          className: "check",
-          renderer: (col, state) => {
-            let checked = state.selectAll;
-            let handler = (ev) => {
-              let node = ev.target;
-              this.selectAllCallback(node.checked);
-              return false;
-            };
-            return (
-              <input type="checkbox"
-                     onChange={handler}
-                     checked={checked}/>
-            );
-          }
-        },
-        filter: {
-          className: "check",
-        },
-        cell: {
-          className: "check",
-          renderer: (val, row, col, opts) => {
-            let checked = opts.isSelectedRow;
-            let handler = (ev) => {
-              let node = ev.target;
-              this.rowCallback(row, node.checked);
-              return false;
-            };
-            return (
-              <input type="checkbox"
-                     onChange={handler}
-                     checked={checked}/>
-            );
-          }
-        }
-      }
-    };
-
-    var mergedTypes = _.assign({}, defaultTypes, this.props.customTypes);
-
-    var completeType = function(type) {
-      return _.defaults(type, {
-        cell: {
-          className: "scroll_columns",
-          renderer: (val) => val,
-        },
-        header: {
-          className: "column_head scroll_columns",
-          renderer: (col) => col.title,
-        },
-        filter: {
-          className: "sub_head scroll_columns",
-          renderer: normalFilter,
-        },
-      });
-    };
-
-    let allTypes = _.mapValues(mergedTypes, completeType);
-
-    return allTypes;
+  getType: function (type) {
+    let types = this.buildTypes();
+    return types[type] || types.hidden;
   },
 
   getInitialState: function () {
@@ -175,10 +44,10 @@ var BETable = React.createClass({
   },
 
   sortingCallback: function (obj) {
-    if (!obj.sortable) {
+    if (obj.sortable === false) {
       return;
     }
-    var ascending = (this.state.sorting.column === obj) ? !this.state.sorting.ascending : false;
+    let ascending = (this.state.sorting.column === obj) ? !this.state.sorting.ascending : false;
     this.setState({
       sorting: {
         column: obj,
@@ -207,7 +76,7 @@ var BETable = React.createClass({
 
   rowCallback: function (row, insert) {
     this.setState(function (previousState, currentProps) {
-      var rows = previousState.selectedRows;
+      let rows = previousState.selectedRows;
       if (previousState.selectAll) {
         insert = !insert;
       }
@@ -232,14 +101,14 @@ var BETable = React.createClass({
       return {
         selectedRows: {},
         selectAll: !prevState.selectAll
-      }
+      };
     }, function () {
       this.props.callback(this.state, {eventType: 'selectAllToggled'});
     });
   },
 
   isSelectedRow: function (row) {
-    let selected = _.has(this.state.selectedRows, row.id)
+    let selected = _.has(this.state.selectedRows, row.id);
     if (this.state.selectAll) {
       selected = !selected;
     }
@@ -248,10 +117,10 @@ var BETable = React.createClass({
 
   render: function() {
     let columnDefs = this.props.columns;
-    var types = this.getTypes();
+    let types = this.buildTypes();
 
-    var headers = columnDefs.map(function (col) {
-      let builder = types[col.type].header;
+    let headers = columnDefs.map(function (col) {
+      let builder = this.getType(col.type).header;
       let className = getOrCall(builder.className, col);
       let content = getOrCall(builder.renderer, col, this.state);
       return (
@@ -265,20 +134,20 @@ var BETable = React.createClass({
       );
     }.bind(this));
 
-    var searchFilters = columnDefs.map(function (col) {
-      let builder = types[col.type].filter;
+    let searchFilters = columnDefs.map(function (col) {
+      let builder = this.getType(col.type).filter;
       return (
-        <SearchFilter className={getOrCall(builder.className, col)}>
+        <SearchFilter className={getOrCall(builder.className, col)} key={col.key}>
           {getOrCall(builder.renderer, col)}
         </SearchFilter>
         );
     }.bind(this));
 
-    var rows = this.props.rows.map(function (row) {
-      return <Row row={row} isSelectedRow={this.isSelectedRow(row)} columns={columnDefs} sorting={this.state.sorting} dataTypes={types} key={row.id}></Row>;
+    let rows = this.props.rows.map(function (row) {
+      return <Row row={row} isSelectedRow={this.isSelectedRow(row)} columns={columnDefs} sorting={this.state.sorting} getType={this.getType} key={row.id}></Row>;
     }.bind(this));
 
-    var numberOfObjects = this.props.searchmeta.totalMatchCount || this.props.searchmeta.number_matching_search;
+    let numberOfObjects = this.props.searchmeta.totalMatchCount || this.props.searchmeta.number_matching_search;
 
     return (
       <div>
@@ -308,7 +177,7 @@ var BETable = React.createClass({
 });
 
 
-var Header = React.createClass({
+let Header = React.createClass({
   propTypes: {
     column : React.PropTypes.object.isRequired,
     handleClick: React.PropTypes.func,
@@ -324,19 +193,18 @@ var Header = React.createClass({
     this.props.handleClick(e, this.props.column);
   },
   render: function() {
-    let classString = this.props.className;
+    let classes = {};
     let column = this.props.column;
     if (column === this.props.sorting.column) {
-      classString += " sorted";
-      if (this.props.sorting.ascending) {
-        classString += " sort_asc";
-      } else {
-        classString += " sort_desc";
-      }
+      classes = {
+        sorted: true,
+        sort_asc: this.props.sorting.ascending,
+        sort_desc: !this.props.sorting.ascending,
+      };
     }
 
     return (
-      <th className={classString} onClick={this.handleClick}>
+      <th className={classNames(this.props.className, classes)} onClick={this.handleClick}>
         {this.props.children}
       </th>
     );
@@ -346,45 +214,39 @@ var Header = React.createClass({
 
 /**
  * SearchFilter: the filter sub header
- * TODO:
- *  - add range filter if column type is date or number or custom
- *  - add date picker to date filter
- *  - add checkbox and checkbox logic (involves checkbox header)
- *  - prevent searching on checkbox column?
- *  - add blank and protected filters
  */
-var SearchFilter = React.createClass({
-
+let SearchFilter = React.createClass({
   render: function() {
-    let content;
-    var thClassString = "sub_head scroll_columns";
+    let thClassString = "sub_head scroll_columns" + " " + this.props.className;
 
     return (
-      <th className={thClassString + " " + this.props.className}>
+      <th className={thClassString}>
         {this.props.children}
       </th>
     );
   }
 });
 
-var Row = React.createClass({
+let Row = React.createClass({
   propTypes: {
     row: React.PropTypes.object.isRequired,
     columns: React.PropTypes.array.isRequired,
     sorting: React.PropTypes.object.isRequired,
-    dataTypes: React.PropTypes.object.isRequired
+    getType: React.PropTypes.func.isRequired
   },
   render: function() {
-    var row = this.props.columns.map(function (col) {
-      var isSorted = col === this.props.sorting.column;
+    let row = this.props.columns.map(function (col) {
+      let isSorted = col === this.props.sorting.column;
       let cellValue = this.props.row[col.key];
-      let cellBuilder = this.props.dataTypes[col.type].cell;
+      let cellBuilder = this.props.getType(col.type).cell;
       let content = getOrCall(cellBuilder.renderer, cellValue, this.props.row, col, {isSelectedRow: this.props.isSelectedRow});
       let className = getOrCall(cellBuilder.className, col);
+
       return (
         <Cell isSorted={isSorted}
               isSelectedRow={this.props.isSelectedRow}
-              className={className}>
+              className={className}
+              key={col.key}>
           {content}
         </Cell>
       );
@@ -401,7 +263,7 @@ var Row = React.createClass({
  * Cell: table row cell: `td`
  *   Allows custom React elements to be returned if set in BETable.types
  */
-var Cell = React.createClass({
+let Cell = React.createClass({
   propTypes: {
     className: React.PropTypes.string.isRequired,
     isSorted: React.PropTypes.bool,
@@ -421,7 +283,7 @@ var Cell = React.createClass({
 /**
  * pagination footer
  */
-var TableFooter = React.createClass({
+let TableFooter = React.createClass({
   propTypes: {
     numberPerPageOptions: React.PropTypes.array,
     numberPerPage: React.PropTypes.number,
@@ -458,21 +320,21 @@ var TableFooter = React.createClass({
     }
   },
   render: function () {
-    var options = this.props.numberPerPageOptions.map(function (opt) {
-      return <option value={opt}>{opt}</option>;
+    let options = this.props.numberPerPageOptions.map(function (opt) {
+      return <option key={opt} value={opt}>{opt}</option>;
     }.bind(this));
-    var numberOfPages = this.numberOfPages();
-    var pageStart = ((this.props.currentPage - 1) * this.props.numberPerPage) + 1;
-    var pageEnd = (this.props.currentPage === numberOfPages) ? this.props.numberOfObjects : this.props.currentPage * this.props.numberPerPage;
-    var prevDisabled = this.props.currentPage <= 1 ? "disabled" : "";
-    var prevStyle = this.props.currentPage <= 1 ? {} : {cursor: "pointer"};
-    var nextDisabled = this.props.currentPage === numberOfPages ? "disabled" : "";
-    var nextStyle = this.props.currentPage === numberOfPages ? {} : {cursor: "pointer"};
-    var firstButton;
-    var lastButton;
+    let numberOfPages = this.numberOfPages();
+    let pageStart = ((this.props.currentPage - 1) * this.props.numberPerPage) + 1;
+    let pageEnd = (this.props.currentPage === numberOfPages) ? this.props.numberOfObjects : this.props.currentPage * this.props.numberPerPage;
+    let prevDisabled = this.props.currentPage <= 1 ? "disabled" : "";
+    let prevStyle = this.props.currentPage <= 1 ? {} : {cursor: "pointer"};
+    let nextDisabled = this.props.currentPage === numberOfPages ? "disabled" : "";
+    let nextStyle = this.props.currentPage === numberOfPages ? {} : {cursor: "pointer"};
+    let firstButton;
+    let lastButton;
     if (this.props.enableFirstLast) {
         firstButton = (<li className={prevDisabled}><a style={prevStyle} onClick={this.firstPage}><i className="fa fa-angle-double-left"></i><i className="fa fa-angle-double-left"></i> First</a></li>);
-        lastButton = (<li className={nextDisabled}><a style={nextStyle} onClick={this.lastPage}>Last <i className="fa fa-angle-double-right"></i><i className="fa fa-angle-double-right"></i></a></li>)
+        lastButton = (<li className={nextDisabled}><a style={nextStyle} onClick={this.lastPage}>Last <i className="fa fa-angle-double-right"></i><i className="fa fa-angle-double-right"></i></a></li>);
     }
 
     return (
@@ -503,10 +365,12 @@ var TableFooter = React.createClass({
 });
 
 // last step add the react component to the mix
-getNamespace('BE', 'Table').BETable = BETable;
-getNamespace('BE', 'Table').Header = Header;
-getNamespace('BE', 'Table').Row = Row;
-getNamespace('BE', 'Table').Cell = Cell;
+let ns = getNamespace('BE', 'Table');
+ns.BETable = BETable;
+ns.Header = Header;
+ns.Row = Row;
+ns.Cell = Cell;
+ns.SearchFilter = SearchFilter;
 
 try {
   module.exports = {
@@ -514,6 +378,7 @@ try {
     Header: Header,
     Row: Row,
     Cell: Cell,
+    SearchFilter: SearchFilter
   };
 } catch (e) {
 

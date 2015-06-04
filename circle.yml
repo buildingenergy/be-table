@@ -1,0 +1,12 @@
+dependencies:
+    override:
+        - npm install -g gulp
+        - npm install -g jshint
+        - npm install -g jsxhint
+        - npm install
+test:
+
+    override:
+        - jsxhint -e .jsx ./src/*.jsx
+        - jshint ./src/*.js
+        - gulp circletest

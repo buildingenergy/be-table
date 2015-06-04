@@ -1,6 +1,7 @@
 /* jshint ignore:start */
 
 var formatters = {};
+getNamespace('BE', 'Table').formatters = formatters;
 
 (function (ns){
   /**

@@ -5,6 +5,8 @@ jest.dontMock('lodash');
 
 var React = window.React = require('react/addons');
 var _ = window._ = require('lodash');
+var classNames = window.classNames = require('classnames');
+
 var BE = require(srcFile);
 var TU = React.addons.TestUtils;
 
@@ -24,11 +26,11 @@ var tableAttrs = {
     },
   ],
   rows: [
-    {'city': 'Portland', 'gfa': 1000},
-    {'city': 'Portland', 'gfa': 2000},
-    {'city': 'Seattle', 'gfa': 1000},
-    {'city': 'Seattle', 'gfa': 2000},
-    {'city': 'Seattle', 'gfa': 3000},
+    {'id': 1, 'city': 'Portland', 'gfa': 1000},
+    {'id': 2, 'city': 'Portland', 'gfa': 2000},
+    {'id': 3, 'city': 'Seattle', 'gfa': 1000},
+    {'id': 4, 'city': 'Seattle', 'gfa': 2000},
+    {'id': 5, 'city': 'Seattle', 'gfa': 3000},
   ],
   callback: _.noop,
   searchmeta: {},
@@ -49,7 +51,7 @@ var renderHeader = function(attrs, content) {
 describe('BETable headers', function () {
   it('renders headers', function () {
     var table = renderTable(tableAttrs);
-    var thead = TU.findRenderedDOMComponentWithTag(table, 'thead')
+    var thead = TU.findRenderedDOMComponentWithTag(table, 'thead');
     var headers = thead.props.children[0].props.children;
     expect(headers[0].key).toBe('city');
     expect(headers[0].props.column.title).toBe('City');
@@ -69,8 +71,9 @@ describe('Header', function () {
       handleClick: _.noop,
       sorting: {column: tableAttrs.columns[0]}
     }, content);
-    expect(header.getDOMNode().textContent).toBe(content);
-    expect(header.getDOMNode().className).toBe(" sorted sort_desc");
+    expect(React.findDOMNode(header).textContent).toBe(content);
+    expect(React.findDOMNode(header).className).toBe("sorted sort_desc");
+    expect(React.findDOMNode(header).tagName).toBe('TH');
   });
 
   it('should take a className', function () {
@@ -81,8 +84,8 @@ describe('Header', function () {
       sorting: {column: tableAttrs.columns[0]},
       className: "happy"
     }, content);
-    expect(header.getDOMNode().textContent).toBe(content);
-    expect(header.getDOMNode().className).toBe("happy sorted sort_desc");
+    expect(React.findDOMNode(header).textContent).toBe(content);
+    expect(React.findDOMNode(header).className).toBe("happy sorted sort_desc");
   });
 
   it('should show the desc sort class when selected and not ascending', function () {
@@ -96,8 +99,8 @@ describe('Header', function () {
       },
       className: "happy"
     }, content);
-    expect(header.getDOMNode().textContent).toBe(content);
-    expect(header.getDOMNode().className).toBe("happy sorted sort_desc");
+    expect(React.findDOMNode(header).textContent).toBe(content);
+    expect(React.findDOMNode(header).className).toBe("happy sorted sort_desc");
   });
 
   it('should show the asc sort class when selected and ascending', function () {
@@ -111,8 +114,8 @@ describe('Header', function () {
       },
       className: "happy"
     }, content);
-    expect(header.getDOMNode().textContent).toBe(content);
-    expect(header.getDOMNode().className).toBe("happy sorted sort_asc");
+    expect(React.findDOMNode(header).textContent).toBe(content);
+    expect(React.findDOMNode(header).className).toBe("happy sorted sort_asc");
   });
 
   it('should show no sorting classes when not selected', function () {
@@ -126,8 +129,8 @@ describe('Header', function () {
       },
       className: "happy"
     }, content);
-    expect(header.getDOMNode().textContent).toBe(content);
-    expect(header.getDOMNode().className).toBe("happy");
+    expect(React.findDOMNode(header).textContent).toBe(content);
+    expect(React.findDOMNode(header).className).toBe("happy");
   });
 
   it('should call the callback with the column when clicked', function () {
@@ -144,7 +147,7 @@ describe('Header', function () {
       className: "happy"
     }, content);
     // act
-    TU.Simulate.click(header.getDOMNode());
+    TU.Simulate.click(React.findDOMNode(header));
     // assert
     expect(mockCallback.mock.calls.length).toBe(1);
     expect(mockCallback.mock.calls[0][1]).toBe(tableAttrs.columns[0]);

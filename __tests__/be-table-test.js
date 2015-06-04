@@ -5,6 +5,8 @@ jest.dontMock('lodash');
 
 var React = window.React = require('react/addons');
 var _ = window._ = require('lodash');
+var classNames = window.classNames = require('classnames');
+
 var BE = require(srcFile);
 var TU = React.addons.TestUtils;
 
@@ -24,11 +26,11 @@ var tableAttrs = {
     },
   ],
   rows: [
-    {'city': 'Portland', 'gfa': 1000},
-    {'city': 'Portland', 'gfa': 2000},
-    {'city': 'Seattle', 'gfa': 1000},
-    {'city': 'Seattle', 'gfa': 2000},
-    {'city': 'Seattle', 'gfa': 3000},
+    {'id': 1, 'city': 'Portland', 'gfa': 1000},
+    {'id': 2, 'city': 'Portland', 'gfa': 2000},
+    {'id': 3, 'city': 'Seattle', 'gfa': 1000},
+    {'id': 4, 'city': 'Seattle', 'gfa': 2000},
+    {'id': 5, 'city': 'Seattle', 'gfa': 3000},
   ],
   callback: function () {},
   searchmeta: {},
@@ -43,8 +45,8 @@ var renderTable = function(attrs) {
 describe('BETable', function () {
   it('renders rows', function () {
     var table = renderTable(tableAttrs);
-    var thead = TU.findRenderedDOMComponentWithTag(table, 'thead')
-    var tbody = TU.findRenderedDOMComponentWithTag(table, 'tbody')
+    var thead = TU.findRenderedDOMComponentWithTag(table, 'thead');
+    var tbody = TU.findRenderedDOMComponentWithTag(table, 'tbody');
     var headRows = TU.scryRenderedDOMComponentsWithTag(thead, 'tr');
     var bodyRows = TU.scryRenderedDOMComponentsWithTag(tbody, 'tr');
     expect(headRows.length).toBe(2);
@@ -57,18 +59,18 @@ describe('BETable', function () {
     var tbody, tableRows, first;
     expect(headers.length).toBe(2);
 
-    tbody = TU.findRenderedDOMComponentWithTag(table, 'tbody')
+    tbody = TU.findRenderedDOMComponentWithTag(table, 'tbody');
 
-    TU.Simulate.click(headers[0].getDOMNode());
+    TU.Simulate.click(React.findDOMNode(headers[0]));
     expect(table.state.sorting.column).toBe(tableAttrs.columns[0]);
     expect(table.state.sorting.ascending).toBe(false);
 
-    TU.Simulate.click(headers[0].getDOMNode());
+    TU.Simulate.click(React.findDOMNode(headers[0]));
     expect(table.state.sorting.column).toBe(tableAttrs.columns[0]);
     expect(table.state.sorting.ascending).toBe(true);
 
-    TU.Simulate.click(headers[1].getDOMNode());
+    TU.Simulate.click(React.findDOMNode(headers[1]));
     expect(table.state.sorting.column).toBe(tableAttrs.columns[1]);
     expect(table.state.sorting.ascending).toBe(false);
   });
-})
+});
