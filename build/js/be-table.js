@@ -14,8 +14,8 @@ function getNamespace() {
    *   // keeps existing objects intact if extant, otherwise creates empty objects
    */
   var o = window;
-  for (var _i in arguments) {
-    var k = arguments[_i];
+  for (var i in arguments) {
+    var k = arguments[i];
     o[k] = o[k] || {};
     o = o[k];
   }
@@ -47,8 +47,8 @@ function getOrCall(x) {
 
     var classes = '';
 
-    for (var _i2 = 0; _i2 < arguments.length; _i2++) {
-      var arg = arguments[_i2];
+    for (var i = 0; i < arguments.length; i++) {
+      var arg = arguments[i];
       if (!arg) continue;
 
       var argType = typeof arg;
@@ -575,7 +575,8 @@ var defaultTypes = function defaultTypes(table) {
     hidden: {
       header: { className: 'hidden' },
       filter: { className: 'hidden' },
-      cell: { className: 'hidden' } },
+      cell: { className: 'hidden' }
+    },
     string: {},
     number: {
       filter: {
@@ -585,7 +586,8 @@ var defaultTypes = function defaultTypes(table) {
         className: 'scroll_columns is_aligned_right',
         renderer: function renderer(val) {
           return formatters.numberRenderer(val, 0);
-        } }
+        }
+      }
     },
     year: {
       filter: {
@@ -594,7 +596,8 @@ var defaultTypes = function defaultTypes(table) {
       cell: {
         renderer: function renderer(val) {
           return formatters.numberRenderer(val, 0, true);
-        } }
+        }
+      }
     },
     date: {
       filter: {
@@ -622,7 +625,8 @@ var defaultTypes = function defaultTypes(table) {
         }
       },
       filter: {
-        className: 'check' },
+        className: 'check'
+      },
       cell: {
         className: 'check',
         renderer: function renderer(val, row, col, opts) {
@@ -653,15 +657,19 @@ var completeType = function completeType(filterRenderer) {
         className: 'scroll_columns',
         renderer: function renderer(val) {
           return val;
-        } },
+        }
+      },
       header: {
         className: 'column_head scroll_columns',
         renderer: function renderer(col) {
           return col.title;
-        } },
+        }
+      },
       filter: {
         className: 'sub_head scroll_columns',
-        renderer: filterRenderer } });
+        renderer: filterRenderer
+      }
+    });
   };
 };
 
@@ -710,12 +718,14 @@ var BETable = React.createClass({
     return {
       sorting: {
         column: {},
-        ascending: true },
+        ascending: true
+      },
       searchFilters: {},
       currentPage: 1,
       numberPerPage: 10,
       selectedRows: {},
-      selectAll: false };
+      selectAll: false
+    };
   },
 
   sortingCallback: function sortingCallback(obj) {
@@ -726,7 +736,8 @@ var BETable = React.createClass({
     this.setState({
       sorting: {
         column: obj,
-        ascending: ascending },
+        ascending: ascending
+      },
       currentPage: 1
     }, function () {
       this.props.callback(this.state, { eventType: 'columnSorted' });
@@ -894,7 +905,8 @@ var Header = React.createClass({
       classes = {
         sorted: true,
         sort_asc: this.props.sorting.ascending,
-        sort_desc: !this.props.sorting.ascending };
+        sort_desc: !this.props.sorting.ascending
+      };
     }
 
     return React.createElement(
