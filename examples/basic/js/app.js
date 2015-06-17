@@ -53,6 +53,7 @@
   };
 
   function render() {
+    console.log('rendered table ' + String(Date.now()));
     var props = {
       columns: columns,
       rows: rows,
@@ -68,18 +69,27 @@
   function tableCallback (state, tableEvent) {
     var sortKey = _.get(state, 'sorting.column.key');
     var comparator = _.lt;
+    var temp;
     if (tableEvent && tableEvent.eventType && tableEvent.eventType === 'columnSorted') {
       if (!_.get(state, 'sorting.ascending')) {
         comparator = _.gt;
       }
-      rows = _.sortBy(rows, 'price');
-      // rows = rows.sort(function (a, b) {
-      //   var valA = _.get(a, sortKey);
-      //   var valB = _.get(b, sortKey);
-      //   return comparator(valA, valB);
-      // });
+
+      // sorting in place works, but you need to re-render the element
+      // if you are changing a variable reference so using a temp
+      // variable to demonstrate that
+      temp = _.clone(rows);
+      rows = temp.sort(function (a, b) {
+        var valA = _.get(a, sortKey);
+        var valB = _.get(b, sortKey);
+        return comparator(valA, valB);
+      });
+
+      // only need to re-render if the data model changes
+      // e.g. we don't rerender when the number per page changes in this example
+      // because we are not modifying our data in response to that event
+      render();
     }
-    render();
   };
 
   // kickoff rendering
