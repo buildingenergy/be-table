@@ -2,6 +2,7 @@
 /**
  * BETable react component and table library
  */
+let ns = getNamespace('BE', 'Table');
 
 let BETable = React.createClass({
   propTypes: {
@@ -149,22 +150,46 @@ let BETable = React.createClass({
 
     let numberOfObjects = this.props.searchmeta.totalMatchCount || this.props.searchmeta.number_matching_search;
 
+    let self = this,
+        basicTableProps = {
+          columns: columnDefs,
+          rows: this.props.rows,
+          tableClasses: 'table table-striped sortable',
+          renderers: {
+            header: {
+              base: function (column, context) {
+                console.log('custom base renderer called!');
+                let builder = self.getType(column.type).header,
+                    content = getOrCall(builder.renderer, column, self.state);
+                return <th>{content}</th>
+              }
+            }
+          }
+        },
+        basicTable = ns.basicTable(basicTableProps);
+
+    /* old table template delegating to BasicTable now
+
+    <table className="table table-striped sortable">
+      <thead>
+        <tr>
+          {headers}
+        </tr>
+        <tr className="sub_head">
+          {searchFilters}
+        </tr>
+      </thead>
+      <tbody>
+        {rows}
+      </tbody>
+    </table>
+     */
+
+
     return (
       <div>
         <div className="vert_table_scroll_container">
-          <table className="table table-striped sortable">
-            <thead>
-              <tr>
-                {headers}
-              </tr>
-              <tr className="sub_head">
-                {searchFilters}
-              </tr>
-            </thead>
-            <tbody>
-              {rows}
-            </tbody>
-          </table>
+          {basicTable}
         </div>
         <TableFooter objectName={this.props.objectname}
                      currentPage={this.state.currentPage}
@@ -365,7 +390,6 @@ let TableFooter = React.createClass({
 });
 
 // last step add the react component to the mix
-let ns = getNamespace('BE', 'Table');
 ns.BETable = BETable;
 ns.Header = Header;
 ns.Row = Row;

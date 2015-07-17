@@ -20,6 +20,7 @@ var filePaths = {
     'src/utils.js',
     'src/formatters.js',
     'src/default-types.jsx',
+    'src/basic-table.jsx',
     'src/be-table.jsx'
   ],
   tests: [
