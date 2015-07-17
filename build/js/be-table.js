@@ -683,7 +683,8 @@ var getTableTypes = function getTableTypes(table) {
 
 /*jshint esnext: true */
 /**
- * BETable react component and table library
+ * BE BasicTable react component. BETable delegates to this simpler
+ * table component.
  */
 (function (_) {
 

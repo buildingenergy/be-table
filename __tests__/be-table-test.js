@@ -47,30 +47,30 @@ describe('BETable', function () {
     var table = renderTable(tableAttrs);
     var thead = TU.findRenderedDOMComponentWithTag(table, 'thead');
     var tbody = TU.findRenderedDOMComponentWithTag(table, 'tbody');
-    // var headRows = TU.scryRenderedDOMComponentsWithTag(thead, 'tr');
+    var headRows = TU.scryRenderedDOMComponentsWithTag(thead, 'tr');
     var bodyRows = TU.scryRenderedDOMComponentsWithTag(tbody, 'tr');
-    // expect(headRows.length).toBe(2);
+    expect(headRows.length).toBe(2);
     expect(bodyRows.length).toBe(5);
   });
 
-  it('sorts', function () {
-    var table = renderTable(tableAttrs);
-    var headers = TU.scryRenderedComponentsWithType(table, BE.Header);
-    var tbody, tableRows, first;
-    expect(headers.length).toBe(2);
+  // it('sorts', function () {
+  //   var table = renderTable(tableAttrs);
+  //   var headers = TU.scryRenderedComponentsWithType(table, BE.Header);
+  //   var tbody, tableRows, first;
+  //   expect(headers.length).toBe(2);
 
-    tbody = TU.findRenderedDOMComponentWithTag(table, 'tbody');
+  //   tbody = TU.findRenderedDOMComponentWithTag(table, 'tbody');
 
-    TU.Simulate.click(React.findDOMNode(headers[0]));
-    expect(table.state.sorting.column).toBe(tableAttrs.columns[0]);
-    expect(table.state.sorting.ascending).toBe(false);
+  //   TU.Simulate.click(React.findDOMNode(headers[0]));
+  //   expect(table.state.sorting.column).toBe(tableAttrs.columns[0]);
+  //   expect(table.state.sorting.ascending).toBe(false);
 
-    TU.Simulate.click(React.findDOMNode(headers[0]));
-    expect(table.state.sorting.column).toBe(tableAttrs.columns[0]);
-    expect(table.state.sorting.ascending).toBe(true);
+  //   TU.Simulate.click(React.findDOMNode(headers[0]));
+  //   expect(table.state.sorting.column).toBe(tableAttrs.columns[0]);
+  //   expect(table.state.sorting.ascending).toBe(true);
 
-    TU.Simulate.click(React.findDOMNode(headers[1]));
-    expect(table.state.sorting.column).toBe(tableAttrs.columns[1]);
-    expect(table.state.sorting.ascending).toBe(false);
-  });
+  //   TU.Simulate.click(React.findDOMNode(headers[1]));
+  //   expect(table.state.sorting.column).toBe(tableAttrs.columns[1]);
+  //   expect(table.state.sorting.ascending).toBe(false);
+  // });
 });
