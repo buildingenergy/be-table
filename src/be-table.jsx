@@ -117,55 +117,40 @@ let BETable = React.createClass({
   },
 
   render: function() {
-    let columnDefs = this.props.columns;
-    let types = this.buildTypes();
+    let self = this,
+        columnDefs = this.props.columns,
+        types = this.buildTypes(),
+        searchFilters = _.map(columnDefs, function (col) {
+          let builder = self.getType(col.type).filter;
+          return (
+            <SearchFilter className={getOrCall(builder.className, col)} key={col.key}>
+              {getOrCall(builder.renderer, col)}
+            </SearchFilter>
+          );
+        });
 
-    let headers = columnDefs.map(function (col) {
-      let builder = this.getType(col.type).header;
-      let className = getOrCall(builder.className, col);
-      let content = getOrCall(builder.renderer, col, this.state);
-      return (
-        <Header key={col.key}
-                column={col}
-                className={className}
-                handleClick={() => this.sortingCallback(col)}
-                sorting={this.state.sorting}>
-          {content}
-        </Header>
-      );
-    }.bind(this));
-
-    let searchFilters = columnDefs.map(function (col) {
-      let builder = this.getType(col.type).filter;
-      return (
-        <SearchFilter className={getOrCall(builder.className, col)} key={col.key}>
-          {getOrCall(builder.renderer, col)}
-        </SearchFilter>
-        );
-    }.bind(this));
-
+    /*
     let rows = this.props.rows.map(function (row) {
       return <Row row={row} isSelectedRow={this.isSelectedRow(row)} columns={columnDefs} sorting={this.state.sorting} getType={this.getType} key={row.id}></Row>;
     }.bind(this));
+    */
 
     let numberOfObjects = this.props.searchmeta.totalMatchCount || this.props.searchmeta.number_matching_search;
 
-    let self = this,
-        basicTableProps = {
-          columns: columnDefs,
-          rows: this.props.rows,
-          tableClasses: 'table table-striped sortable',
-          renderers: {
-            header: {
-              base: function (column, context) {
-                console.log('custom base renderer called!');
-                let builder = self.getType(column.type).header,
-                    content = getOrCall(builder.renderer, column, self.state);
-                return <th>{content}</th>
-              }
-            }
+    let basicTableProps = {
+      columns: columnDefs,
+      rows: self.props.rows,
+      tableClasses: 'table table-striped sortable',
+      renderers: {
+        header: {
+          base: function (column, context) {
+            let builder = self.getType(column.type).header,
+                content = getOrCall(builder.renderer, column, self.state);
+            return <th>{content}</th>
           }
-        },
+        }
+      }
+    },
         basicTable = ns.basicTable(basicTableProps);
 
     /* old table template delegating to BasicTable now
@@ -197,41 +182,6 @@ let BETable = React.createClass({
                      numberOfObjects={numberOfObjects}
                      paginationCallback={this.paginationCallback}> </TableFooter>
       </div>
-    );
-  }
-});
-
-
-let Header = React.createClass({
-  propTypes: {
-    column : React.PropTypes.object.isRequired,
-    handleClick: React.PropTypes.func,
-    sorting: React.PropTypes.object.isRequired,
-    className: React.PropTypes.string
-  },
-  getDefaultProps: function () {
-    return {
-      className: ""
-    };
-  },
-  handleClick: function (e) {
-    this.props.handleClick(e, this.props.column);
-  },
-  render: function() {
-    let classes = {};
-    let column = this.props.column;
-    if (column === this.props.sorting.column) {
-      classes = {
-        sorted: true,
-        sort_asc: this.props.sorting.ascending,
-        sort_desc: !this.props.sorting.ascending,
-      };
-    }
-
-    return (
-      <th className={classNames(this.props.className, classes)} onClick={this.handleClick}>
-        {this.props.children}
-      </th>
     );
   }
 });
@@ -391,7 +341,6 @@ let TableFooter = React.createClass({
 
 // last step add the react component to the mix
 ns.BETable = BETable;
-ns.Header = Header;
 ns.Row = Row;
 ns.Cell = Cell;
 ns.SearchFilter = SearchFilter;
@@ -399,7 +348,6 @@ ns.SearchFilter = SearchFilter;
 try {
   module.exports = {
     BETable: BETable,
-    Header: Header,
     Row: Row,
     Cell: Cell,
     SearchFilter: SearchFilter

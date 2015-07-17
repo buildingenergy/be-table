@@ -695,11 +695,9 @@ var getTableTypes = function getTableTypes(table) {
       if (_.isPlainObject(subObj0)) {
         return mergeObjects(subObj0, subObj1);
       } else {
-        // console.log('subs:', subObj0, subObj1);
         return subObj1;
       }
     });
-    //    console.log('mergeResult:', result);
     return result;
   }
 
@@ -743,7 +741,7 @@ var getTableTypes = function getTableTypes(table) {
       cell: {
         base: function base(column, data, context) {
           return React.createElement(
-            'span',
+            'td',
             null,
             'A cell!'
           );
@@ -761,7 +759,7 @@ var getTableTypes = function getTableTypes(table) {
 
     computeTableClasses: function computeTableClasses() {
       // TODO: extend to support a function or an array
-      if (typeof this.props.tableClasses === 'string') {
+      if (_.isString(this.props.tableClasses)) {
         return this.props.tableClasses;
       } else {
         return '';
@@ -814,7 +812,6 @@ var getTableTypes = function getTableTypes(table) {
           })
         );
       });
-
       return React.createElement(
         'table',
         { className: this.computeTableClasses() },
@@ -974,52 +971,33 @@ var BETable = React.createClass({
   },
 
   render: function render() {
-    var columnDefs = this.props.columns;
-    var types = this.buildTypes();
-
-    var headers = columnDefs.map((function (col) {
-      var _this = this;
-
-      var builder = this.getType(col.type).header;
-      var className = getOrCall(builder.className, col);
-      var content = getOrCall(builder.renderer, col, this.state);
-      return React.createElement(
-        Header,
-        { key: col.key,
-          column: col,
-          className: className,
-          handleClick: function () {
-            return _this.sortingCallback(col);
-          },
-          sorting: this.state.sorting },
-        content
-      );
-    }).bind(this));
-
-    var searchFilters = columnDefs.map((function (col) {
-      var builder = this.getType(col.type).filter;
+    var self = this,
+        columnDefs = this.props.columns,
+        types = this.buildTypes(),
+        searchFilters = _.map(columnDefs, function (col) {
+      var builder = self.getType(col.type).filter;
       return React.createElement(
         SearchFilter,
         { className: getOrCall(builder.className, col), key: col.key },
         getOrCall(builder.renderer, col)
       );
-    }).bind(this));
+    });
 
-    var rows = this.props.rows.map((function (row) {
-      return React.createElement(Row, { row: row, isSelectedRow: this.isSelectedRow(row), columns: columnDefs, sorting: this.state.sorting, getType: this.getType, key: row.id });
-    }).bind(this));
+    /*
+    let rows = this.props.rows.map(function (row) {
+      return <Row row={row} isSelectedRow={this.isSelectedRow(row)} columns={columnDefs} sorting={this.state.sorting} getType={this.getType} key={row.id}></Row>;
+    }.bind(this));
+    */
 
     var numberOfObjects = this.props.searchmeta.totalMatchCount || this.props.searchmeta.number_matching_search;
 
-    var self = this,
-        basicTableProps = {
+    var basicTableProps = {
       columns: columnDefs,
-      rows: this.props.rows,
+      rows: self.props.rows,
       tableClasses: 'table table-striped sortable',
       renderers: {
         header: {
           base: function base(column, context) {
-            console.log('custom base renderer called!');
             var builder = self.getType(column.type).header,
                 content = getOrCall(builder.renderer, column, self.state);
             return React.createElement(
@@ -1066,42 +1044,6 @@ var BETable = React.createClass({
           paginationCallback: this.paginationCallback },
         ' '
       )
-    );
-  }
-});
-
-var Header = React.createClass({
-  displayName: 'Header',
-
-  propTypes: {
-    column: React.PropTypes.object.isRequired,
-    handleClick: React.PropTypes.func,
-    sorting: React.PropTypes.object.isRequired,
-    className: React.PropTypes.string
-  },
-  getDefaultProps: function getDefaultProps() {
-    return {
-      className: ''
-    };
-  },
-  handleClick: function handleClick(e) {
-    this.props.handleClick(e, this.props.column);
-  },
-  render: function render() {
-    var classes = {};
-    var column = this.props.column;
-    if (column === this.props.sorting.column) {
-      classes = {
-        sorted: true,
-        sort_asc: this.props.sorting.ascending,
-        sort_desc: !this.props.sorting.ascending
-      };
-    }
-
-    return React.createElement(
-      'th',
-      { className: classNames(this.props.className, classes), onClick: this.handleClick },
-      this.props.children
     );
   }
 });
@@ -1343,7 +1285,6 @@ var TableFooter = React.createClass({
 
 // last step add the react component to the mix
 ns.BETable = BETable;
-ns.Header = Header;
 ns.Row = Row;
 ns.Cell = Cell;
 ns.SearchFilter = SearchFilter;
@@ -1351,7 +1292,6 @@ ns.SearchFilter = SearchFilter;
 try {
   module.exports = {
     BETable: BETable,
-    Header: Header,
     Row: Row,
     Cell: Cell,
     SearchFilter: SearchFilter

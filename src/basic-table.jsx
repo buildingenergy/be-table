@@ -12,11 +12,9 @@
       if (_.isPlainObject(subObj0)) {
         return mergeObjects(subObj0, subObj1);
       } else {
-        // console.log('subs:', subObj0, subObj1);
         return subObj1;
       }
     });
-    //    console.log('mergeResult:', result);
     return result;
   }
 
@@ -60,7 +58,7 @@
       },
       cell: {
         base: function (column, data, context) {
-          return <span>A cell!</span>;
+          return <td>A cell!</td>;
         }
       }
     },
@@ -75,7 +73,7 @@
 
     computeTableClasses: function () {
       // TODO: extend to support a function or an array
-      if (typeof this.props.tableClasses === 'string') {
+      if (_.isString(this.props.tableClasses)) {
         return this.props.tableClasses;
       } else {
         return '';
@@ -130,14 +128,13 @@
               </tr>
             );
           });
-
         return (
           <table className={this.computeTableClasses()}>
             <thead>
               <tr>{renderedHeaders}</tr>
             </thead>
             <tbody>
-              {renderedRows}
+                {renderedRows}
             </tbody>
           </table>
         );
