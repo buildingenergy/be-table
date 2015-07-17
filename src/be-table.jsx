@@ -140,13 +140,49 @@ let BETable = React.createClass({
     let basicTableProps = {
       columns: columnDefs,
       rows: self.props.rows,
+      subHeaderRows: [_.map(columnDefs, function (column) {
+        return {
+          type: 'search-filter',
+          headerColumn: column
+        }
+      })],
       tableClasses: 'table table-striped sortable',
+      dispatchers: {
+        header: function (column, context) {
+          if (column.type === 'search-filter') {
+            return 'filter';
+          } else {
+            return 'base';
+          }
+        }
+      },
       renderers: {
         header: {
           base: function (column, context) {
             let builder = self.getType(column.type).header,
                 content = getOrCall(builder.renderer, column, self.state);
             return <th>{content}</th>
+          },
+          filter: function (column, context) {
+            let builder = self.getType(column.headerColumn.type).filter,
+                content = getOrCall(builder.renderer, column);
+            return (
+                <th className="sub_head scroll_columns">
+                {content}
+              </th>
+            );
+          }
+        },
+        cell: {
+          base: function (column, data, context) {
+            let cellValue = data[column.key],
+                builder = self.getType(column.type).cell,
+                content = getOrCall(builder.renderer,
+                                    cellValue,
+                                    data,
+                                    column,
+                                    {isSelectedRow: self.isSelectedRow(data)});
+            return <td>{content}</td>
           }
         }
       }

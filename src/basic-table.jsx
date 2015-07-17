@@ -23,6 +23,7 @@
     propTypes: {
       columns: React.PropTypes.array.isRequired,
       rows: React.PropTypes.array.isRequired,
+      subHeaderRows: React.PropTypes.array,
       callback: React.PropTypes.func,
       dispatchers: React.PropTypes.object,
       renderers: React.PropTypes.object,
@@ -114,10 +115,22 @@
 
       let columns = this.props.columns,
           rows = this.props.rows,
+          subHeaderRows = this.props.subHeaderRows,
           renderHeader = this.renderHeader,
           renderCell = this.renderCell,
           renderedHeaders = _.map(columns, function (column) {
             return renderHeader(column, null);
+          }),
+          renderedSubheaders = _.map(subHeaderRows, function (subHeaders) {
+            return (
+              <tr>
+                {
+                  _.map(subHeaders, function (column) {
+                    return renderHeader(column, null);
+                  })
+                 }
+              </tr>
+            );
           }),
           renderedRows = _.map(rows, function (data) {
             return (
@@ -128,10 +141,12 @@
               </tr>
             );
           });
-        return (
-          <table className={this.computeTableClasses()}>
-            <thead>
-              <tr>{renderedHeaders}</tr>
+
+      return (
+        <table className={this.computeTableClasses()}>
+          <thead>
+            <tr>{renderedHeaders}</tr>
+            {renderedSubheaders}
             </thead>
             <tbody>
                 {renderedRows}

@@ -707,6 +707,7 @@ var getTableTypes = function getTableTypes(table) {
     propTypes: {
       columns: React.PropTypes.array.isRequired,
       rows: React.PropTypes.array.isRequired,
+      subHeaderRows: React.PropTypes.array,
       callback: React.PropTypes.func,
       dispatchers: React.PropTypes.object,
       renderers: React.PropTypes.object,
@@ -798,10 +799,20 @@ var getTableTypes = function getTableTypes(table) {
 
       var columns = this.props.columns,
           rows = this.props.rows,
+          subHeaderRows = this.props.subHeaderRows,
           renderHeader = this.renderHeader,
           renderCell = this.renderCell,
           renderedHeaders = _.map(columns, function (column) {
         return renderHeader(column, null);
+      }),
+          renderedSubheaders = _.map(subHeaderRows, function (subHeaders) {
+        return React.createElement(
+          'tr',
+          null,
+          _.map(subHeaders, function (column) {
+            return renderHeader(column, null);
+          })
+        );
       }),
           renderedRows = _.map(rows, function (data) {
         return React.createElement(
@@ -812,6 +823,7 @@ var getTableTypes = function getTableTypes(table) {
           })
         );
       });
+
       return React.createElement(
         'table',
         { className: this.computeTableClasses() },
@@ -822,7 +834,8 @@ var getTableTypes = function getTableTypes(table) {
             'tr',
             null,
             renderedHeaders
-          )
+          ),
+          renderedSubheaders
         ),
         React.createElement(
           'tbody',
@@ -994,7 +1007,22 @@ var BETable = React.createClass({
     var basicTableProps = {
       columns: columnDefs,
       rows: self.props.rows,
+      subHeaderRows: [_.map(columnDefs, function (column) {
+        return {
+          type: 'search-filter',
+          headerColumn: column
+        };
+      })],
       tableClasses: 'table table-striped sortable',
+      dispatchers: {
+        header: function header(column, context) {
+          if (column.type === 'search-filter') {
+            return 'filter';
+          } else {
+            return 'base';
+          }
+        }
+      },
       renderers: {
         header: {
           base: function base(column, context) {
@@ -1002,6 +1030,27 @@ var BETable = React.createClass({
                 content = getOrCall(builder.renderer, column, self.state);
             return React.createElement(
               'th',
+              null,
+              content
+            );
+          },
+          filter: function filter(column, context) {
+            var builder = self.getType(column.headerColumn.type).filter,
+                content = getOrCall(builder.renderer, column);
+            return React.createElement(
+              'th',
+              { className: 'sub_head scroll_columns' },
+              content
+            );
+          }
+        },
+        cell: {
+          base: function base(column, data, context) {
+            var cellValue = data[column.key],
+                builder = self.getType(column.type).cell,
+                content = getOrCall(builder.renderer, cellValue, data, column, { isSelectedRow: self.isSelectedRow(data) });
+            return React.createElement(
+              'td',
               null,
               content
             );
