@@ -160,15 +160,16 @@ let BETable = React.createClass({
         header: {
           base: function (column, context) {
             let builder = self.getType(column.type).header,
-                content = getOrCall(builder.renderer, column, self.state);
-            return <th>{content}</th>
+                content = getOrCall(builder.renderer, column, self.state),
+                callback = () => self.sortingCallback(column);
+            return <th onClick={callback}>{content}</th>
           },
           filter: function (column, context) {
             let builder = self.getType(column.headerColumn.type).filter,
-                content = getOrCall(builder.renderer, column);
+                content = getOrCall(builder.renderer, column.headerColumn);
             return (
                 <th className="sub_head scroll_columns">
-                {content}
+                  {content}
               </th>
             );
           }
@@ -187,7 +188,7 @@ let BETable = React.createClass({
         }
       }
     },
-        basicTable = ns.basicTable(basicTableProps);
+    basicTable = ns.basicTable(basicTableProps);
 
     /* old table template delegating to BasicTable now
 

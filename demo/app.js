@@ -23,6 +23,7 @@ angular.module('app', ['react'])
     {id: 9, item: 'dates', price: 13.20},
     {id: 10, item: 'granola', price: 7.40, label: {text: 'Honey'}}
   ];
+  $scope.data.renderedRows = $scope.data.rows;
   $scope.tableCallback = function (state, tableEvent) {
     $log.info(state, tableEvent);
     if (tableEvent && tableEvent.eventType && tableEvent.eventType === 'columnSorted') {

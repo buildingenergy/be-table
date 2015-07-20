@@ -55,20 +55,28 @@ var tableAttrs = {
   searchmeta: {},
 };
 
-var renderTable = function(attrs) {
+function renderTable(attrs) {
   return TU.renderIntoDocument(
     React.createElement(BE.BETable, attrs)
   );
 };
 
+function findHeaderRows(table) {
+  var thead = TU.findRenderedDOMComponentWithTag(table, 'thead');
+  return TU.scryRenderedDOMComponentsWithTag(thead, 'tr');
+}
+
 describe('BETable', function () {
   it('renders filters', function () {
     // arrange
     var table = renderTable(tableAttrs);
-    var filters = TU.scryRenderedComponentsWithType(table, BE.SearchFilter);
+    var headerRows = findHeaderRows(table);
+    var filtersRow = headerRows[1];
+    var filters = TU.scryRenderedDOMComponentsWithTag(filtersRow, 'th');
     var cityFilter = React.findDOMNode(filters[0]);
     var cityFilterInput = cityFilter.children[0];
     var gfaInputFilters = React.findDOMNode(filters[2]).getElementsByTagName("INPUT");
+
     // assert
     expect(filters.length).toBe(5);
     expect(filters[0].props.className).toBe("sub_head scroll_columns");
@@ -83,7 +91,8 @@ describe('BETable', function () {
   it('renders disabled filters', function () {
     // arrange
     var table = renderTable(tableAttrs);
-    var filters = TU.scryRenderedComponentsWithType(table, BE.SearchFilter);
+    var headerRows = findHeaderRows(table);
+    var filters = TU.scryRenderedDOMComponentsWithTag(headerRows[1], 'th');
     var stringFilter = React.findDOMNode(filters[3]);
     var stringFilterInput = stringFilter.children[0];
     var numberFilters = React.findDOMNode(filters[4]).getElementsByTagName("INPUT");
@@ -103,7 +112,8 @@ describe('SearchFilter', function () {
     var mockCallback = jest.genMockFunction();
     tableAttrs.callback = mockCallback;
     var table = renderTable(tableAttrs);
-    var filters = TU.scryRenderedComponentsWithType(table, BE.SearchFilter);
+    var headerRows = findHeaderRows(table);
+    var filters = TU.scryRenderedDOMComponentsWithTag(headerRows[1], 'th');
     var cityInput = TU.findRenderedDOMComponentWithTag(filters[0], "input");
     cityInput = React.findDOMNode(cityInput);
     var stateInput = TU.findRenderedDOMComponentWithTag(filters[1], "input");

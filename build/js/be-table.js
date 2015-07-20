@@ -1028,16 +1028,19 @@ var BETable = React.createClass({
         header: {
           base: function base(column, context) {
             var builder = self.getType(column.type).header,
-                content = getOrCall(builder.renderer, column, self.state);
+                content = getOrCall(builder.renderer, column, self.state),
+                callback = function callback() {
+              return self.sortingCallback(column);
+            };
             return React.createElement(
               'th',
-              null,
+              { onClick: callback },
               content
             );
           },
           filter: function filter(column, context) {
             var builder = self.getType(column.headerColumn.type).filter,
-                content = getOrCall(builder.renderer, column);
+                content = getOrCall(builder.renderer, column.headerColumn);
             return React.createElement(
               'th',
               { className: 'sub_head scroll_columns' },

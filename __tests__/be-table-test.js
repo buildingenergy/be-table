@@ -53,24 +53,29 @@ describe('BETable', function () {
     expect(bodyRows.length).toBe(5);
   });
 
-  // it('sorts', function () {
-  //   var table = renderTable(tableAttrs);
-  //   var headers = TU.scryRenderedComponentsWithType(table, BE.Header);
-  //   var tbody, tableRows, first;
-  //   expect(headers.length).toBe(2);
+  it('sorts', function () {
+    var table = renderTable(tableAttrs);
+    var thead, tbody, headerRows, headersRow, headers, tableRows, first;
 
-  //   tbody = TU.findRenderedDOMComponentWithTag(table, 'tbody');
+    thead =TU.findRenderedDOMComponentWithTag(table, 'thead');
+    tbody = TU.findRenderedDOMComponentWithTag(table, 'tbody');
+    headerRows = TU.scryRenderedDOMComponentsWithTag(thead, 'tr');
+    headersRow = headerRows[0];
+    headers = TU.scryRenderedDOMComponentsWithTag(headersRow, 'th');
 
-  //   TU.Simulate.click(React.findDOMNode(headers[0]));
-  //   expect(table.state.sorting.column).toBe(tableAttrs.columns[0]);
-  //   expect(table.state.sorting.ascending).toBe(false);
+    expect(headers.length).toBe(2);
 
-  //   TU.Simulate.click(React.findDOMNode(headers[0]));
-  //   expect(table.state.sorting.column).toBe(tableAttrs.columns[0]);
-  //   expect(table.state.sorting.ascending).toBe(true);
 
-  //   TU.Simulate.click(React.findDOMNode(headers[1]));
-  //   expect(table.state.sorting.column).toBe(tableAttrs.columns[1]);
-  //   expect(table.state.sorting.ascending).toBe(false);
-  // });
+    TU.Simulate.click(React.findDOMNode(headers[0]));
+    expect(table.state.sorting.column).toBe(tableAttrs.columns[0]);
+    expect(table.state.sorting.ascending).toBe(false);
+
+    TU.Simulate.click(React.findDOMNode(headers[0]));
+    expect(table.state.sorting.column).toBe(tableAttrs.columns[0]);
+    expect(table.state.sorting.ascending).toBe(true);
+
+    TU.Simulate.click(React.findDOMNode(headers[1]));
+    expect(table.state.sorting.column).toBe(tableAttrs.columns[1]);
+    expect(table.state.sorting.ascending).toBe(false);
+  });
 });
