@@ -22,6 +22,8 @@
   let BasicTable = React.createClass({
 
     propTypes: {
+      // arbitrary context to be passed to renderers
+      context: React.PropTypes.object,
       columns: React.PropTypes.array.isRequired,
       rows: React.PropTypes.array.isRequired,
       subHeaderRows: React.PropTypes.array,
@@ -73,7 +75,7 @@
       return mergeObjects(this.defaultRenderers, this.props.renderers);
     },
 
-    computeTableClasses: function () {
+   computeTableClasses: function () {
       // TODO: extend to support a function or an array
       if (_.isString(this.props.tableClasses)) {
         return this.props.tableClasses;
@@ -114,20 +116,21 @@
 
     render: function() {
 
-      let columns = this.props.columns,
+      let context = this.props.context,
+          columns = this.props.columns,
           rows = this.props.rows,
           subHeaderRows = this.props.subHeaderRows,
           renderHeader = this.renderHeader,
           renderCell = this.renderCell,
           renderedHeaders = _.map(columns, function (column) {
-            return renderHeader(column, null);
+            return renderHeader(column, context);
           }),
           renderedSubheaders = _.map(subHeaderRows, function (subHeaders) {
             return (
               <tr>
                 {
                   _.map(subHeaders, function (column) {
-                    return renderHeader(column, null);
+                    return renderHeader(column, context);
                   })
                  }
               </tr>
@@ -137,7 +140,7 @@
             return (
               <tr>
                 {_.map(columns, function (column) {
-                  return renderCell(column, data, null);
+                  return renderCell(column, data, context);
                  })}
               </tr>
             );
