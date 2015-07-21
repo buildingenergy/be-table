@@ -228,7 +228,7 @@ let BETable = React.createClass({
  * SearchFilter: the filter sub header
  */
 let SearchFilter = React.createClass({
-  render: function() {
+  render: function () {
     let thClassString = "sub_head scroll_columns" + " " + this.props.className;
 
     return (
@@ -239,6 +239,7 @@ let SearchFilter = React.createClass({
   }
 });
 
+/*
 let Row = React.createClass({
   propTypes: {
     row: React.PropTypes.object.isRequired,
@@ -271,10 +272,14 @@ let Row = React.createClass({
   }
 });
 
+*/
+
 /**
  * Cell: table row cell: `td`
  *   Allows custom React elements to be returned if set in BETable.types
  */
+
+/*
 let Cell = React.createClass({
   propTypes: {
     className: React.PropTypes.string.isRequired,
@@ -291,6 +296,8 @@ let Cell = React.createClass({
     );
   }
 });
+*/
+
 
 /**
  * pagination footer
@@ -378,15 +385,13 @@ let TableFooter = React.createClass({
 
 // last step add the react component to the mix
 ns.BETable = BETable;
-ns.Row = Row;
-ns.Cell = Cell;
+// ns.Row = Row;
+// ns.Cell = Cell;
 ns.SearchFilter = SearchFilter;
 
 try {
   module.exports = {
     BETable: BETable,
-    Row: Row,
-    Cell: Cell,
     SearchFilter: SearchFilter
   };
 } catch (e) {

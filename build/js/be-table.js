@@ -706,6 +706,8 @@ var getTableTypes = function getTableTypes(table) {
     displayName: 'BasicTable',
 
     propTypes: {
+      // arbitrary context to be passed to renderers
+      context: React.PropTypes.object,
       columns: React.PropTypes.array.isRequired,
       rows: React.PropTypes.array.isRequired,
       subHeaderRows: React.PropTypes.array,
@@ -798,20 +800,21 @@ var getTableTypes = function getTableTypes(table) {
 
     render: function render() {
 
-      var columns = this.props.columns,
+      var context = this.props.context,
+          columns = this.props.columns,
           rows = this.props.rows,
           subHeaderRows = this.props.subHeaderRows,
           renderHeader = this.renderHeader,
           renderCell = this.renderCell,
           renderedHeaders = _.map(columns, function (column) {
-        return renderHeader(column, null);
+        return renderHeader(column, context);
       }),
           renderedSubheaders = _.map(subHeaderRows, function (subHeaders) {
         return React.createElement(
           'tr',
           null,
           _.map(subHeaders, function (column) {
-            return renderHeader(column, null);
+            return renderHeader(column, context);
           })
         );
       }),
@@ -820,7 +823,7 @@ var getTableTypes = function getTableTypes(table) {
           'tr',
           null,
           _.map(columns, function (column) {
-            return renderCell(column, data, null);
+            return renderCell(column, data, context);
           })
         );
       });
@@ -1118,64 +1121,64 @@ var SearchFilter = React.createClass({
   }
 });
 
-var Row = React.createClass({
-  displayName: 'Row',
-
+/*
+let Row = React.createClass({
   propTypes: {
     row: React.PropTypes.object.isRequired,
     columns: React.PropTypes.array.isRequired,
     sorting: React.PropTypes.object.isRequired,
     getType: React.PropTypes.func.isRequired
   },
-  render: function render() {
-    var row = this.props.columns.map((function (col) {
-      var isSorted = col === this.props.sorting.column;
-      var cellValue = this.props.row[col.key];
-      var cellBuilder = this.props.getType(col.type).cell;
-      var content = getOrCall(cellBuilder.renderer, cellValue, this.props.row, col, { isSelectedRow: this.props.isSelectedRow });
-      var className = getOrCall(cellBuilder.className, col);
+  render: function() {
+    let row = this.props.columns.map(function (col) {
+      let isSorted = col === this.props.sorting.column;
+      let cellValue = this.props.row[col.key];
+      let cellBuilder = this.props.getType(col.type).cell;
+      let content = getOrCall(cellBuilder.renderer, cellValue, this.props.row, col, {isSelectedRow: this.props.isSelectedRow});
+      let className = getOrCall(cellBuilder.className, col);
 
-      return React.createElement(
-        Cell,
-        { isSorted: isSorted,
-          isSelectedRow: this.props.isSelectedRow,
-          className: className,
-          key: col.key },
-        content
+      return (
+        <Cell isSorted={isSorted}
+              isSelectedRow={this.props.isSelectedRow}
+              className={className}
+              key={col.key}>
+          {content}
+        </Cell>
       );
-    }).bind(this));
-    return React.createElement(
-      'tr',
-      { className: this.props.isSelectedRow ? 'selected-row' : '' },
-      row
+    }.bind(this));
+    return (
+      <tr className={this.props.isSelectedRow ? 'selected-row' : ''}>
+        {row}
+      </tr>
     );
   }
 });
+
+*/
 
 /**
  * Cell: table row cell: `td`
  *   Allows custom React elements to be returned if set in BETable.types
  */
-var Cell = React.createClass({
-  displayName: 'Cell',
 
+/*
+let Cell = React.createClass({
   propTypes: {
     className: React.PropTypes.string.isRequired,
     isSorted: React.PropTypes.bool,
     isSelectedRow: React.PropTypes.bool
   },
-  render: function render() {
-    var classString = this.props.className;
+  render: function () {
+    let classString = this.props.className;
     if (this.props.isSorted) {
-      classString += ' sorted';
+      classString += " sorted";
     }
-    return React.createElement(
-      'td',
-      { className: classString },
-      this.props.children
+    return (
+      <td className={classString}>{this.props.children}</td>
     );
   }
 });
+*/
 
 /**
  * pagination footer
@@ -1338,15 +1341,13 @@ var TableFooter = React.createClass({
 
 // last step add the react component to the mix
 ns.BETable = BETable;
-ns.Row = Row;
-ns.Cell = Cell;
+// ns.Row = Row;
+// ns.Cell = Cell;
 ns.SearchFilter = SearchFilter;
 
 try {
   module.exports = {
     BETable: BETable,
-    Row: Row,
-    Cell: Cell,
     SearchFilter: SearchFilter
   };
 } catch (e) {}
