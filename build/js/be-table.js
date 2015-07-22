@@ -736,11 +736,11 @@ var getTableTypes = function getTableTypes(table) {
 
     defaultRenderers: {
       row: {
-        base: function base(columns, rowData, context, content) {
+        base: function base(columns, rowData, content, context) {
           return React.createElement(
             'tr',
             null,
-            renderedColumns
+            content
           );
         }
       },

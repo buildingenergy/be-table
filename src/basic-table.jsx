@@ -52,9 +52,9 @@
 
     defaultRenderers: {
       row: {
-        base: (columns, rowData, context, content) => {
+        base: (columns, rowData, content, context) => {
           return (
-            <tr>{renderedColumns}</tr>
+            <tr>{content}</tr>
           );
         }
       },
