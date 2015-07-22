@@ -129,12 +129,6 @@ let BETable = React.createClass({
           );
         });
 
-    /*
-    let rows = this.props.rows.map(function (row) {
-      return <Row row={row} isSelectedRow={this.isSelectedRow(row)} columns={columnDefs} sorting={this.state.sorting} getType={this.getType} key={row.id}></Row>;
-    }.bind(this));
-    */
-
     let numberOfObjects = this.props.searchmeta.totalMatchCount || this.props.searchmeta.number_matching_search;
 
     let basicTableProps = {
@@ -161,52 +155,56 @@ let BETable = React.createClass({
           base: function (column, context) {
             let builder = self.getType(column.type).header,
                 content = getOrCall(builder.renderer, column, self.state),
+                className = getOrCall(builder.className, column),
                 callback = () => self.sortingCallback(column);
-            return <th onClick={callback}>{content}</th>
+            return (
+              <th className={className}
+                  onClick={callback}>
+                {content}
+              </th>
+            );
           },
           filter: function (column, context) {
             let builder = self.getType(column.headerColumn.type).filter,
                 content = getOrCall(builder.renderer, column.headerColumn);
             return (
-                <th className="sub_head scroll_columns">
-                  {content}
+              <th className="sub_head scroll_columns">
+                {content}
               </th>
+            );
+          }
+        },
+        row: {
+          base: function (columns, data, context, renderedCells) {
+            let isSelectedRow = self.isSelectedRow(data),
+                className = isSelectedRow ? 'selected-row' : '';
+            return (
+              <tr className={className}>
+                {renderedCells}
+              </tr>
             );
           }
         },
         cell: {
           base: function (column, data, context) {
             let cellValue = data[column.key],
+                isSorted = (column === self.state.sorting.column),
+                isSelectedRow = self.isSelectedRow(data),
                 builder = self.getType(column.type).cell,
                 content = getOrCall(builder.renderer,
                                     cellValue,
                                     data,
                                     column,
-                                    {isSelectedRow: self.isSelectedRow(data)});
-            return <td>{content}</td>
+                                    {isSelectedRow: self.isSelectedRow(data)}),
+                baseClassName = getOrCall(builder.className, column),
+                className = isSorted ? baseClassName + ' sorted' : baseClassName;
+            // TODO: need facility to add classes to a tr.
+            return <td className={className}>{content}</td>
           }
         }
       }
     },
     basicTable = ns.basicTable(basicTableProps);
-
-    /* old table template delegating to BasicTable now
-
-    <table className="table table-striped sortable">
-      <thead>
-        <tr>
-          {headers}
-        </tr>
-        <tr className="sub_head">
-          {searchFilters}
-        </tr>
-      </thead>
-      <tbody>
-        {rows}
-      </tbody>
-    </table>
-     */
-
 
     return (
       <div>
@@ -238,65 +236,6 @@ let SearchFilter = React.createClass({
     );
   }
 });
-
-/*
-let Row = React.createClass({
-  propTypes: {
-    row: React.PropTypes.object.isRequired,
-    columns: React.PropTypes.array.isRequired,
-    sorting: React.PropTypes.object.isRequired,
-    getType: React.PropTypes.func.isRequired
-  },
-  render: function() {
-    let row = this.props.columns.map(function (col) {
-      let isSorted = col === this.props.sorting.column;
-      let cellValue = this.props.row[col.key];
-      let cellBuilder = this.props.getType(col.type).cell;
-      let content = getOrCall(cellBuilder.renderer, cellValue, this.props.row, col, {isSelectedRow: this.props.isSelectedRow});
-      let className = getOrCall(cellBuilder.className, col);
-
-      return (
-        <Cell isSorted={isSorted}
-              isSelectedRow={this.props.isSelectedRow}
-              className={className}
-              key={col.key}>
-          {content}
-        </Cell>
-      );
-    }.bind(this));
-    return (
-      <tr className={this.props.isSelectedRow ? 'selected-row' : ''}>
-        {row}
-      </tr>
-    );
-  }
-});
-
-*/
-
-/**
- * Cell: table row cell: `td`
- *   Allows custom React elements to be returned if set in BETable.types
- */
-
-/*
-let Cell = React.createClass({
-  propTypes: {
-    className: React.PropTypes.string.isRequired,
-    isSorted: React.PropTypes.bool,
-    isSelectedRow: React.PropTypes.bool
-  },
-  render: function () {
-    let classString = this.props.className;
-    if (this.props.isSorted) {
-      classString += " sorted";
-    }
-    return (
-      <td className={classString}>{this.props.children}</td>
-    );
-  }
-});
-*/
 
 
 /**
@@ -385,8 +324,6 @@ let TableFooter = React.createClass({
 
 // last step add the react component to the mix
 ns.BETable = BETable;
-// ns.Row = Row;
-// ns.Cell = Cell;
 ns.SearchFilter = SearchFilter;
 
 try {

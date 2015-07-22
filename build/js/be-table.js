@@ -729,6 +729,12 @@ var getTableTypes = function getTableTypes(table) {
       },
       cell: function cell(column, data, context) {
         return column.type;
+      },
+      headerRow: function headerRow(columns, context) {
+        return 'base';
+      },
+      row: function row(columns, data, context) {
+        return 'base';
       }
     },
 
@@ -739,6 +745,24 @@ var getTableTypes = function getTableTypes(table) {
             'th',
             null,
             'A header!'
+          );
+        }
+      },
+      headerRow: {
+        base: function base(columns, context, renderedHeaders) {
+          return React.createElement(
+            'tr',
+            null,
+            renderedHeaders
+          );
+        }
+      },
+      row: {
+        base: function base(columns, rowData, context, renderedColumns) {
+          return React.createElement(
+            'tr',
+            null,
+            renderedColumns
           );
         }
       },
@@ -770,31 +794,40 @@ var getTableTypes = function getTableTypes(table) {
       }
     },
 
-    headerRenderer: function headerRenderer(column, context) {
+    getDispatchValue: function getDispatchValue(type, args) {
       var dispatchers = this.getDispatchers(),
-          renderers = this.getRenderers(),
-          dispatch = dispatchers.header,
-          dispatchValue = dispatch(column, context),
-          renderer = _.get(renderers, ['header', dispatchValue]) || _.get(renderers, ['header', 'base']);
+          dispatch = _.get(dispatchers, type),
+          dispatchValue = dispatch.apply(null, args);
+      return dispatchValue;
+    },
+
+    getRenderer: function getRenderer(type, dispatchValue) {
+      var renderers = this.getRenderers(),
+          renderer = _.get(renderers, [type, dispatchValue]) || _.get(renderers, [type, 'base']);
       return renderer;
+    },
+
+    lookupRenderer: function lookupRenderer(type, args) {
+      return this.getRenderer(type, this.getDispatchValue(type, args));
     },
 
     renderHeader: function renderHeader(column, context) {
-      var render = this.headerRenderer(column, context);
+      var render = this.lookupRenderer('header', [column, context]);
       return render(column, context);
     },
 
-    cellRenderer: function cellRenderer(column, data, context) {
-      var dispatchers = this.getDispatchers(),
-          renderers = this.getRenderers(),
-          dispatch = dispatchers.cell,
-          dispatchValue = dispatch(column, data, context),
-          renderer = _.get(renderers, ['cell', dispatchValue]) || _.get(renderers, ['cell', 'base']);
-      return renderer;
+    renderHeaderRow: function renderHeaderRow(columns, context, renderedHeaders) {
+      var render = this.lookupRenderer('headerRow', [columns, context]);
+      return render(columns, context, renderedHeaders);
+    },
+
+    renderRow: function renderRow(columns, data, context, renderedCells) {
+      var render = this.lookupRenderer('row', [columns, data, context, renderedCells]);
+      return render(columns, data, context, renderedCells);
     },
 
     renderCell: function renderCell(column, data, context) {
-      var render = this.cellRenderer(column, data, context);
+      var render = this.lookupRenderer('cell', [column, data, context]);
       return render(column, data, context);
     },
 
@@ -806,26 +839,23 @@ var getTableTypes = function getTableTypes(table) {
           subHeaderRows = this.props.subHeaderRows,
           renderHeader = this.renderHeader,
           renderCell = this.renderCell,
+          renderHeaderRow = this.renderHeaderRow,
+          renderRow = this.renderRow,
           renderedHeaders = _.map(columns, function (column) {
         return renderHeader(column, context);
       }),
+          renderedHeadersRow = renderHeaderRow(columns, context, renderedHeaders),
           renderedSubheaders = _.map(subHeaderRows, function (subHeaders) {
-        return React.createElement(
-          'tr',
-          null,
-          _.map(subHeaders, function (column) {
-            return renderHeader(column, context);
-          })
-        );
+        return _.map(subHeaders, function (column) {
+          return renderHeader(column, context);
+        });
       }),
+          renderedSubheadersRows = renderHeaderRow(columns, context, renderedHeaders),
           renderedRows = _.map(rows, function (data) {
-        return React.createElement(
-          'tr',
-          null,
-          _.map(columns, function (column) {
-            return renderCell(column, data, context);
-          })
-        );
+        var renderedCells = _.map(columns, function (column) {
+          return renderCell(column, data, context);
+        });
+        return renderRow(columns, data, context, renderedCells);
       });
 
       return React.createElement(
@@ -834,12 +864,8 @@ var getTableTypes = function getTableTypes(table) {
         React.createElement(
           'thead',
           null,
-          React.createElement(
-            'tr',
-            null,
-            renderedHeaders
-          ),
-          renderedSubheaders
+          renderedHeadersRow,
+          renderedSubheadersRows
         ),
         React.createElement(
           'tbody',
@@ -1000,12 +1026,6 @@ var BETable = React.createClass({
       );
     });
 
-    /*
-    let rows = this.props.rows.map(function (row) {
-      return <Row row={row} isSelectedRow={this.isSelectedRow(row)} columns={columnDefs} sorting={this.state.sorting} getType={this.getType} key={row.id}></Row>;
-    }.bind(this));
-    */
-
     var numberOfObjects = this.props.searchmeta.totalMatchCount || this.props.searchmeta.number_matching_search;
 
     var basicTableProps = {
@@ -1032,12 +1052,14 @@ var BETable = React.createClass({
           base: function base(column, context) {
             var builder = self.getType(column.type).header,
                 content = getOrCall(builder.renderer, column, self.state),
+                className = getOrCall(builder.className, column),
                 callback = function callback() {
               return self.sortingCallback(column);
             };
             return React.createElement(
               'th',
-              { onClick: callback },
+              { className: className,
+                onClick: callback },
               content
             );
           },
@@ -1051,14 +1073,30 @@ var BETable = React.createClass({
             );
           }
         },
+        row: {
+          base: function base(columns, data, context, renderedCells) {
+            var isSelectedRow = self.isSelectedRow(data),
+                className = isSelectedRow ? 'selected-row' : '';
+            return React.createElement(
+              'tr',
+              { className: className },
+              renderedCells
+            );
+          }
+        },
         cell: {
           base: function base(column, data, context) {
             var cellValue = data[column.key],
+                isSorted = column === self.state.sorting.column,
+                isSelectedRow = self.isSelectedRow(data),
                 builder = self.getType(column.type).cell,
-                content = getOrCall(builder.renderer, cellValue, data, column, { isSelectedRow: self.isSelectedRow(data) });
+                content = getOrCall(builder.renderer, cellValue, data, column, { isSelectedRow: self.isSelectedRow(data) }),
+                baseClassName = getOrCall(builder.className, column),
+                className = isSorted ? baseClassName + ' sorted' : baseClassName;
+            // TODO: need facility to add classes to a tr.
             return React.createElement(
               'td',
-              null,
+              { className: className },
               content
             );
           }
@@ -1066,22 +1104,6 @@ var BETable = React.createClass({
       }
     },
         basicTable = ns.basicTable(basicTableProps);
-
-    /* old table template delegating to BasicTable now
-     <table className="table table-striped sortable">
-      <thead>
-        <tr>
-          {headers}
-        </tr>
-        <tr className="sub_head">
-          {searchFilters}
-        </tr>
-      </thead>
-      <tbody>
-        {rows}
-      </tbody>
-    </table>
-     */
 
     return React.createElement(
       'div',
@@ -1120,65 +1142,6 @@ var SearchFilter = React.createClass({
     );
   }
 });
-
-/*
-let Row = React.createClass({
-  propTypes: {
-    row: React.PropTypes.object.isRequired,
-    columns: React.PropTypes.array.isRequired,
-    sorting: React.PropTypes.object.isRequired,
-    getType: React.PropTypes.func.isRequired
-  },
-  render: function() {
-    let row = this.props.columns.map(function (col) {
-      let isSorted = col === this.props.sorting.column;
-      let cellValue = this.props.row[col.key];
-      let cellBuilder = this.props.getType(col.type).cell;
-      let content = getOrCall(cellBuilder.renderer, cellValue, this.props.row, col, {isSelectedRow: this.props.isSelectedRow});
-      let className = getOrCall(cellBuilder.className, col);
-
-      return (
-        <Cell isSorted={isSorted}
-              isSelectedRow={this.props.isSelectedRow}
-              className={className}
-              key={col.key}>
-          {content}
-        </Cell>
-      );
-    }.bind(this));
-    return (
-      <tr className={this.props.isSelectedRow ? 'selected-row' : ''}>
-        {row}
-      </tr>
-    );
-  }
-});
-
-*/
-
-/**
- * Cell: table row cell: `td`
- *   Allows custom React elements to be returned if set in BETable.types
- */
-
-/*
-let Cell = React.createClass({
-  propTypes: {
-    className: React.PropTypes.string.isRequired,
-    isSorted: React.PropTypes.bool,
-    isSelectedRow: React.PropTypes.bool
-  },
-  render: function () {
-    let classString = this.props.className;
-    if (this.props.isSorted) {
-      classString += " sorted";
-    }
-    return (
-      <td className={classString}>{this.props.children}</td>
-    );
-  }
-});
-*/
 
 /**
  * pagination footer
@@ -1341,8 +1304,6 @@ var TableFooter = React.createClass({
 
 // last step add the react component to the mix
 ns.BETable = BETable;
-// ns.Row = Row;
-// ns.Cell = Cell;
 ns.SearchFilter = SearchFilter;
 
 try {
