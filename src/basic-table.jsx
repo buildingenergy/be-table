@@ -39,6 +39,7 @@
 
     getDefaultProps: () => {
       return {
+        context: {},
         numHeaderRows: 1,
         tableClasses: '',
       };
@@ -65,10 +66,15 @@
       }
     },
 
-    getDispatchers: () => mergeObjects(this.defaultDispatchers, this.props.dispatchers),
-    getRenderers: () => mergeObjects(this.defaultRenderers, this.props.renderers),
+    getDispatchers: function () {
+      return mergeObjects(this.defaultDispatchers, this.props.dispatchers);
+    },
 
-    computeTableClasses: () => {
+    getRenderers: function () {
+      return mergeObjects(this.defaultRenderers, this.props.renderers);
+    },
+
+    computeTableClasses: function () {
       // TODO: extend to support a function or an array
       if (_.isString(this.props.tableClasses)) {
         return this.props.tableClasses;
@@ -77,36 +83,36 @@
       }
     },
 
-    getDispatchValue: (type, columnOrColumns, rowData, context) => {
+    getDispatchValue: function (type, columnOrColumns, rowData, context) {
       let dispatchers = this.getDispatchers(),
           dispatch = _.get(dispatchers, type),
           dispatchValue = dispatch(columnOrColumns, rowData, context);
       return dispatchValue;
     },
 
-    getRenderer: (type, dispatchValue) => {
+    getRenderer: function (type, dispatchValue) {
       let renderers = this.getRenderers(),
           renderer = (_.get(renderers, [type, dispatchValue]) ||
                       _.get(renderers, [type, 'base']));
       return renderer;
     },
 
-    lookupRenderer: (type, columnOrColumns, rowData, context) => {
+    lookupRenderer: function (type, columnOrColumns, rowData, context) {
       let dispatchValue = this.getDispatchValue(type, columnOrColumns, rowData, context);
       return this.getRenderer(type, dispatchValue);
     },
 
-    renderRow: (columns, rowData, content, context) => {
-      let render = lookupRenderer('row', columns, rowData, context);
+    renderRow: function (columns, rowData, content, context) {
+      let render = this.lookupRenderer('row', columns, rowData, context);
       return render(columns, rowData, content, context);
     },
 
-    renderCell: (column, rowData, context) => {
+    renderCell: function (column, rowData, context) {
       let render = this.lookupRenderer('cell', column, rowData, context);
       return render(column, rowData, context);
     },
 
-    render: () => {
+    render: function () {
       let context = this.props.context,
           numHeaderRows = this.props.numHeaderRows,
           columns = this.props.columns,
@@ -140,9 +146,7 @@
   let ns = getNamespace('BE', 'Table');
 
   ns.BasicTable = BasicTable;
-  ns.basicTable = (props) => {
-    return React.createElement(BasicTable, props);
-  };
+  ns.basicTable = React.createFactory(BasicTable);
 
   try {
     module.exports = {

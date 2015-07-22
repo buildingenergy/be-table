@@ -687,7 +687,6 @@ var getTableTypes = function getTableTypes(table) {
  * table component.
  */
 (function (_) {
-  var _this = this;
 
   /**
    * Recusrive merge of two nested objects. Arrays values are not supported.
@@ -720,6 +719,7 @@ var getTableTypes = function getTableTypes(table) {
 
     getDefaultProps: function getDefaultProps() {
       return {
+        context: {},
         numHeaderRows: 1,
         tableClasses: ''
       };
@@ -757,56 +757,57 @@ var getTableTypes = function getTableTypes(table) {
     },
 
     getDispatchers: function getDispatchers() {
-      return mergeObjects(_this.defaultDispatchers, _this.props.dispatchers);
+      return mergeObjects(this.defaultDispatchers, this.props.dispatchers);
     },
+
     getRenderers: function getRenderers() {
-      return mergeObjects(_this.defaultRenderers, _this.props.renderers);
+      return mergeObjects(this.defaultRenderers, this.props.renderers);
     },
 
     computeTableClasses: function computeTableClasses() {
       // TODO: extend to support a function or an array
-      if (_.isString(_this.props.tableClasses)) {
-        return _this.props.tableClasses;
+      if (_.isString(this.props.tableClasses)) {
+        return this.props.tableClasses;
       } else {
         return '';
       }
     },
 
     getDispatchValue: function getDispatchValue(type, columnOrColumns, rowData, context) {
-      var dispatchers = _this.getDispatchers(),
+      var dispatchers = this.getDispatchers(),
           dispatch = _.get(dispatchers, type),
           dispatchValue = dispatch(columnOrColumns, rowData, context);
       return dispatchValue;
     },
 
     getRenderer: function getRenderer(type, dispatchValue) {
-      var renderers = _this.getRenderers(),
+      var renderers = this.getRenderers(),
           renderer = _.get(renderers, [type, dispatchValue]) || _.get(renderers, [type, 'base']);
       return renderer;
     },
 
     lookupRenderer: function lookupRenderer(type, columnOrColumns, rowData, context) {
-      var dispatchValue = _this.getDispatchValue(type, columnOrColumns, rowData, context);
-      return _this.getRenderer(type, dispatchValue);
+      var dispatchValue = this.getDispatchValue(type, columnOrColumns, rowData, context);
+      return this.getRenderer(type, dispatchValue);
     },
 
     renderRow: function renderRow(columns, rowData, content, context) {
-      var render = lookupRenderer('row', columns, rowData, context);
+      var render = this.lookupRenderer('row', columns, rowData, context);
       return render(columns, rowData, content, context);
     },
 
     renderCell: function renderCell(column, rowData, context) {
-      var render = _this.lookupRenderer('cell', column, rowData, context);
+      var render = this.lookupRenderer('cell', column, rowData, context);
       return render(column, rowData, context);
     },
 
     render: function render() {
-      var context = _this.props.context,
-          numHeaderRows = _this.props.numHeaderRows,
-          columns = _this.props.columns,
-          rows = _this.props.rows,
-          renderRow = _this.renderRow,
-          renderCell = _this.renderCell,
+      var context = this.props.context,
+          numHeaderRows = this.props.numHeaderRows,
+          columns = this.props.columns,
+          rows = this.props.rows,
+          renderRow = this.renderRow,
+          renderCell = this.renderCell,
           renderedRows = _.map(rows, function (rowData) {
         var renderedCells = _.map(columns, function (column) {
           return renderCell(column, rowData, context);
@@ -818,7 +819,7 @@ var getTableTypes = function getTableTypes(table) {
 
       return React.createElement(
         'table',
-        { className: _this.computeTableClasses() },
+        { className: this.computeTableClasses() },
         React.createElement(
           'thead',
           null,
@@ -838,9 +839,7 @@ var getTableTypes = function getTableTypes(table) {
   var ns = getNamespace('BE', 'Table');
 
   ns.BasicTable = BasicTable;
-  ns.basicTable = function (props) {
-    return React.createElement(BasicTable, props);
-  };
+  ns.basicTable = React.createFactory(BasicTable);
 
   try {
     module.exports = {
@@ -981,16 +980,10 @@ var BETable = React.createClass({
         { className: getOrCall(builder.className, col), key: col.key },
         getOrCall(builder.renderer, col)
       );
-    });
-
-    var numberOfObjects = this.props.searchmeta.totalMatchCount || this.props.searchmeta.number_matching_search;
-
-    var columns = columnDefs,
-        rows = [_.map(columnDefs, function (col) {
-      return { type: 'header', headerColumn: col };
-    }), _.map(columnDefs, function (col) {
-      return { type: 'search-filter', headerColumn: col };
-    })].concat(this.props.rows),
+    }),
+        numberOfObjects = this.props.searchmeta.totalMatchCount || this.props.searchmeta.number_matching_search,
+        columns = columnDefs,
+        rows = [{ type: 'header' }, { type: 'search-filter' }].concat(self.props.rows),
         basicTableProps = {
       numHeaderRows: 2,
       columns: columns,
@@ -998,22 +991,22 @@ var BETable = React.createClass({
       tableClasses: 'table table-striped sortable',
       dispatchers: {
         row: function row(columns, rowData, content, context) {
+          var result = 'base';
           if (rowData.type === 'header') {
-            return 'headers';
+            result = 'headers';
           } else if (rowData.type === 'search-filter') {
-            return 'filters';
-          } else {
-            return 'base';
+            result = 'filters';
           }
+          return result;
         },
         cell: function cell(column, rowData, context) {
+          var result = 'base';
           if (rowData.type === 'header') {
-            return 'header';
+            result = 'header';
           } else if (rowData.type === 'search-filter') {
-            return 'filter';
-          } else {
-            return 'base';
+            result = 'filter';
           }
+          return result;
         }
       },
       renderers: {
@@ -1050,18 +1043,16 @@ var BETable = React.createClass({
               return self.sortingCallback(column);
             },
                 baseClassName = getOrCall(builder.className, column);
-
             var classes = {};
-            if (column === self.props.sorting.column) {
+            if (column === self.state.sorting.column) {
               classes = {
                 sorted: true,
-                sort_asc: self.props.sorting.ascending,
-                sord_desc: !self.props.sorting.ascending
+                sort_asc: self.state.sorting.ascending,
+                sord_desc: !self.state.sorting.ascending
               };
             }
 
             var className = classNames(baseClassName, classes);
-
             return React.createElement(
               'th',
               { className: className,

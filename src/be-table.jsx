@@ -120,26 +120,20 @@ let BETable = React.createClass({
     let self = this,
         columnDefs = this.props.columns,
         types = this.buildTypes(),
-        searchFilters = _.map(columnDefs, function (col) {
+        searchFilters = _.map(columnDefs, (col) => {
           let builder = self.getType(col.type).filter;
           return (
             <SearchFilter className={getOrCall(builder.className, col)} key={col.key}>
               {getOrCall(builder.renderer, col)}
             </SearchFilter>
           );
-        });
-
-    let numberOfObjects = this.props.searchmeta.totalMatchCount || this.props.searchmeta.number_matching_search;
-
-    let columns = columnDefs,
+        }),
+        numberOfObjects = this.props.searchmeta.totalMatchCount || this.props.searchmeta.number_matching_search,
+        columns = columnDefs,
         rows = [
-          _.map(columnDefs, (col) => {
-            return {type: 'header', headerColumn: col}
-          }),
-          _.map(columnDefs, (col) => {
-            return {type: 'search-filter', headerColumn: col}
-          })
-        ].concat(this.props.rows),
+          {type: 'header'},
+          {type: 'search-filter'}
+        ].concat(self.props.rows),
         basicTableProps = {
           numHeaderRows: 2,
           columns: columns,
@@ -147,22 +141,22 @@ let BETable = React.createClass({
           tableClasses: 'table table-striped sortable',
           dispatchers: {
             row: (columns, rowData, content, context) => {
+              var result = 'base';
               if (rowData.type === 'header') {
-                return 'headers';
+                result = 'headers';
               } else if (rowData.type === 'search-filter') {
-                return 'filters';
-              } else {
-                return 'base';
+                result = 'filters';
               }
+              return result;
             },
             cell: (column, rowData, context) => {
+              var result = 'base';
               if (rowData.type === 'header') {
-                return 'header';
+                result = 'header';
               } else if (rowData.type === 'search-filter') {
-                return 'filter';
-              } else {
-                return 'base';
+                result = 'filter';
               }
+              return result;
             }
           },
           renderers: {
@@ -185,18 +179,16 @@ let BETable = React.createClass({
                     content = getOrCall(builder.renderer, column, self.state),
                     callback = () => self.sortingCallback(column),
                     baseClassName = getOrCall(builder.className, column);
-
                 var classes = {};
-                if (column === self.props.sorting.column) {
+                if (column === self.state.sorting.column) {
                   classes = {
                     sorted: true,
-                    sort_asc: self.props.sorting.ascending,
-                    sord_desc: !self.props.sorting.ascending,
+                    sort_asc: self.state.sorting.ascending,
+                    sord_desc: !self.state.sorting.ascending,
                   };
                 }
 
                 let className = classNames(baseClassName, classes);
-
                 return (
                   <th className={className}
                       onClick={callback}>
