@@ -116,7 +116,7 @@ let BETable = React.createClass({
     return selected;
   },
 
-  render: function() {
+  render: function () {
     let self = this,
         columnDefs = this.props.columns,
         types = this.buildTypes(),
@@ -131,80 +131,108 @@ let BETable = React.createClass({
 
     let numberOfObjects = this.props.searchmeta.totalMatchCount || this.props.searchmeta.number_matching_search;
 
-    let basicTableProps = {
-      columns: columnDefs,
-      rows: self.props.rows,
-      subHeaderRows: [_.map(columnDefs, function (column) {
-        return {
-          type: 'search-filter',
-          headerColumn: column
-        }
-      })],
-      tableClasses: 'table table-striped sortable',
-      dispatchers: {
-        header: function (column, context) {
-          if (column.type === 'search-filter') {
-            return 'filter';
-          } else {
-            return 'base';
-          }
-        }
-      },
-      renderers: {
-        header: {
-          base: function (column, context) {
-            let builder = self.getType(column.type).header,
-                content = getOrCall(builder.renderer, column, self.state),
-                className = getOrCall(builder.className, column),
-                callback = () => self.sortingCallback(column);
-            return (
-              <th className={className}
-                  onClick={callback}>
-                {content}
-              </th>
-            );
+    let columns = columnDefs,
+        rows = [
+          _.map(columnDefs, (col) => {
+            return {type: 'header', headerColumn: col}
+          }),
+          _.map(columnDefs, (col) => {
+            return {type: 'search-filter', headerColumn: col}
+          })
+        ].concat(this.props.rows),
+        basicTableProps = {
+          numHeaderRows: 2,
+          columns: columns,
+          rows: rows,
+          tableClasses: 'table table-striped sortable',
+          dispatchers: {
+            row: (columns, rowData, content, context) => {
+              if (rowData.type === 'header') {
+                return 'headers';
+              } else if (rowData.type === 'search-filter') {
+                return 'filters';
+              } else {
+                return 'base';
+              }
+            },
+            cell: (column, rowData, context) => {
+              if (rowData.type === 'header') {
+                return 'header';
+              } else if (rowData.type === 'search-filter') {
+                return 'filter';
+              } else {
+                return 'base';
+              }
+            }
           },
-          filter: function (column, context) {
-            let builder = self.getType(column.headerColumn.type).filter,
-                content = getOrCall(builder.renderer, column.headerColumn);
-            return (
-              <th className="sub_head scroll_columns">
-                {content}
-              </th>
-            );
+          renderers: {
+            row: {
+              headers: (columns, rowData, content, context) => {
+                return <tr>{content}</tr>;
+              },
+              filters: (columns, rowData, content, context) => {
+                return <tr className="sub_head">{content}</tr>;
+              },
+              base: (columns, rowData, content, context) => {
+                let isSelectedRow = self.isSelectedRow(rowData),
+                    className = isSelectedRow ? 'selected-row' : '';
+                return <tr className={className}>{content}</tr>;
+              }
+            },
+            cell: {
+              header: (column, rowData, context) => {
+                let builder = self.getType(column.type).header,
+                    content = getOrCall(builder.renderer, column, self.state),
+                    callback = () => self.sortingCallback(column),
+                    baseClassName = getOrCall(builder.className, column);
+
+                var classes = {};
+                if (column === self.props.sorting.column) {
+                  classes = {
+                    sorted: true,
+                    sort_asc: self.props.sorting.ascending,
+                    sord_desc: !self.props.sorting.ascending,
+                  };
+                }
+
+                let className = classNames(baseClassName, classes);
+
+                return (
+                  <th className={className}
+                      onClick={callback}>
+                    {content}
+                  </th>
+                );
+              },
+              filter: (column, rowData, context) => {
+                let builder = self.getType(column.type).filter,
+                    content = getOrCall(builder.renderer, column);
+                return (
+                  <th className="sub_head scroll_columns">
+                    {content}
+                  </th>
+                );
+              },
+              base: (column, rowData, context) => {
+                let cellValue = rowData[column.key],
+                    isSorted = (column === self.state.sorting.column),
+                    isSelectedRow = self.isSelectedRow(rowData),
+                    builder = self.getType(column.type).cell,
+                    content = getOrCall(builder.renderer,
+                                        cellValue,
+                                        rowData,
+                                        column,
+                                        {isSelectedRow: isSelectedRow}),
+                    baseClassName = getOrCall(builder.className, column),
+                    className = isSorted ? baseClassName + ' sorted' : baseClassName;
+
+                return <td className={className}>{content}</td>;
+              }
+            },
           }
         },
-        row: {
-          base: function (columns, data, context, renderedCells) {
-            let isSelectedRow = self.isSelectedRow(data),
-                className = isSelectedRow ? 'selected-row' : '';
-            return (
-              <tr className={className}>
-                {renderedCells}
-              </tr>
-            );
-          }
-        },
-        cell: {
-          base: function (column, data, context) {
-            let cellValue = data[column.key],
-                isSorted = (column === self.state.sorting.column),
-                isSelectedRow = self.isSelectedRow(data),
-                builder = self.getType(column.type).cell,
-                content = getOrCall(builder.renderer,
-                                    cellValue,
-                                    data,
-                                    column,
-                                    {isSelectedRow: self.isSelectedRow(data)}),
-                baseClassName = getOrCall(builder.className, column),
-                className = isSorted ? baseClassName + ' sorted' : baseClassName;
-            // TODO: need facility to add classes to a tr.
-            return <td className={className}>{content}</td>
-          }
-        }
-      }
-    },
-    basicTable = ns.basicTable(basicTableProps);
+
+        basicTable = ns.basicTable(basicTableProps);
 
     return (
       <div>
@@ -215,7 +243,8 @@ let BETable = React.createClass({
                      currentPage={this.state.currentPage}
                      numberPerPage={this.state.numberPerPage}
                      numberOfObjects={numberOfObjects}
-                     paginationCallback={this.paginationCallback}> </TableFooter>
+                     paginationCallback={this.paginationCallback}>
+        </TableFooter>
       </div>
     );
   }

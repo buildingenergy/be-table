@@ -9,7 +9,7 @@
    * Recusrive merge of two nested objects. Arrays values are not supported.
    */
   function mergeObjects(obj0, obj1) {
-    let result =  _.merge(obj0, obj1, function (subObj0, subObj1) {
+    let result =  _.merge(obj0, obj1, (subObj0, subObj1) => {
       if (_.isPlainObject(subObj0)) {
         return mergeObjects(subObj0, subObj1);
       } else {
@@ -24,12 +24,12 @@
     propTypes: {
       // arbitrary context to be passed to renderers
       context: React.PropTypes.object,
+      numHeaderRows: React.PropTypes.number,  // defaults to 1
       columns: React.PropTypes.array.isRequired,
       rows: React.PropTypes.array.isRequired,
-      subHeaderRows: React.PropTypes.array,
-      callback: React.PropTypes.func,
       dispatchers: React.PropTypes.object,
       renderers: React.PropTypes.object,
+      callback: React.PropTypes.func,
       tableClasses: React.PropTypes.oneOfType([
         React.PropTypes.string,
         React.PropTypes.func,
@@ -37,65 +37,38 @@
       ]),
     },
 
-    getDefaultProps: function () {
+    getDefaultProps: () => {
       return {
-        tableClasses: ''
+        numHeaderRows: 1,
+        tableClasses: '',
       };
     },
 
     defaultDispatchers: {
-      header: function (column, context) {
-        return column.type;
-      },
-      cell: function (column, data, context) {
-        return column.type;
-      },
-      headerRow: function (columns, context) {
-        return 'base';
-      },
-      row: function (columns, data, context) {
-        return 'base';
-      },
+      row: (columns, rowData, context) => 'base',
+      cell: (column, rowData, context) => 'base',
     },
 
     defaultRenderers: {
-      header: {
-        base: function (column, context) {
-          return (
-            <th>A header!</th>
-          );
-        }
-      },
-      headerRow: {
-        base: function (columns, context, renderedHeaders) {
-          return (
-            <tr>{renderedHeaders}</tr>
-          );
-        }
-      },
       row: {
-        base: function (columns, rowData, context, renderedColumns) {
+        base: (columns, rowData, context, content) => {
           return (
             <tr>{renderedColumns}</tr>
           );
         }
       },
       cell: {
-        base: function (column, data, context) {
-          return <td>A cell!</td>;
+        base: (column, rowData, context) => {
+          let content = _.get(rowData, column);
+          return <td>{content}</td>;
         }
       }
     },
 
-    getDispatchers: function () {
-      return mergeObjects(this.defaultDispatchers, this.props.dispatchers);
-    },
+    getDispatchers: () => mergeObjects(this.defaultDispatchers, this.props.dispatchers),
+    getRenderers: () => mergeObjects(this.defaultRenderers, this.props.renderers),
 
-    getRenderers: function () {
-      return mergeObjects(this.defaultRenderers, this.props.renderers);
-    },
-
-   computeTableClasses: function () {
+    computeTableClasses: () => {
       // TODO: extend to support a function or an array
       if (_.isString(this.props.tableClasses)) {
         return this.props.tableClasses;
@@ -104,83 +77,61 @@
       }
     },
 
-    getDispatchValue: function (type, args) {
+    getDispatchValue: (type, columnOrColumns, rowData, context) => {
       let dispatchers = this.getDispatchers(),
           dispatch = _.get(dispatchers, type),
-          dispatchValue = dispatch.apply(null, args);
+          dispatchValue = dispatch(columnOrColumns, rowData, context);
       return dispatchValue;
     },
 
-    getRenderer: function (type, dispatchValue) {
+    getRenderer: (type, dispatchValue) => {
       let renderers = this.getRenderers(),
           renderer = (_.get(renderers, [type, dispatchValue]) ||
                       _.get(renderers, [type, 'base']));
       return renderer;
     },
 
-    lookupRenderer: function (type, args) {
-      return this.getRenderer(type, this.getDispatchValue(type, args));
+    lookupRenderer: (type, columnOrColumns, rowData, context) => {
+      let dispatchValue = this.getDispatchValue(type, columnOrColumns, rowData, context);
+      return this.getRenderer(type, dispatchValue);
     },
 
-    renderHeader: function (column, context) {
-      let render = this.lookupRenderer('header', [column, context]);
-      return render(column, context);
+    renderRow: (columns, rowData, content, context) => {
+      let render = lookupRenderer('row', columns, rowData, context);
+      return render(columns, rowData, content, context);
     },
 
-    renderHeaderRow: function (columns, context, renderedHeaders) {
-      let render = this.lookupRenderer('headerRow', [columns, context]);
-      return render(columns, context, renderedHeaders);
+    renderCell: (column, rowData, context) => {
+      let render = this.lookupRenderer('cell', column, rowData, context);
+      return render(column, rowData, context);
     },
 
-    renderRow: function (columns, data, context, renderedCells) {
-      let render = this.lookupRenderer('row', [columns, data, context, renderedCells]);
-      return render(columns, data, context, renderedCells);
-    },
-
-    renderCell: function (column, data, context) {
-      let render = this.lookupRenderer('cell', [column, data, context]);
-      return render(column, data, context);
-    },
-
-    render: function() {
-
+    render: () => {
       let context = this.props.context,
+          numHeaderRows = this.props.numHeaderRows,
           columns = this.props.columns,
           rows = this.props.rows,
-          subHeaderRows = this.props.subHeaderRows,
-          renderHeader = this.renderHeader,
-          renderCell = this.renderCell,
-          renderHeaderRow = this.renderHeaderRow,
           renderRow = this.renderRow,
-          renderedHeaders = _.map(columns, function (column) {
-            return renderHeader(column, context);
-          }),
-          renderedHeadersRow = renderHeaderRow(columns, context, renderedHeaders),
-          renderedSubheaders = _.map(subHeaderRows, function (subHeaders) {
-            return _.map(subHeaders, function (column) {
-              return renderHeader(column, context);
-            })
-          }),
-          renderedSubheadersRows = renderHeaderRow(columns, context, renderedHeaders),
-          renderedRows = _.map(rows, function (data) {
-            let renderedCells = _.map(columns, function (column) {
-              return renderCell(column, data, context);
+          renderCell = this.renderCell,
+          renderedRows = _.map(rows, (rowData) => {
+            let renderedCells = _.map(columns, (column) => {
+              return renderCell(column, rowData, context);
             });
-            return renderRow(columns, data, context, renderedCells);
-          });
+            return renderRow(columns, rowData, renderedCells, context);
+          }),
+          renderedHeaderRows = _.take(renderedRows, numHeaderRows),
+          renderedBodyRows = _.drop(renderedRows, numHeaderRows);
 
       return (
         <table className={this.computeTableClasses()}>
           <thead>
-            {renderedHeadersRow}
-            {renderedSubheadersRows}
-            </thead>
-            <tbody>
-                {renderedRows}
-            </tbody>
-          </table>
-        );
-
+            {renderedHeaderRows}
+          </thead>
+          <tbody>
+            {renderedBodyRows}
+          </tbody>
+        </table>
+      );
     }
 
   });

@@ -687,6 +687,7 @@ var getTableTypes = function getTableTypes(table) {
  * table component.
  */
 (function (_) {
+  var _this = this;
 
   /**
    * Recusrive merge of two nested objects. Arrays values are not supported.
@@ -708,57 +709,34 @@ var getTableTypes = function getTableTypes(table) {
     propTypes: {
       // arbitrary context to be passed to renderers
       context: React.PropTypes.object,
+      numHeaderRows: React.PropTypes.number, // defaults to 1
       columns: React.PropTypes.array.isRequired,
       rows: React.PropTypes.array.isRequired,
-      subHeaderRows: React.PropTypes.array,
-      callback: React.PropTypes.func,
       dispatchers: React.PropTypes.object,
       renderers: React.PropTypes.object,
+      callback: React.PropTypes.func,
       tableClasses: React.PropTypes.oneOfType([React.PropTypes.string, React.PropTypes.func, React.PropTypes.array])
     },
 
     getDefaultProps: function getDefaultProps() {
       return {
+        numHeaderRows: 1,
         tableClasses: ''
       };
     },
 
     defaultDispatchers: {
-      header: function header(column, context) {
-        return column.type;
-      },
-      cell: function cell(column, data, context) {
-        return column.type;
-      },
-      headerRow: function headerRow(columns, context) {
+      row: function row(columns, rowData, context) {
         return 'base';
       },
-      row: function row(columns, data, context) {
+      cell: function cell(column, rowData, context) {
         return 'base';
       }
     },
 
     defaultRenderers: {
-      header: {
-        base: function base(column, context) {
-          return React.createElement(
-            'th',
-            null,
-            'A header!'
-          );
-        }
-      },
-      headerRow: {
-        base: function base(columns, context, renderedHeaders) {
-          return React.createElement(
-            'tr',
-            null,
-            renderedHeaders
-          );
-        }
-      },
       row: {
-        base: function base(columns, rowData, context, renderedColumns) {
+        base: function base(columns, rowData, context, content) {
           return React.createElement(
             'tr',
             null,
@@ -767,110 +745,89 @@ var getTableTypes = function getTableTypes(table) {
         }
       },
       cell: {
-        base: function base(column, data, context) {
+        base: function base(column, rowData, context) {
+          var content = _.get(rowData, column);
           return React.createElement(
             'td',
             null,
-            'A cell!'
+            content
           );
         }
       }
     },
 
     getDispatchers: function getDispatchers() {
-      return mergeObjects(this.defaultDispatchers, this.props.dispatchers);
+      return mergeObjects(_this.defaultDispatchers, _this.props.dispatchers);
     },
-
     getRenderers: function getRenderers() {
-      return mergeObjects(this.defaultRenderers, this.props.renderers);
+      return mergeObjects(_this.defaultRenderers, _this.props.renderers);
     },
 
     computeTableClasses: function computeTableClasses() {
       // TODO: extend to support a function or an array
-      if (_.isString(this.props.tableClasses)) {
-        return this.props.tableClasses;
+      if (_.isString(_this.props.tableClasses)) {
+        return _this.props.tableClasses;
       } else {
         return '';
       }
     },
 
-    getDispatchValue: function getDispatchValue(type, args) {
-      var dispatchers = this.getDispatchers(),
+    getDispatchValue: function getDispatchValue(type, columnOrColumns, rowData, context) {
+      var dispatchers = _this.getDispatchers(),
           dispatch = _.get(dispatchers, type),
-          dispatchValue = dispatch.apply(null, args);
+          dispatchValue = dispatch(columnOrColumns, rowData, context);
       return dispatchValue;
     },
 
     getRenderer: function getRenderer(type, dispatchValue) {
-      var renderers = this.getRenderers(),
+      var renderers = _this.getRenderers(),
           renderer = _.get(renderers, [type, dispatchValue]) || _.get(renderers, [type, 'base']);
       return renderer;
     },
 
-    lookupRenderer: function lookupRenderer(type, args) {
-      return this.getRenderer(type, this.getDispatchValue(type, args));
+    lookupRenderer: function lookupRenderer(type, columnOrColumns, rowData, context) {
+      var dispatchValue = _this.getDispatchValue(type, columnOrColumns, rowData, context);
+      return _this.getRenderer(type, dispatchValue);
     },
 
-    renderHeader: function renderHeader(column, context) {
-      var render = this.lookupRenderer('header', [column, context]);
-      return render(column, context);
+    renderRow: function renderRow(columns, rowData, content, context) {
+      var render = lookupRenderer('row', columns, rowData, context);
+      return render(columns, rowData, content, context);
     },
 
-    renderHeaderRow: function renderHeaderRow(columns, context, renderedHeaders) {
-      var render = this.lookupRenderer('headerRow', [columns, context]);
-      return render(columns, context, renderedHeaders);
-    },
-
-    renderRow: function renderRow(columns, data, context, renderedCells) {
-      var render = this.lookupRenderer('row', [columns, data, context, renderedCells]);
-      return render(columns, data, context, renderedCells);
-    },
-
-    renderCell: function renderCell(column, data, context) {
-      var render = this.lookupRenderer('cell', [column, data, context]);
-      return render(column, data, context);
+    renderCell: function renderCell(column, rowData, context) {
+      var render = _this.lookupRenderer('cell', column, rowData, context);
+      return render(column, rowData, context);
     },
 
     render: function render() {
-
-      var context = this.props.context,
-          columns = this.props.columns,
-          rows = this.props.rows,
-          subHeaderRows = this.props.subHeaderRows,
-          renderHeader = this.renderHeader,
-          renderCell = this.renderCell,
-          renderHeaderRow = this.renderHeaderRow,
-          renderRow = this.renderRow,
-          renderedHeaders = _.map(columns, function (column) {
-        return renderHeader(column, context);
-      }),
-          renderedHeadersRow = renderHeaderRow(columns, context, renderedHeaders),
-          renderedSubheaders = _.map(subHeaderRows, function (subHeaders) {
-        return _.map(subHeaders, function (column) {
-          return renderHeader(column, context);
-        });
-      }),
-          renderedSubheadersRows = renderHeaderRow(columns, context, renderedHeaders),
-          renderedRows = _.map(rows, function (data) {
+      var context = _this.props.context,
+          numHeaderRows = _this.props.numHeaderRows,
+          columns = _this.props.columns,
+          rows = _this.props.rows,
+          renderRow = _this.renderRow,
+          renderCell = _this.renderCell,
+          renderedRows = _.map(rows, function (rowData) {
         var renderedCells = _.map(columns, function (column) {
-          return renderCell(column, data, context);
+          return renderCell(column, rowData, context);
         });
-        return renderRow(columns, data, context, renderedCells);
-      });
+        return renderRow(columns, rowData, renderedCells, context);
+      }),
+          renderedHeaderRows = _.take(renderedRows, numHeaderRows),
+          renderedBodyRows = _.drop(renderedRows, numHeaderRows);
 
       return React.createElement(
         'table',
-        { className: this.computeTableClasses() },
+        { className: _this.computeTableClasses() },
         React.createElement(
           'thead',
           null,
-          renderedHeadersRow,
-          renderedSubheadersRows
+          renderedHeaderRows
         ),
         React.createElement(
           'tbody',
           null,
-          renderedRows
+          renderedBodyRows
         )
       );
     }
@@ -1028,19 +985,31 @@ var BETable = React.createClass({
 
     var numberOfObjects = this.props.searchmeta.totalMatchCount || this.props.searchmeta.number_matching_search;
 
-    var basicTableProps = {
-      columns: columnDefs,
-      rows: self.props.rows,
-      subHeaderRows: [_.map(columnDefs, function (column) {
-        return {
-          type: 'search-filter',
-          headerColumn: column
-        };
-      })],
+    var columns = columnDefs,
+        rows = [_.map(columnDefs, function (col) {
+      return { type: 'header', headerColumn: col };
+    }), _.map(columnDefs, function (col) {
+      return { type: 'search-filter', headerColumn: col };
+    })].concat(this.props.rows),
+        basicTableProps = {
+      numHeaderRows: 2,
+      columns: columns,
+      rows: rows,
       tableClasses: 'table table-striped sortable',
       dispatchers: {
-        header: function header(column, context) {
-          if (column.type === 'search-filter') {
+        row: function row(columns, rowData, content, context) {
+          if (rowData.type === 'header') {
+            return 'headers';
+          } else if (rowData.type === 'search-filter') {
+            return 'filters';
+          } else {
+            return 'base';
+          }
+        },
+        cell: function cell(column, rowData, context) {
+          if (rowData.type === 'header') {
+            return 'header';
+          } else if (rowData.type === 'search-filter') {
             return 'filter';
           } else {
             return 'base';
@@ -1048,14 +1017,51 @@ var BETable = React.createClass({
         }
       },
       renderers: {
-        header: {
-          base: function base(column, context) {
+        row: {
+          headers: function headers(columns, rowData, content, context) {
+            return React.createElement(
+              'tr',
+              null,
+              content
+            );
+          },
+          filters: function filters(columns, rowData, content, context) {
+            return React.createElement(
+              'tr',
+              { className: 'sub_head' },
+              content
+            );
+          },
+          base: function base(columns, rowData, content, context) {
+            var isSelectedRow = self.isSelectedRow(rowData),
+                className = isSelectedRow ? 'selected-row' : '';
+            return React.createElement(
+              'tr',
+              { className: className },
+              content
+            );
+          }
+        },
+        cell: {
+          header: function header(column, rowData, context) {
             var builder = self.getType(column.type).header,
                 content = getOrCall(builder.renderer, column, self.state),
-                className = getOrCall(builder.className, column),
                 callback = function callback() {
               return self.sortingCallback(column);
-            };
+            },
+                baseClassName = getOrCall(builder.className, column);
+
+            var classes = {};
+            if (column === self.props.sorting.column) {
+              classes = {
+                sorted: true,
+                sort_asc: self.props.sorting.ascending,
+                sord_desc: !self.props.sorting.ascending
+              };
+            }
+
+            var className = classNames(baseClassName, classes);
+
             return React.createElement(
               'th',
               { className: className,
@@ -1063,37 +1069,24 @@ var BETable = React.createClass({
               content
             );
           },
-          filter: function filter(column, context) {
-            var builder = self.getType(column.headerColumn.type).filter,
-                content = getOrCall(builder.renderer, column.headerColumn);
+          filter: function filter(column, rowData, context) {
+            var builder = self.getType(column.type).filter,
+                content = getOrCall(builder.renderer, column);
             return React.createElement(
               'th',
               { className: 'sub_head scroll_columns' },
               content
             );
-          }
-        },
-        row: {
-          base: function base(columns, data, context, renderedCells) {
-            var isSelectedRow = self.isSelectedRow(data),
-                className = isSelectedRow ? 'selected-row' : '';
-            return React.createElement(
-              'tr',
-              { className: className },
-              renderedCells
-            );
-          }
-        },
-        cell: {
-          base: function base(column, data, context) {
-            var cellValue = data[column.key],
+          },
+          base: function base(column, rowData, context) {
+            var cellValue = rowData[column.key],
                 isSorted = column === self.state.sorting.column,
-                isSelectedRow = self.isSelectedRow(data),
+                isSelectedRow = self.isSelectedRow(rowData),
                 builder = self.getType(column.type).cell,
-                content = getOrCall(builder.renderer, cellValue, data, column, { isSelectedRow: self.isSelectedRow(data) }),
+                content = getOrCall(builder.renderer, cellValue, rowData, column, { isSelectedRow: isSelectedRow }),
                 baseClassName = getOrCall(builder.className, column),
                 className = isSorted ? baseClassName + ' sorted' : baseClassName;
-            // TODO: need facility to add classes to a tr.
+
             return React.createElement(
               'td',
               { className: className },
@@ -1113,15 +1106,11 @@ var BETable = React.createClass({
         { className: 'vert_table_scroll_container' },
         basicTable
       ),
-      React.createElement(
-        TableFooter,
-        { objectName: this.props.objectname,
-          currentPage: this.state.currentPage,
-          numberPerPage: this.state.numberPerPage,
-          numberOfObjects: numberOfObjects,
-          paginationCallback: this.paginationCallback },
-        ' '
-      )
+      React.createElement(TableFooter, { objectName: this.props.objectname,
+        currentPage: this.state.currentPage,
+        numberPerPage: this.state.numberPerPage,
+        numberOfObjects: numberOfObjects,
+        paginationCallback: this.paginationCallback })
     );
   }
 });
