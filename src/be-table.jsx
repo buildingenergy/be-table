@@ -43,6 +43,17 @@ let BETable = React.createClass({
     };
   },
 
+  hasCallback: function () {
+    return _.isFunction(this.props.callback);
+  },
+
+  callCallback: function (tableState, event) {
+    if (this.hasCallback()) {
+      return this.props.callback(tableState, event);
+    }
+    return false;
+  },
+
   sortingCallback: function (obj) {
     if (obj.sortable === false) {
       return;
@@ -55,7 +66,7 @@ let BETable = React.createClass({
       },
       currentPage: 1
     }, function () {
-      this.props.callback(this.state, {eventType: 'columnSorted'});
+      this.callCallback(this.state, {eventType: 'columnSorted'});
     });
   },
 
@@ -64,13 +75,13 @@ let BETable = React.createClass({
       previousState.searchFilters[key] = val;
       return {searchFilters: previousState.searchFilters, currentPage: 1};
     }, function () {
-      this.props.callback(this.state, {eventType: 'filterChanged'});
+      this.callCallback(this.state, {eventType: 'filterChanged'});
     });
   },
 
   paginationCallback: function (state) {
     this.setState(state, function () {
-      this.props.callback(this.state, {eventType: 'pagination'});
+      this.callCallback(this.state, {eventType: 'pagination'});
     });
   },
 
@@ -91,7 +102,7 @@ let BETable = React.createClass({
         selectedRows: rows
       };
     }, function () {
-      this.props.callback(this.state, {eventType: 'rowClicked'});
+      this.callCallback(this.state, {eventType: 'rowClicked'});
     });
   },
 
@@ -103,7 +114,7 @@ let BETable = React.createClass({
         selectAll: !prevState.selectAll
       };
     }, function () {
-      this.props.callback(this.state, {eventType: 'selectAllToggled'});
+      this.callCallback(this.state, {eventType: 'selectAllToggled'});
     });
   },
 
